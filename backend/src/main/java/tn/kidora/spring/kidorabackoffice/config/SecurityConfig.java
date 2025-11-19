@@ -11,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import tn.kidora.spring.kidorabackoffice.utils.Constants;
 
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +42,7 @@ public class SecurityConfig {
         return http
                .csrf(AbstractHttpConfigurer::disable)
                .authorizeHttpRequests(auth ->
-               auth.requestMatchers("/api/v1/login").permitAll()
+               auth.requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.LOGIN,Constants.APP_ROOT+Constants.AUTH+Constants.REGISTER).permitAll()
                               .anyRequest().authenticated())
              .addFilterBefore(new JwtFilter(customUserDetailsService, jwtUtils), UsernamePasswordAuthenticationFilter.class)
              .build();
