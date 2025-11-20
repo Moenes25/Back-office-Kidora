@@ -22,7 +22,7 @@ public class JwtUtils {
 private String secretKey;
 
 @Value("${app.jwt-expiration-time}")
-private String jwtExpirationTime;
+private long jwtExpirationTime;
 
 
 public String generateToken(String username) {
