@@ -43,7 +43,10 @@ public class SecurityConfig {
                .csrf(AbstractHttpConfigurer::disable)
                .authorizeHttpRequests(auth ->
                auth.requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.LOGIN,Constants.APP_ROOT+Constants.AUTH+Constants.REGISTER).permitAll()
+                              .requestMatchers(Constants.APP_ROOT+Constants.ADMIN_GENERAL).hasRole("ADMIN_GENERAL")
                               .anyRequest().authenticated())
+                     
+                     
              .addFilterBefore(new JwtFilter(customUserDetailsService, jwtUtils), UsernamePasswordAuthenticationFilter.class)
              .build();
                
