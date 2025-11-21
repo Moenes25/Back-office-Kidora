@@ -42,7 +42,8 @@ public class SecurityConfig {
         return http
                .csrf(AbstractHttpConfigurer::disable)
                .authorizeHttpRequests(auth ->
-               auth.requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.LOGIN,Constants.APP_ROOT+Constants.AUTH+Constants.REGISTER).permitAll()
+               auth.requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.LOGIN,Constants.APP_ROOT+Constants.AUTH+Constants.REGISTER,
+                               Constants.APP_ROOT +Constants.ETABLISSEMENT + "/**").permitAll()
                               .requestMatchers(Constants.APP_ROOT+Constants.ADMIN_GENERAL).hasRole("ADMIN_GENERAL")
                               .anyRequest().authenticated())
                      
