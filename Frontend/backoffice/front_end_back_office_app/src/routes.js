@@ -1,56 +1,109 @@
 import React from "react";
 
-// Admin Imports
+/* === Admin pages === */
 import MainDashboard from "views/admin/default";
-import NFTMarketplace from "views/admin/marketplace";
 import Profile from "views/admin/profile";
-
-
-
-
-
-// Auth Imports
-import SignIn from "views/auth/SignIn";
-
-// Icon Imports
-import {
- MdOutlineShoppingCart,
-  MdBarChart,
-  MdPerson,
-  MdLock,
-} from "react-icons/md";
-import {
-  MdHome,
-  MdBusiness,
-  MdPsychology,
-  MdPayments,
-  MdSupportAgent,
-  MdSettings,
-} from "react-icons/md";
-
-
-import CrechesPage from "views/admin/creches";
 import IAPage from "views/admin/ia";
 import PaiementsPage from "views/admin/paiements";
 import SupportPage from "views/admin/support";
 import SettingsPage from "views/admin/settings";
 
+/* === Nouvelles pages selon cahier === */
+import ClientsPage from "views/admin/clients";   // liste + filtres (types, statut, commercial)
+import MapsPage from "views/admin/maps";         // cartographie
+import TeamPage from "views/admin/team";         // équipe & rôles (RBAC)
+import ReportsPage from "views/admin/reports";   // rapports & exports
+
+/* === Auth === */
+import SignIn from "views/auth/SignIn";
+
+/* === Icons === */
+import {
+  MdHome,
+  MdBusiness,
+  MdPayments,
+  MdMap,
+  MdGroups,
+  MdSupportAgent,
+  MdBarChart,
+  MdPsychology,
+  MdSettings,
+  MdPerson,
+  MdLock,
+} from "react-icons/md";
+
+/**
+ * IMPORTANT :
+ * - Export par défaut = routes (le thème fait `import routes from "routes"`).
+ * - Ordre et intitulés = sections du cahier des charges.
+ */
 const routes = [
+  /* 2.1 Dashboard Général */
   {
-    name: "Main Dashboard",
+    name: "Dashboard",
     layout: "/admin",
     path: "default",
     icon: <MdHome className="h-6 w-6" />,
     component: <MainDashboard />,
   },
-    {
-    name: "Crèches",
+
+  /* 2.2 Gestion des Clients (Garderies / Crèches / Écoles) */
+  {
+    name: "Clients",
     layout: "/admin",
-    path: "creches",
+    path: "clients",
     icon: <MdBusiness className="h-6 w-6" />,
-    component: <CrechesPage />,
+    component: <ClientsPage />,
+  },
+  // (optionnel, caché du menu) détail client :
+  // { name: "Client Details", layout: "/admin", path: "clients/:id", component: <ClientDetails />, secondary: true },
+
+  /* 2.3 Paiements & Abonnements */
+  {
+    name: "Paiements",
+    layout: "/admin",
+    path: "paiements",
+    icon: <MdPayments className="h-6 w-6" />,
+    component: <PaiementsPage />,
   },
 
+  /* 2.4 Cartographie (Maps – Gestion par Zones) */
+  {
+    name: "Cartographie",
+    layout: "/admin",
+    path: "cartographie",
+    icon: <MdMap className="h-6 w-6" />,
+    component: <MapsPage />,
+  },
+
+  /* 2.5 Gestion interne de l’équipe Kidora (Admins & Staff) */
+  {
+    name: "Équipe Kidora",
+    layout: "/admin",
+    path: "equipe",
+    icon: <MdGroups className="h-6 w-6" />,
+    component: <TeamPage />,
+  },
+
+  /* 2.6 Support & Tickets */
+  {
+    name: "Support & Tickets",
+    layout: "/admin",
+    path: "support",
+    icon: <MdSupportAgent className="h-6 w-6" />,
+    component: <SupportPage />,
+  },
+
+  /* 2.7 Rapports & Analytics */
+  {
+    name: "Rapports & Analytics",
+    layout: "/admin",
+    path: "rapports",
+    icon: <MdBarChart className="h-6 w-6" />,
+    component: <ReportsPage />,
+  },
+
+  /* 3. Analyse IA */
   {
     name: "Analyse IA",
     layout: "/admin",
@@ -59,22 +112,7 @@ const routes = [
     component: <IAPage />,
   },
 
-  {
-    name: "Paiements & Licences",
-    layout: "/admin",
-    path: "paiements",
-    icon: <MdPayments className="h-6 w-6" />,
-    component: <PaiementsPage />,
-  },
-
-  {
-    name: "Support",
-    layout: "/admin",
-    path: "support",
-    icon: <MdSupportAgent className="h-6 w-6" />,
-    component: <SupportPage />,
-  },
-
+  /* Paramètres, Profil */
   {
     name: "Paramètres",
     layout: "/admin",
@@ -83,21 +121,14 @@ const routes = [
     component: <SettingsPage />,
   },
   {
-    name: "NFT Marketplace",
-    layout: "/admin",
-    path: "nft-marketplace",
-    icon: <MdOutlineShoppingCart className="h-6 w-6" />,
-    component: <NFTMarketplace />,
-    secondary: true,
-  },
-
-  {
     name: "Profile",
     layout: "/admin",
     path: "profile",
     icon: <MdPerson className="h-6 w-6" />,
     component: <Profile />,
   },
+
+  /* Auth (hors menu admin) */
   {
     name: "Sign In",
     layout: "/auth",
@@ -105,6 +136,6 @@ const routes = [
     icon: <MdLock className="h-6 w-6" />,
     component: <SignIn />,
   },
-
 ];
+
 export default routes;

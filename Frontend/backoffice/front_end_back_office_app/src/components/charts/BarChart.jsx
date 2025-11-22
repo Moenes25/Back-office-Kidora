@@ -1,13 +1,11 @@
-import React, { Component } from 'react';
-import Chart from 'react-apexcharts';
+// src/components/charts/BarChart.jsx
+import React, { Component } from "react";
+import Chart from "react-apexcharts";
 
 class BarChart extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      chartData: [],
-      chartOptions: {},
-    };
+    this.state = { chartData: [], chartOptions: {} };
   }
 
   componentDidMount() {
@@ -15,6 +13,18 @@ class BarChart extends Component {
       chartData: this.props.chartData,
       chartOptions: this.props.chartOptions,
     });
+  }
+
+  componentDidUpdate(prevProps) {
+    if (
+      prevProps.chartData !== this.props.chartData ||
+      prevProps.chartOptions !== this.props.chartOptions
+    ) {
+      this.setState({
+        chartData: this.props.chartData,
+        chartOptions: this.props.chartOptions,
+      });
+    }
   }
 
   render() {

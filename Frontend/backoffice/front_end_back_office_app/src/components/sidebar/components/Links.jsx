@@ -3,74 +3,92 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import DashIcon from "components/icons/DashIcon";
 
-export function SidebarLinks({ routes }) {
-  const location = useLocation();
+const BRAND = {
+  barFrom: "from-indigo-500",
+  barTo: "to-blue-500",
+};
 
-  const activeRoute = (routeName) => {
-    return location.pathname.includes(routeName);
-  };
+export default function SidebarLinks({ routes }) {
+  const { pathname } = useLocation();
+  const isActive = (r) => pathname.includes(`${r.layout}/${r.path}`);
 
-  return routes.map((route, index) => {
-    if (
-      route.layout === "/admin" ||
-      route.layout === "/auth" ||
-      route.layout === "/rtl"
-    ) {
-      const isActive = activeRoute(route.path);
+  return (
+    <ul className="space-y-3 px-3 ">
+      {routes
+        .filter((r) => ["/admin", "/auth", "/rtl"].includes(r.layout))
+        .map((route, i) => {
+          const active = isActive(route);
 
-      return (
-        <Link key={index} to={route.layout + "/" + route.path}>
-          <div
-            className={`
-              group relative mb-3 flex items-center 
-              px-6 py-2 rounded-xl
-              transition-all duration-300 
-              hover:translate-x-2
-              hover:bg-gradient-to-r 
-              hover:from-indigo-50 hover:via-purple-50 hover:to-blue-50
-              dark:hover:from-navy-700/30 dark:hover:via-navy-600/20 dark:hover:to-navy-700/30
-              ${isActive ? "bg-indigo-50 dark:bg-navy-700/40" : ""}
-            `}
-          >
-            {/* Ligne active animée */}
-            {isActive && (
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1.5 rounded-full bg-gradient-to-b from-indigo-500 to-blue-500 animate-pulse"></div>
-            )}
+          return (
+            <li key={i}>
+              <Link
+                to={`${route.layout}/${route.path}`}
+                aria-current={active ? "page" : undefined}
+                className={[
+                  // pill de base
+                  "group relative isolate flex items-center gap-3 rounded-2xl px-4 py-4",
+                  "border border-black/5 bg-white shadow-xl transition-all duration-300 hover:translate-x-1",
+                  "hover:bg-indigo-300/15 hover:border-indigo-300",
 
-            <li className="flex items-center cursor-pointer">
-              {/* Icône animée */}
-              <span
-                className={`
-                  text-xl transition-all duration-300 group-hover:scale-110 
-                  group-hover:translate-x-1
-                  ${isActive ? "text-indigo-600 dark:text-white" : "text-gray-600 dark:text-gray-300"}
-                `}
+                  // anneau/glow quand sélectionnée
+                  "aria-[current=page]:ring-1 aria-[current=page]:ring-indigo-400/70",
+                  "aria-[current=page]:ring-offset-[3px] aria-[current=page]:ring-offset-indigo-50",
+                  "aria-[current=page]:shadow-[0_12px_32px_rgba(99,102,241,.28)]",
+                ].join(" ")}
               >
-                {route.icon ? route.icon : <DashIcon />}
-              </span>
+                {/* overlay translucide à l'intérieur de la pill */}
+                <span
+                  aria-hidden="true"
+                  className={[
+                    "absolute inset-0 z-0 rounded-2xl",
+                    // ajuste l’opacité ici: /10, /15, /20
+                    "bg-indigo-400/15",
+                    "opacity-0 group-aria-[current=page]:opacity-100",
+                    "transition-opacity duration-300",
+                  ].join(" ")}
+                />
 
-              {/* Titre */}
-              <p
-                className={`
-                  ml-4 text-sm transition-all duration-300 
-                  group-hover:text-indigo-600 dark:group-hover:text-white 
-                  ${isActive ? "font-bold text-indigo-600 dark:text-white" : "text-gray-600 dark:text-gray-300"}
-                `}
-              >
-                {route.name}
-              </p>
+                {/* pastille arrondie gauche */}
+                <span
+                  aria-hidden="true"
+                  className={[
+                    "absolute -left-1.5 top-1/2 -translate-y-1/2 z-20",
+                    "h-9 w-2.5 rounded-r-full bg-gradient-to-b",
+                    `${BRAND.barFrom} ${BRAND.barTo}`,
+                    "opacity-0 group-aria-[current=page]:opacity-100",
+                    "shadow-[0_0_10px_2px_rgba(99,102,241,.45)] transition-opacity duration-300",
+                  ].join(" ")}
+                />
+
+                {/* halo doux sous la carte */}
+                <span
+                  aria-hidden="true"
+                  className={[
+                    "pointer-events-none absolute inset-0 -z-10 rounded-2xl",
+                    "opacity-0 group-aria-[current=page]:opacity-100 transition-opacity duration-300",
+                    "shadow-[0_20px_60px_rgba(99,102,241,.35)]",
+                  ].join(" ")}
+                />
+
+                {/* contenu au-dessus de l’overlay */}
+                <span className="z-10 grid h-8 w-8 place-items-center rounded-xl border text-lg
+                   bg-slate-100 border-slate-200
+                   group-aria-[current=page]:bg-indigo-50 group-aria-[current=page]:border-indigo-200">
+                  <span className="transition-transform duration-300 group-hover:scale-110 group-hover:translate-x-0.5
+                    text-indigo-500 group-aria-[current=page]:text-indigo-600">
+                    {route.icon ? route.icon : <DashIcon />}
+                  </span>
+                </span>
+
+                <span className="z-10 text-[15px] font-semibold
+                  text-gray-700 group-hover:text-indigo-700 group-aria-[current=page]:text-indigo-700">
+                  {route.name}
+                </span>
+              </Link>
             </li>
-
-            {/* Effet Glow au hover */}
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-20 
-              bg-gradient-to-r from-indigo-500 to-blue-400 
-              blur-xl transition-all duration-500 pointer-events-none">
-            </div>
-          </div>
-        </Link>
-      );
-    }
-  });
+          );
+        })}
+    </ul>
+    
+  );
 }
-
-export default SidebarLinks;

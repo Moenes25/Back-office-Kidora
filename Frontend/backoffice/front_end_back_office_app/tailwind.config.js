@@ -1,7 +1,18 @@
 /** @type {import('tailwindcss').Config} */
+// tailwind.config.js
+const defaultColors = require('tailwindcss/colors'); // 👈 important
+
 module.exports = {
   darkMode: "class",
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
+ safelist: ["bg-emerald-500","bg-indigo-500","bg-rose-500","bg-sky-500",
+           "bg-emerald-50","ring-emerald-300","border-emerald-200/70","bg-emerald-500/15",
+            "bg-indigo-50","ring-indigo-300","border-indigo-200/70","bg-indigo-500/15",
+            "bg-sky-50","ring-sky-300","border-sky-200/70","bg-sky-500/15",
+            "bg-slate-50","ring-slate-300","border-slate-200/70","bg-slate-400/15",
+            "!bg-rose-600', '!text-white', '!rounded-xl', '!px-4', '!py-2', 'hover:!brightness-110",
+             "!bg-gray-100', '!text-gray-700', 'hover:!bg-gray-200"
+ ],
   theme: {
     extend: {
       width: {
@@ -120,6 +131,10 @@ module.exports = {
       animation: {
     "gradient-move": "gradientMove 6s ease infinite",
     "gradient-slide": "gradientSlide 4s linear infinite",
+     'enter': 'enter .45s cubic-bezier(.2,.7,.3,1) both',
+      'icon-pop': 'iconPop .6s cubic-bezier(.2,.7,.3,1) both',
+      'icon-float': 'iconFloat 4s ease-in-out infinite',
+      'shine': 'shine 1.2s linear both',
   },
   keyframes: {
     gradientMove: {
@@ -131,6 +146,23 @@ module.exports = {
       "0%": { transform: "translateX(-20%)" },
       "100%": { transform: "translateX(20%)" },
     },
+     enter: {
+          '0%':   { opacity: 0, transform: 'translateY(10px) scale(.98)', filter: 'blur(3px)' },
+          '100%': { opacity: 1, transform: 'translateY(0) scale(1)',     filter: 'blur(0)' }
+        },
+        iconPop: {
+          '0%':   { transform: 'scale(.8) rotate(-4deg)' },
+          '60%':  { transform: 'scale(1.08) rotate(2deg)' },
+          '100%': { transform: 'scale(1) rotate(0deg)' }
+        },
+        iconFloat: {
+          '0%,100%': { transform: 'translateY(0)' },
+          '50%':     { transform: 'translateY(-6px)' }
+        },
+        shine: {
+          '0%':   { backgroundPosition: '-150% 0' },
+          '100%': { backgroundPosition: '350% 0' }
+        }
   },
       
     },
@@ -155,6 +187,9 @@ module.exports = {
       lightPrimary: "#F4F7FE",
       blueSecondary: "#4318FF",
       brandLinear: "#868CFF",
+      emerald: defaultColors.emerald,
+      sky: defaultColors.sky,
+      slate: defaultColors.slate,  
       gray: {
         50: "#f8f9fa",
         100: "#edf2f7",

@@ -58,40 +58,46 @@ export default function Admin(props) {
   };
 
   document.documentElement.dir = "ltr";
-  return (
-    <div className="flex h-full w-full">
-      <Sidebar open={open} onClose={() => setOpen(false)} />
-      {/* Navbar & Main Content */}
-      <div className="h-full w-full bg-lightPrimary dark:!bg-navy-900">
-        {/* Main Content */}
-        <main
-          className={`mx-[12px] h-full flex-none transition-all md:pr-2 xl:ml-[313px]`}
-        >
-          {/* Routes */}
-          <div className="h-full">
-            <Navbar
-              onOpenSidenav={() => setOpen(true)}
-              logoText={"Horizon UI Tailwind React"}
-              brandText={currentRoute}
-              secondary={getActiveNavbar(routes)}
-              {...rest}
-            />
-            <div className="pt-5s mx-auto mb-auto h-full min-h-[84vh] p-2 md:pr-2">
-              <Routes>
-                {getRoutes(routes)}
+ return (
+  <div className="flex h-full w-full relative">
 
-                <Route
-                  path="/"
-                  element={<Navigate to="/admin/default" replace />}
-                />
-              </Routes>
-            </div>
-            <div className="p-3">
-              <Footer />
-            </div>
+    {/* SIDEBAR */}
+    <Sidebar open={open} onClose={() => setOpen(false)} />
+
+    {/* ⭐ OVERLAY BLUR POUR MOBILE / TABLETTE ⭐ */}
+    {open && (
+      <div
+        className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 xl:hidden"
+        onClick={() => setOpen(false)}
+      ></div>
+    )}
+
+    {/* MAIN CONTENT */}
+    <div className="h-full w-full bg-lightPrimary dark:!bg-navy-900 relative z-0">
+      <main className="mx-[12px] h-full flex-none transition-all md:pr-2 xl:ml-[264px]">
+        <div className="h-full">
+          <Navbar
+            onOpenSidenav={() => setOpen(true)}
+            brandText={currentRoute}
+            secondary={getActiveNavbar(routes)}
+            {...rest}
+          />
+
+          <div className="pt-5s mx-auto mb-auto h-full min-h-[84vh] p-2 md:pr-2">
+            <Routes>
+              {getRoutes(routes)}
+              <Route path="/" element={<Navigate to="/admin/default" replace />} />
+            </Routes>
           </div>
-        </main>
-      </div>
+
+          <div className="p-3">
+            <Footer />
+          </div>
+        </div>
+      </main>
     </div>
-  );
+
+  </div>
+);
+
 }
