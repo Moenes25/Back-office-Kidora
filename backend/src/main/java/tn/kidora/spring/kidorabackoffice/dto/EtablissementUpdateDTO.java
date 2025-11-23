@@ -1,23 +1,20 @@
 package tn.kidora.spring.kidorabackoffice.dto;
 
-import lombok.AccessLevel;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Data;
-import lombok.experimental.FieldDefaults;
 import tn.kidora.spring.kidorabackoffice.entities.Type_Etablissement;
 
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
-public class Etab_Dto {
-    Integer idEtablissment;
+public class EtablissementUpdateDTO  {
     String nomEtablissement;
     String adresse_complet;
     String region;
     String telephone ;
     String url_localisation;
+    @Enumerated(EnumType.STRING)
     Type_Etablissement type;
     String email;
     Boolean isActive;
-    Integer userId;
-    String userNom;
-    String userEmail;
+     Integer userId;
 }

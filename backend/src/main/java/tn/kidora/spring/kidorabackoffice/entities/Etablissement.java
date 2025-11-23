@@ -26,6 +26,9 @@ public class Etablissement {
     Type_Etablissement type;
     String email;
     String password ;
-     Boolean isActive;
-
+    Boolean isActive;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false) 
+    @ToString.Exclude
+    User user; 
 }
