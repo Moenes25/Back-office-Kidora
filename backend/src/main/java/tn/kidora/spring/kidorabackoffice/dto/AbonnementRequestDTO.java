@@ -11,6 +11,6 @@ public class AbonnementRequestDTO {
     private Double montantPaye;
     private Double montantDu;
     private StatutPaiement statut;
-    private Long etablissementId;
+    private Integer etablissementId;
     
 }

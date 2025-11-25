@@ -18,5 +18,8 @@ public class Constants {
     public static final String ID = "/{id}";
     public static final String ACTIVE = "/active";
     public static final String TOOGLE_STATUS = "/toggle_status";
+    public static final String ABONNEMENT = "/abonnement";
+    public static final String BY_ETABLISSEMENT = "/byetablissement";
+    public static final String BY_STATUS= "/bystatus";
     
 }

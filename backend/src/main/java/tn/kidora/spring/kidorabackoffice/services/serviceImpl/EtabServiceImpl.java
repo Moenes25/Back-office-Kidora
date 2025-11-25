@@ -55,6 +55,7 @@ public class EtabServiceImpl implements EtabService {
         //         .isActive(dto.getIsActive() != null ? dto.getIsActive() : true)
         //         .build();
         Etablissement saved = etablissementRepository.save(etab);
+        System.out.println("DTO reçu : " + dto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(etablissementMapper.EntityToEtab_Dto(saved));
     }
