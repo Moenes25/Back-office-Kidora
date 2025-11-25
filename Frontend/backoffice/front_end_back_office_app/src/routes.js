@@ -13,6 +13,7 @@ import ClientsPage from "views/admin/clients";   // liste + filtres (types, stat
 import MapsPage from "views/admin/maps";         // cartographie
 import TeamPage from "views/admin/team";         // équipe & rôles (RBAC)
 import ReportsPage from "views/admin/reports";   // rapports & exports
+import { MdCalendarToday } from "react-icons/md"; 
 
 /* === Auth === */
 import SignIn from "views/auth/SignIn";
@@ -49,9 +50,9 @@ const routes = [
 
   /* 2.2 Gestion des Clients (Garderies / Crèches / Écoles) */
   {
-    name: "Clients",
+    name: "Entreprises",
     layout: "/admin",
-    path: "clients",
+    path: "Entreprises",
     icon: <MdBusiness className="h-6 w-6" />,
     component: <ClientsPage />,
   },
@@ -60,21 +61,14 @@ const routes = [
 
   /* 2.3 Paiements & Abonnements */
   {
-    name: "Paiements",
+    name: "Calendrier",
     layout: "/admin",
-    path: "paiements",
-    icon: <MdPayments className="h-6 w-6" />,
+    path: "calendrier",
+    icon: <MdCalendarToday className="h-6 w-6" />,
     component: <PaiementsPage />,
   },
 
-  /* 2.4 Cartographie (Maps – Gestion par Zones) */
-  {
-    name: "Cartographie",
-    layout: "/admin",
-    path: "cartographie",
-    icon: <MdMap className="h-6 w-6" />,
-    component: <MapsPage />,
-  },
+
 
   /* 2.5 Gestion interne de l’équipe Kidora (Admins & Staff) */
   {
@@ -112,30 +106,8 @@ const routes = [
     component: <IAPage />,
   },
 
-  /* Paramètres, Profil */
-  {
-    name: "Paramètres",
-    layout: "/admin",
-    path: "settings",
-    icon: <MdSettings className="h-6 w-6" />,
-    component: <SettingsPage />,
-  },
-  {
-    name: "Profile",
-    layout: "/admin",
-    path: "profile",
-    icon: <MdPerson className="h-6 w-6" />,
-    component: <Profile />,
-  },
 
-  /* Auth (hors menu admin) */
-  {
-    name: "Sign In",
-    layout: "/auth",
-    path: "sign-in",
-    icon: <MdLock className="h-6 w-6" />,
-    component: <SignIn />,
-  },
+
 ];
 
 export default routes;

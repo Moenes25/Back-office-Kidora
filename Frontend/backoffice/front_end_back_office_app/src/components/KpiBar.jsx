@@ -1,69 +1,79 @@
-import React, { useEffect, useRef } from "react";
+// src/components/charts/ApexChart.jsx
+import React from "react";
+import ReactApexChart from "react-apexcharts";
 
-export default function AnimatedStatCard({
-  title,
-  value,
-  suffix = "",
-  color = "sky",
-  series = [],
-  trend = { delta: 0 },
-}) {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    const can = canvasRef.current;
-    if (!can) return;
-    const ctx = can.getContext("2d");
-
-    // reset
-    ctx.clearRect(0, 0, can.width, can.height);
-
-    // draw animated bars
-    let progress = 0;
-    const max = Math.max(...series, 100);
-
-    function draw() {
-      progress += 3;
-      ctx.clearRect(0, 0, can.width, can.height);
-
-      const barWidth = can.width / series.length;
-      series.forEach((v, i) => {
-        const h = (v / max) * can.height * (progress / 100);
-        ctx.fillStyle = "rgba(135,206,235,0.55)";
-        ctx.fillRect(i * barWidth, can.height - h, barWidth - 4, h);
-      });
-
-      if (progress < 100) requestAnimationFrame(draw);
-    }
-    draw();
-  }, [series]);
-
-  return (
-    <div className="p-5 bg-white/70 backdrop-blur-md border border-black/5 shadow-md rounded-2xl hover:shadow-xl transition-all duration-300">
-      <div className="flex items-center justify-between">
-        <h4 className="font-semibold text-gray-600">{title}</h4>
-        <span
-          className={`text-sm font-medium ${
-            trend.delta >= 0 ? "text-emerald-600" : "text-rose-600"
-          }`}
-        >
-          {trend.delta >= 0 ? "▲" : "▼"} {trend.delta}%
-        </span>
-      </div>
-
-      <div className="mt-2 flex items-end gap-2">
-        <h2 className="text-3xl font-extrabold text-gray-900">
-          {value}
-          <span className="text-xl">{suffix}</span>
-        </h2>
-      </div>
-
-      <canvas
-        ref={canvasRef}
-        width={320}
-        height={70}
-        className="mt-4 w-full"
-      ></canvas>
-    </div>
-  );
+export default function ApexChart({ type = "line", series, options, height = 250 }) {
+  return <ReactApexChart type={type} series={series} options={options} height={height} />;
 }
+
+
+// src/views/admin/default/chartPresets.js
+export const MOTION = {
+  chart: {
+    animations: {
+      enabled: true,
+      easing: "easeinout",
+      speed: 800,
+      animateGradually: { enabled: true, delay: 120 },
+      dynamicAnimation: { enabled: true, speed: 600 },
+    },
+    toolbar: { show: false },
+    dropShadow: { enabled: true, top: 1, left: 0, blur: 3, opacity: 0.12 },
+  },
+  states: {
+    hover:  { filter: { type: "lighten", value: 0.08 } },
+    active: { filter: { type: "darken",  value: 0.25 } },
+  },
+};
+
+export const lineOptions = {
+  ...MOTION,
+  chart: { ...MOTION.chart, type: "line" },
+  stroke: { width: 3, curve: "smooth" },
+  dataLabels: { enabled: false },
+  xaxis: { categories: ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"] },
+  grid: { borderColor: "rgba(0,0,0,.08)", strokeDashArray: 4 },
+  colors: ["#60a5fa"],
+};
+
+export const areaOptions = {
+  ...lineOptions,
+  chart: { ...MOTION.chart, type: "area" },
+  fill: {
+    type: "gradient",
+    gradient: { shadeIntensity: 0.25, opacityFrom: 0.9, opacityTo: 0.65, stops: [0, 90, 100] },
+  },
+  colors: ["#a78bfa"],
+};
+
+export const radarOptions = {
+  ...MOTION,
+  chart: { ...MOTION.chart, type: "radar" },
+  stroke: { width: 2 },
+  fill: { opacity: 0.2 },
+  colors: ["#34d399"],
+  xaxis: { categories: ["Qualité","Support","Prix","Fiabilité","Ux"] },
+};
+
+export const heatmapOptions = {
+  ...MOTION,
+  chart: { ...MOTION.chart, type: "heatmap" },
+  dataLabels: { enabled: false },
+  plotOptions: { heatmap: { shadeIntensity: 0.45, radius: 6, useFillColorAsStroke: false } },
+  colors: ["#4c6fff"],
+};
+
+export const radialOptions = {
+  ...MOTION,
+  chart: { ...MOTION.chart, type: "radialBar" },
+  plotOptions: {
+    radialBar: {
+      hollow: { size: "65%" },
+      dataLabels: {
+        name: { show: true, fontSize: "12px" },
+        value: { formatter: (v) => `${Math.round(v)}%` },
+      },
+    },
+  },
+  colors: ["#10b981"],
+};

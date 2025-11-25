@@ -1,30 +1,26 @@
 // src/components/maps/CrechesMap.jsx
 import React, { useState, useRef, useMemo, useEffect } from "react";
-import {
-  GoogleMap,
-  LoadScript,
-  Marker,
-  InfoWindow,
-  HeatmapLayer,
-  MarkerClusterer,
-} from "@react-google-maps/api";
 import Card from "components/card";
+
+/* === Leaflet / React-Leaflet === */
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 /* --- styles & map container --- */
 const containerStyle = { width: "100%", height: "420px", borderRadius: "20px" };
 const defaultCenter = { lat: 35.5, lng: 10.0 };
 
-const lightMapStyle = [
-  { featureType: "all", elementType: "geometry", stylers: [{ color: "#eef2ff" }] },
-  { featureType: "water", stylers: [{ color: "#dbeafe" }] },
-  { featureType: "road", stylers: [{ color: "#e5e7eb" }] },
-  { featureType: "poi", stylers: [{ visibility: "off" }] },
-];
-const darkMapStyle = [
-  { elementType: "geometry", stylers: [{ color: "#0f172a" }] },
-  { featureType: "water", stylers: [{ color: "#020617" }] },
-  { featureType: "road", stylers: [{ color: "#1e293b" }] },
-];
+/* Icône Leaflet (corrige les marqueurs cassés) */
+const icon = new L.Icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
 
 /* --- datasets 3 types --- */
 const CRECHES = [
@@ -60,7 +56,7 @@ const hexToRgba = (hex, a=1) => {
 /* --- Segmented control animé (filtre type) --- */
 function TypeSegmented({ value, onChange, counts }) {
   const options = ["creches", "garderies", "ecoles"];
-  const containerRef = useRef(null);
+  const containerRef = React.useRef(null);
   const [indicator, setIndicator] = useState({ left: 0, width: 0 });
 
   const recalc = () => {
@@ -83,68 +79,66 @@ function TypeSegmented({ value, onChange, counts }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
-const activeColor = TYPE_META[value]?.color || '#6366f1';
+  const activeColor = TYPE_META[value]?.color || '#6366f1';
 
-return (
-  <div
-    ref={containerRef}
-    className="relative flex items-center rounded-2xl border border-black/10 bg-white/70 dark:bg-white/10 overflow-hidden"
-  >
-    {/* indicateur coloré */}
+  return (
     <div
-      className="absolute top-0 bottom-0 rounded-2xl pointer-events-none transition-all duration-300 ease-out"
-      style={{
-        width: indicator.width,
-        transform: `translateX(${indicator.left}px)`,
-        background: `linear-gradient(135deg, ${hexToRgba(activeColor, .22)}, ${hexToRgba(activeColor, .10)})`,
-        boxShadow: `0 6px 20px ${hexToRgba(activeColor, .28)}`,
-      }}
-    />
+      ref={containerRef}
+      className="relative flex items-center rounded-2xl border border-black/10 bg-white/70 dark:bg-white/10 overflow-hidden"
+    >
+      {/* indicateur coloré */}
+      <div
+        className="absolute top-0 bottom-0 rounded-2xl pointer-events-none transition-all duration-300 ease-out"
+        style={{
+          width: indicator.width,
+          transform: `translateX(${indicator.left}px)`,
+          background: `linear-gradient(135deg, ${hexToRgba(activeColor, .22)}, ${hexToRgba(activeColor, .10)})`,
+          boxShadow: `0 6px 20px ${hexToRgba(activeColor, .28)}`,
+        }}
+      />
 
-    {options.map((k) => {
-      const isActive = value === k;
-      const c = TYPE_META[k].color;
-      return (
-        <button
-          key={k}
-          type="button"
-          onClick={(e) => {
-            const r = document.createElement("span");
-            r.className = "pointer-events-none absolute animate-ripple rounded-full";
-            r.style.background = hexToRgba(c, .18);
-            const rect = e.currentTarget.getBoundingClientRect();
-            r.style.width = r.style.height = `${rect.width * 1.5}px`;
-            r.style.left = `${e.clientX - rect.left - rect.width * 0.75}px`;
-            r.style.top  = `${e.clientY - rect.top  - rect.width * 0.75}px`;
-            e.currentTarget.appendChild(r);
-            setTimeout(() => r.remove(), 600);
-            onChange(k);
-          }}
-          className={[
-            "relative z-10 px-4 py-2 text-sm font-semibold flex items-center gap-2 transition-colors",
-            isActive ? "text-gray-900 dark:text-white" : "text-gray-600 dark:text-gray-300 hover:text-gray-900"
-          ].join(" ")}
-          style={isActive ? { color: c } : undefined}
-        >
-          <span>{TYPE_META[k].label.charAt(0).toUpperCase()+TYPE_META[k].label.slice(1)}</span>
-          <span
-            className="rounded-full px-2 text-[11px] font-bold border"
-            style={{
-              borderColor: hexToRgba(c,.25),
-              background: hexToRgba(c,.08),
-              color: isActive ? c : undefined,
+      {options.map((k) => {
+        const isActive = value === k;
+        const c = TYPE_META[k].color;
+        return (
+          <button
+            key={k}
+            type="button"
+            onClick={(e) => {
+              const r = document.createElement("span");
+              r.className = "pointer-events-none absolute animate-ripple rounded-full";
+              r.style.background = hexToRgba(c, .18);
+              const rect = e.currentTarget.getBoundingClientRect();
+              r.style.width = r.style.height = `${rect.width * 1.5}px`;
+              r.style.left = `${e.clientX - rect.left - rect.width * 0.75}px`;
+              r.style.top  = `${e.clientY - rect.top  - rect.width * 0.75}px`;
+              e.currentTarget.appendChild(r);
+              setTimeout(() => r.remove(), 600);
+              onChange(k);
             }}
+            className={[
+              "relative z-10 px-4 py-2 text-sm font-semibold flex items-center gap-2 transition-colors",
+              isActive ? "text-gray-900 dark:text-white" : "text-gray-600 dark:text-gray-300 hover:text-gray-900"
+            ].join(" ")}
+            style={isActive ? { color: c } : undefined}
           >
-            {counts[k] ?? 0}
-          </span>
-        </button>
-      );
-    })}
-  </div>
-);
-
+            <span>{TYPE_META[k].label.charAt(0).toUpperCase()+TYPE_META[k].label.slice(1)}</span>
+            <span
+              className="rounded-full px-2 text-[11px] font-bold border"
+              style={{
+                borderColor: hexToRgba(c,.25),
+                background: hexToRgba(c,.08),
+                color: isActive ? c : undefined,
+              }}
+            >
+              {counts[k] ?? 0}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
 }
-
 
 const CrechesMap = () => {
   /* --- states --- */
@@ -165,23 +159,12 @@ const CrechesMap = () => {
     [selectedRegion, currentData]
   );
 
-  const heatmapData = useMemo(() => {
-    if (!window.google) return [];
-    return filteredEntities.map((c) => ({
-      location: new window.google.maps.LatLng(c.latitude, c.longitude),
-      weight: Math.max(1, c.enfantsInscrits / 20),
-    }));
-  }, [filteredEntities]);
-
-  /* --- map --- */
+  /* --- map (Leaflet) --- */
   const onMapLoad = (map) => { mapRef.current = map; };
   const focusOn = (ent) => {
     setSelectedEntity(ent);
-    mapRef.current?.panTo({ lat: ent.latitude, lng: ent.longitude });
-    mapRef.current?.setZoom(11);
+    mapRef.current?.setView([ent.latitude, ent.longitude], 11, { animate: true });
   };
-  const isDark = document.body.classList.contains("dark");
-  const mapOptions = { styles: isDark ? darkMapStyle : lightMapStyle, disableDefaultUI: true, zoomControl: true };
 
   /* --- helpers UI --- */
   const meta = TYPE_META[selectedType];
@@ -202,18 +185,17 @@ const CrechesMap = () => {
           {/* Title */}
           <div className="relative">
             <h2 className="flex items-center gap-3 text-2xl font-extrabold">
-            <span className="relative inline-grid place-items-center w-10 h-10 rounded-full ring-2 ring-black/10 dark:ring-white/10">
-  {/* halo coloré */}
-  <span
-    className="absolute inset-0 rounded-full blur-[6px] opacity-40"
-    style={{ background: `radial-gradient(circle, ${hexToRgba(meta.color,.45)}, transparent 60%)` }}
-  />
-  {/* orbite */}
-  <span className="absolute inset-0 rounded-full animate-spin-slow bg-[conic-gradient(from_0deg,transparent_0_72%,rgba(0,0,0,.08)_72%)]" />
-  {/* terre */}
-  <span className="relative text-3xl animate-earth-wobble">🌍</span>
-</span>
-
+              <span className="relative inline-grid place-items-center w-10 h-10 rounded-full ring-2 ring-black/10 dark:ring-white/10">
+                {/* halo coloré */}
+                <span
+                  className="absolute inset-0 rounded-full blur-[6px] opacity-40"
+                  style={{ background: `radial-gradient(circle, ${hexToRgba(meta.color,.45)}, transparent 60%)` }}
+                />
+                {/* orbite */}
+                <span className="absolute inset-0 rounded-full animate-spin-slow bg-[conic-gradient(from_0deg,transparent_0_72%,rgba(0,0,0,.08)_72%)]" />
+                {/* terre */}
+                <span className="relative text-3xl animate-earth-wobble">🌍</span>
+              </span>
               Carte des {meta.label}
             </h2>
             <div className="h-0.5 w-24 mt-1 rounded-full bg-gradient-to-r from-indigo-500 via-sky-400 to-emerald-400 animate-gradient-slide" />
@@ -224,14 +206,13 @@ const CrechesMap = () => {
 
           {/* Controls */}
           <div className="flex flex-wrap gap-3 items-center">
-            {/* Segmented control upgraded */}
             <TypeSegmented
               value={selectedType}
               onChange={(t) => { setSelectedType(t); setSelectedRegion("Toutes"); setSelectedEntity(null); }}
               counts={counts}
             />
 
-            {/* Region select with icon & hover ring */}
+            {/* Region select */}
             <div className="flex items-center gap-2 bg-white/70 dark:bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-black/10 shadow-sm">
               <span className="text-sm text-gray-600 dark:text-gray-300">Région :</span>
               <div className="relative">
@@ -251,14 +232,16 @@ const CrechesMap = () => {
 
       {/* GRID : list + map */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-      <div className="h-[420px] overflow-y-auto rounded-2xl bg-white/80 dark:bg-navy-800/60 border border-gray-200 dark:border-navy-700 p-4 shadow-sm backdrop-blur-xl">
-  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 tracking-wide flex items-center gap-2">
-    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: meta.color }} />
-    {meta.listTitle}
-  </h3>
+        {/* Liste */}
+        <div className="h-[420px] overflow-y-auto rounded-2xl bg-white dark:bg-navy-800 border border-gray-200 dark:border-navy-700 p-5 shadow-sm">
 
-  {/* le mask ne couvre que les items → le header reste net */}
-  <div className="flex flex-col gap-3 [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_90%,transparent)]">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 tracking-wide flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: meta.color }} />
+            {meta.listTitle}
+          </h3>
+
+          {/* le mask ne couvre que les items → le header reste net */}
+          <div className="flex flex-col gap-3 ">
             {filteredEntities.map((e, i) => (
               <button
                 key={`${selectedType}-${e.id}`}
@@ -298,55 +281,51 @@ const CrechesMap = () => {
           </div>
         </div>
 
-        {/* Map */}
-        <div className="lg:col-span-2">
-          <LoadScript
-            googleMapsApiKey="AIzaSyAegrKyFWfKvlAoYM-_xhTB96Zg6I3_dxg"
-            libraries={["visualization"]}
+        {/* Map (Leaflet) */}
+        <div
+          className="lg:col-span-2"
+          onMouseMove={(e) => {
+            // garde ton shimmer pour la liste (variables CSS globales)
+            const x = e.clientX ?? 0;
+            const y = e.clientY ?? 0;
+            document.documentElement.style.setProperty("--mx", `${x}px`);
+            document.documentElement.style.setProperty("--my", `${y}px`);
+          }}
+        >
+          <MapContainer
+            center={[defaultCenter.lat, defaultCenter.lng]}
+            zoom={6}
+            style={containerStyle}
+            whenCreated={onMapLoad}
           >
-            <GoogleMap
-              mapContainerStyle={containerStyle}
-              center={defaultCenter}
-              zoom={6}
-              options={mapOptions}
-              onLoad={onMapLoad}
-              onMouseMove={(e) => {
-                // shimmer position for list items (CSS variables)
-                const x = e.domEvent?.clientX ?? 0;
-                const y = e.domEvent?.clientY ?? 0;
-                document.documentElement.style.setProperty("--mx", `${x}px`);
-                document.documentElement.style.setProperty("--my", `${y}px`);
-              }}
-            >
-              <HeatmapLayer data={heatmapData} />
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; OpenStreetMap contributors'
+            />
 
-              <MarkerClusterer>
-                {(clusterer) =>
-                  filteredEntities.map((e) => (
-                    <Marker
-                      key={`${selectedType}-${e.id}`}
-                      clusterer={clusterer}
-                      position={{ lat: e.latitude, lng: e.longitude }}
-                      onClick={() => focusOn(e)}
-                    />
-                  ))
-                }
-              </MarkerClusterer>
+            {filteredEntities.map((e) => (
+              <Marker
+                key={`${selectedType}-${e.id}`}
+                position={[e.latitude, e.longitude]}
+                icon={icon}
+                eventHandlers={{ click: () => focusOn(e) }}
+              />
+            ))}
 
-              {selectedEntity && (
-                <InfoWindow
-                  position={{ lat: selectedEntity.latitude, lng: selectedEntity.longitude }}
-                  onCloseClick={() => setSelectedEntity(null)}
-                >
-                  <div>
-                    <p className="font-bold">{selectedEntity.nom}</p>
-                    <p className="text-xs">{selectedEntity.region}</p>
-                    <p className="text-xs">👶 {selectedEntity.enfantsInscrits} — {selectedEntity.statut}</p>
-                  </div>
-                </InfoWindow>
-              )}
-            </GoogleMap>
-          </LoadScript>
+            {selectedEntity && (
+              <Popup
+                position={[selectedEntity.latitude, selectedEntity.longitude]}
+                onClose={() => setSelectedEntity(null)}
+                autoPan
+              >
+                <div>
+                  <p className="font-bold">{selectedEntity.nom}</p>
+                  <p className="text-xs">{selectedEntity.region}</p>
+                  <p className="text-xs">👶 {selectedEntity.enfantsInscrits} — {selectedEntity.statut}</p>
+                </div>
+              </Popup>
+            )}
+          </MapContainer>
         </div>
       </div>
 
@@ -382,14 +361,14 @@ if (typeof document !== "undefined" && !document.getElementById("map-anim-kf")) 
 
     @keyframes spin-slow { to { transform: rotate(360deg) } }
     .animate-spin-slow { animation: spin-slow 6s linear infinite }
-      @keyframes earth-wobble {
-    0%   { transform: translateY(0) rotate(0deg) }
-    25%  { transform: translateY(-1px) rotate(1.5deg) }
-    50%  { transform: translateY(0) rotate(0deg) }
-    75%  { transform: translateY(1px) rotate(-1.5deg) }
-    100% { transform: translateY(0) rotate(0deg) }
-  }
-  .animate-earth-wobble { animation: earth-wobble 2.8s ease-in-out infinite }
+    @keyframes earth-wobble {
+      0%   { transform: translateY(0) rotate(0deg) }
+      25%  { transform: translateY(-1px) rotate(1.5deg) }
+      50%  { transform: translateY(0) rotate(0deg) }
+      75%  { transform: translateY(1px) rotate(-1.5deg) }
+      100% { transform: translateY(0) rotate(0deg) }
+    }
+    .animate-earth-wobble { animation: earth-wobble 2.8s ease-in-out infinite }
   `;
   document.head.appendChild(style);
 }
