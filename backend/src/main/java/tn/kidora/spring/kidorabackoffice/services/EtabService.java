@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 
+import tn.kidora.spring.kidorabackoffice.dto.DonneesCroissanceDTo;
 import tn.kidora.spring.kidorabackoffice.dto.Etab_Dto;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementUpdateDTO;
@@ -20,6 +21,7 @@ public interface EtabService {
     ResponseEntity<List<Etab_Dto>> getActiveEtablissements();
     ResponseEntity<Etab_Dto> toggleEtablissementStatus(Integer id);
     ResponseEntity<List<Etab_Dto>> getEtablissementsAbonnesCeMois();
+    List<DonneesCroissanceDTo> obtenirCroissanceMensuelle();
    
 
 
