@@ -60,6 +60,8 @@ const MOTION = {
   },
 };
 
+
+
 // Libellés + couleurs + mois (si tu veux des couleurs cohérentes)
 const TYPE_LABELS = ["Garderies", "Crèches", "Écoles"];
 const TYPE_COLORS = ["#60a5fa", "#a78bfa", "#34d399"];
@@ -867,7 +869,7 @@ const availability = (() => {
 </Card>
 
   {/* Area */}
-<Card extra="relative p-5 hidden rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
+<Card extra="relative p-5  rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
   <h3 className="mb-3 text-lg font-extrabold">🌊 Usage mensuel</h3>
   <ApexChart
     type="area"
@@ -887,16 +889,13 @@ const availability = (() => {
 
 
   {/* RadialBar (progress) */}
-<Card extra="relative p-5 hidden rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
+<Card extra="relative p-5  rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
   <h3 className="mb-3 text-lg font-extrabold">🎯 Objectif du mois</h3>
   <ApexChart type="radialBar" options={radialGoalOptions} series={goalSeries} height={360} />
 </Card>
 
-</div>
-
-<div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-3">
   {/* Radar (satisfaction par critère) */}
- <Card extra="relative p-5 hidden rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
+ <Card extra="relative p-5  rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
   <h3 className="mb-3 text-lg font-extrabold">⭐ Satisfaction (sondage)</h3>
   <ApexChart
     type="radar"
@@ -914,14 +913,9 @@ const availability = (() => {
   />
 </Card>
 
-
-
-
-
-
-
-
 </div>
+
+
 
 
 
@@ -935,7 +929,7 @@ const availability = (() => {
 
 {/* 📅 PLANNER : calendrier + modal + liste de RDV */}
 <Card extra="
-  mt-6 p-6 rounded-3xl relative group overflow-visible
+  hidden mt-6 p-6 rounded-3xl relative group overflow-visible
   shadow-[0_0.0625em_0.0625em_rgba(0,0,0,0.25),0_0.125em_0.5em_rgba(0,0,0,0.25),inset_0_0_0_1px_rgba(255,255,255,0.1)]
   hover:shadow-[0_0.125em_0.125em_rgba(0,0,0,0.28),0_0.5em_1em_-0.2em_rgba(0,0,0,0.3),inset_0_0_0_1px_rgba(255,255,255,0.12)]
 "
