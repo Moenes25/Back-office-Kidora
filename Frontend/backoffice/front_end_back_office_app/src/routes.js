@@ -2,35 +2,28 @@ import React from "react";
 
 /* === Admin pages === */
 import MainDashboard from "views/admin/default";
-import Profile from "views/admin/profile";
+
 import IAPage from "views/admin/ia";
 import PaiementsPage from "views/admin/paiements";
 import SupportPage from "views/admin/support";
-import SettingsPage from "views/admin/settings";
 
 /* === Nouvelles pages selon cahier === */
-import ClientsPage from "views/admin/clients";   // liste + filtres (types, statut, commercial)
-import MapsPage from "views/admin/maps";         // cartographie
-import TeamPage from "views/admin/team";         // équipe & rôles (RBAC)
-import ReportsPage from "views/admin/reports";   // rapports & exports
-import { MdCalendarToday } from "react-icons/md"; 
+import ClientsPage from "views/admin/clients"; // liste + filtres (types, statut, commercial)
+
+import TeamPage from "views/admin/team"; // équipe & rôles (RBAC)
+import ReportsPage from "views/admin/reports"; // rapports & exports
+import { MdCalendarToday } from "react-icons/md";
 
 /* === Auth === */
-import SignIn from "views/auth/SignIn";
 
 /* === Icons === */
 import {
   MdHome,
   MdBusiness,
-  MdPayments,
-  MdMap,
   MdGroups,
   MdSupportAgent,
   MdBarChart,
   MdPsychology,
-  MdSettings,
-  MdPerson,
-  MdLock,
 } from "react-icons/md";
 
 /**
@@ -68,8 +61,6 @@ const routes = [
     component: <PaiementsPage />,
   },
 
-
-
   /* 2.5 Gestion interne de l’équipe Kidora (Admins & Staff) */
   {
     name: "Équipe Kidora",
@@ -105,9 +96,6 @@ const routes = [
     icon: <MdPsychology className="h-6 w-6" />,
     component: <IAPage />,
   },
-
-
-
 ];
 
 export default routes;
