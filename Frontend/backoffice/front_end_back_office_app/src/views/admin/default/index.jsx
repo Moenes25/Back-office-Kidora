@@ -13,6 +13,9 @@ import ApexChart from "components/KpiBar";
 import { lineOptions, areaOptions, radarOptions, heatmapOptions, radialOptions } from "components/KpiBar";
 import AlertsPanel from "components/AlertsPanel";
 import AppointmentPlanner from "components/calendar/AppointmentPlanner";
+import AIIndicatorsPanel from "components/ai/AIIndicatorsPanel";
+
+
 
 
 
@@ -59,6 +62,8 @@ const MOTION = {
     active: { filter: { type: "darken",  value: 0.25 } },
   },
 };
+
+
 
 // Libellés + couleurs + mois (si tu veux des couleurs cohérentes)
 const TYPE_LABELS = ["Garderies", "Crèches", "Écoles"];
@@ -842,7 +847,7 @@ const availability = (() => {
   />
 </Card>
   {/* Heatmap (tickets / jour x priorité) */}
-<Card extra="relative p-5 rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
+<Card extra="relative p-5  rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
   <h3 className="mb-3 text-lg font-extrabold">🔥 Tickets par jour</h3>
   <ApexChart
     type="bar"
@@ -887,14 +892,11 @@ const availability = (() => {
 
 
   {/* RadialBar (progress) */}
-<Card extra="relative p-5 hidden rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
+<Card extra="relative p-5  hidden rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
   <h3 className="mb-3 text-lg font-extrabold">🎯 Objectif du mois</h3>
   <ApexChart type="radialBar" options={radialGoalOptions} series={goalSeries} height={360} />
 </Card>
 
-</div>
-
-<div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-3">
   {/* Radar (satisfaction par critère) */}
  <Card extra="relative p-5 hidden rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
   <h3 className="mb-3 text-lg font-extrabold">⭐ Satisfaction (sondage)</h3>
@@ -914,14 +916,28 @@ const availability = (() => {
   />
 </Card>
 
-
-
-
-
-
-
-
 </div>
+
+<AIIndicatorsPanel
+  stats={{
+    creches: { count: 128, info: "actives" },
+    garderies: { count: 140, info: "actives" },
+    ecoles: { count: 44, info: "actives" }
+  }}
+  onSelect={(type) => {
+    // route, filtre, ou open modal :
+    // ex: router.push(`/admin/${type}`);
+    console.log("Nuage cliqué:", type);
+  }}
+  links={{ chatbot: "/assistant" }}
+/>
+
+
+    
+
+
+
+
 
 
 
@@ -935,7 +951,7 @@ const availability = (() => {
 
 {/* 📅 PLANNER : calendrier + modal + liste de RDV */}
 <Card extra="
-  mt-6 p-6 rounded-3xl relative group overflow-visible
+  hidden mt-6 p-6 rounded-3xl relative group overflow-visible
   shadow-[0_0.0625em_0.0625em_rgba(0,0,0,0.25),0_0.125em_0.5em_rgba(0,0,0,0.25),inset_0_0_0_1px_rgba(255,255,255,0.1)]
   hover:shadow-[0_0.125em_0.125em_rgba(0,0,0,0.28),0_0.5em_1em_-0.2em_rgba(0,0,0,0.3),inset_0_0_0_1px_rgba(255,255,255,0.12)]
 "
