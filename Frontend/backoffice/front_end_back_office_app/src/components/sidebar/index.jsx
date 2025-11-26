@@ -2,7 +2,6 @@
 
 import { HiX } from "react-icons/hi";
 import Links from "./components/Links";
-import SidebarCard from "components/sidebar/componentsrtl/SidebarCard";
 import routes from "routes.js";
 
 const Sidebar = ({ open, onClose }) => {
@@ -22,7 +21,7 @@ const Sidebar = ({ open, onClose }) => {
     >
       {/* bouton close (mobile) */}
       <span
-        className="absolute top-4 right-4 block cursor-pointer  xl:hidden"
+        className="absolute right-4 top-4 block cursor-pointer xl:hidden"
         onClick={onClose}
         aria-label="Close sidebar"
       >
@@ -31,7 +30,7 @@ const Sidebar = ({ open, onClose }) => {
 
       {/* header brand (ne doit pas grandir) */}
       <div className="shrink-0 px-6 pt-6">
-        <div className="relative rounded-3xl p-4 bg-indigo-50/70 ring-1 ring-indigo-200/70 shadow-[0_10px_40px_rgba(99,102,241,.20)]">
+        <div className="relative rounded-3xl bg-indigo-50/70 p-4 shadow-[0_10px_40px_rgba(99,102,241,.20)] ring-1 ring-indigo-200/70">
           <span
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 rounded-3xl bg-white/30 mix-blend-overlay"
@@ -46,16 +45,14 @@ const Sidebar = ({ open, onClose }) => {
       </div>
 
       {/* séparateur (ne doit pas grandir) */}
-      <div className="mt-3 mb-4 h-px bg-indigo-100/80 dark:bg-white/20 shrink-0" />
+      <div className="mb-4 mt-3 h-px shrink-0 bg-indigo-100/80 dark:bg-white/20" />
 
       {/* 2) zone scrollable : flex-1 + min-h-0 + overflow-y-auto */}
-      <div className="sidebar-scroll mx-4 flex-1 min-h-0 overflow-y-auto overscroll-contain pr-2">
+      <div className="sidebar-scroll mx-4 min-h-0 flex-1 overflow-y-auto overscroll-contain pr-2">
         <ul className="mb-auto pt-1">
           <Links routes={routes} />
         </ul>
       </div>
-
-   
     </div>
   );
 };
