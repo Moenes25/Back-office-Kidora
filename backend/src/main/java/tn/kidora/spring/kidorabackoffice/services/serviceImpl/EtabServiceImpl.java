@@ -139,4 +139,20 @@ public class EtabServiceImpl implements EtabService {
         Etablissement updated = etablissementRepository.save(etab);
         return ResponseEntity.status(HttpStatus.OK).body(etablissementMapper.EntityToEtab_Dto(updated));
     }
+
+    @Override
+    public ResponseEntity<List<Etab_Dto>> getEtablissementsAbonnesCeMois() {
+        try{
+            List<Etablissement> etablissements = etablissementRepository.findEtablissementsAbonnesCeMois();
+            if (etablissements.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Collections.emptyList());
+            }
+            List<Etab_Dto>  etablissementsDtos = etablissements.stream()
+                                                           .map(etablissementMapper::EntityToEtab_Dto)
+                                                           .collect(Collectors.toList());
+            return ResponseEntity.status(HttpStatus.OK).body(etablissementsDtos);
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
+        }
+    }
 }

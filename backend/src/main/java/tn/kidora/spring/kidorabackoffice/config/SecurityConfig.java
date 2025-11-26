@@ -44,7 +44,7 @@ public class SecurityConfig {
                .authorizeHttpRequests(auth ->
                auth.requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.LOGIN,Constants.APP_ROOT+Constants.AUTH+Constants.REGISTER).permitAll()
                        .requestMatchers(
-                               Constants.APP_ROOT + Constants.ABONNEMENT + Constants.BY_ETABLISSEMENT + "/**"
+                               Constants.APP_ROOT + Constants.ABONNEMENT +"/**"
                        ).authenticated()
                                .requestMatchers(Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.SAVE,
                                                 Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.UPDATE,

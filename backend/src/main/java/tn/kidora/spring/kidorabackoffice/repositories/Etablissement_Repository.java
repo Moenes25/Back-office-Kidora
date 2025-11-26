@@ -3,6 +3,7 @@ package tn.kidora.spring.kidorabackoffice.repositories;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.User;
@@ -14,5 +15,11 @@ public interface Etablissement_Repository extends JpaRepository<Etablissement,In
     List<Etablissement> findByRegion(String region);
     boolean existsByEmail(String email);
     List<Etablissement> findByIsActiveTrue();
+
+    @Query("SELECT DISTINCT e FROM Etablissement e JOIN e.abonnements a "+
+           "WHERE YEAR(a.dateDebutAbonnement) = YEAR(CURRENT_DATE)"+
+           "AND MONTH(a.dateDebutAbonnement) = MONTH(CURRENT_DATE)"
+          )
+    List<Etablissement> findEtablissementsAbonnesCeMois();
 }
 

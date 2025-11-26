@@ -13,6 +13,7 @@ import tn.kidora.spring.kidorabackoffice.entities.StatutPaiement;
 import tn.kidora.spring.kidorabackoffice.repositories.AbonnementRepository;
 import tn.kidora.spring.kidorabackoffice.repositories.Etablissement_Repository;
 import tn.kidora.spring.kidorabackoffice.services.AbonnementService;
+import tn.kidora.spring.kidorabackoffice.utils.mapper.AbonnementMapper;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ import java.util.List;
 public class AbonnementServiceImpl implements  AbonnementService{
 Etablissement_Repository etablissementRepository;
 AbonnementRepository abonnementRepository;
+AbonnementMapper abonnementMapper;
     @Override
     public ResponseEntity<AbonnementResponseDTO> addAbonnement(AbonnementRequestDTO dto) {
         if (dto.getEtablissementId() == null) {
@@ -39,13 +41,15 @@ AbonnementRepository abonnementRepository;
 
         Abonnement saved = abonnementRepository.save(abonnement);
 
-        AbonnementResponseDTO response = new AbonnementResponseDTO();
-        response.setIdAbonnement(saved.getIdAbonnement());
-        response.setDateDebutAbonnement(saved.getDateDebutAbonnement());
-        response.setDateFinAbonnement(saved.getDateFinAbonnement());
-        response.setMontantPaye(saved.getMontantPaye());
-        response.setMontantDu(saved.getMontantDu());
-        response.setStatut(saved.getStatut());
+        // AbonnementResponseDTO response = new AbonnementResponseDTO();
+        // response.setIdAbonnement(saved.getIdAbonnement());
+        // response.setDateDebutAbonnement(saved.getDateDebutAbonnement());
+        // response.setDateFinAbonnement(saved.getDateFinAbonnement());
+        // response.setMontantPaye(saved.getMontantPaye());
+        // response.setMontantDu(saved.getMontantDu());
+        // response.setStatut(saved.getStatut());
+        // response.setEtablissement(null);
+        AbonnementResponseDTO response =abonnementMapper.toResponseDTO(saved);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -88,13 +92,14 @@ AbonnementRepository abonnementRepository;
     public ResponseEntity<List<AbonnementResponseDTO>> getAllAbonnements() {
         List<Abonnement> abonnements = abonnementRepository.findAll();
         List<AbonnementResponseDTO> responseList = abonnements.stream().map(abonnement -> {
-            AbonnementResponseDTO dto = new AbonnementResponseDTO();
-            dto.setIdAbonnement(abonnement.getIdAbonnement());
-            dto.setDateDebutAbonnement(abonnement.getDateDebutAbonnement());
-            dto.setDateFinAbonnement(abonnement.getDateFinAbonnement());
-            dto.setMontantPaye(abonnement.getMontantPaye());
-            dto.setMontantDu(abonnement.getMontantDu());
-            dto.setStatut(abonnement.getStatut());
+            // AbonnementResponseDTO dto = new AbonnementResponseDTO();
+            // dto.setIdAbonnement(abonnement.getIdAbonnement());
+            // dto.setDateDebutAbonnement(abonnement.getDateDebutAbonnement());
+            // dto.setDateFinAbonnement(abonnement.getDateFinAbonnement());
+            // dto.setMontantPaye(abonnement.getMontantPaye());
+            // dto.setMontantDu(abonnement.getMontantDu());
+            // dto.setStatut(abonnement.getStatut());
+            AbonnementResponseDTO dto  = abonnementMapper.toResponseDTO(abonnement);
             return dto;
         }).toList();
         return  ResponseEntity.ok(responseList);

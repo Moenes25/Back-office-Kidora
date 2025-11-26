@@ -11,6 +11,6 @@ import java.util.List;
 public interface AbonnementRepository  extends JpaRepository<Abonnement,Long> {
     List<Abonnement> findByEtablissement_IdEtablissment(Integer idEtablissement);
     List<Abonnement> findByStatut(StatutPaiement statut);
-
+    
 
 }

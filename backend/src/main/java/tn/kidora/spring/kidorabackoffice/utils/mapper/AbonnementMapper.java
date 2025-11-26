@@ -1,10 +1,13 @@
 package tn.kidora.spring.kidorabackoffice.utils.mapper;
 
+import org.springframework.stereotype.Service;
+
 import tn.kidora.spring.kidorabackoffice.dto.AbonnementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.AbonnementResponseDTO;
 import tn.kidora.spring.kidorabackoffice.dto.Etab_Dto;
 import tn.kidora.spring.kidorabackoffice.entities.Abonnement;
 
+@Service
 public class AbonnementMapper {
 
     public Abonnement toEntity(AbonnementRequestDTO dto) {
