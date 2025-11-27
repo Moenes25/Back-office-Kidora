@@ -6,12 +6,11 @@ import Dropdown from "components/dropdown";
 import ProfileSidebar from "./ProfileSidebar";
 
 export default function Navbar({ brandText, onOpenSidenav }) {
-  // const [darkmode, setDarkmode] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <nav>
-      <section className="sticky right-0 top-0 z-40 mb-10 flex w-full items-center justify-between bg-white p-4 shadow-lg backdrop-blur-md dark:bg-navy-800/80">
+      <section className="sticky right-0 top-0 z-40 mb-10 flex w-full items-center justify-between p-4 backdrop-blur-md dark:bg-navy-800/80">
         {/* Title */}
         <h1 className="text-xl font-semibold text-navy-700 dark:text-white">
           {brandText}
@@ -72,17 +71,6 @@ export default function Navbar({ brandText, onOpenSidenav }) {
               </div>
             }
           />
-
-          {/* Dark Mode */}
-          {/* <button
-          className="icon-btn"
-          onClick={() => {
-            document.body.classList.toggle("dark");
-            setDarkmode(!darkmode);
-          }}
-        >
-          {darkmode ? <RiSunFill /> : <RiMoonFill />}
-        </button> */}
 
           {/* Profile Sidebar Trigger */}
           <img

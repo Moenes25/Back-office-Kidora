@@ -6,13 +6,14 @@ import MainDashboard from "views/admin/default";
 import IAPage from "views/admin/ia";
 import PaiementsPage from "views/admin/paiements";
 import SupportPage from "views/admin/support";
+import ProfileOverview from "views/admin/profile";
 
 /* === Nouvelles pages selon cahier === */
 import ClientsPage from "views/admin/clients"; // liste + filtres (types, statut, commercial)
 
 import TeamPage from "views/admin/team"; // équipe & rôles (RBAC)
 import ReportsPage from "views/admin/reports"; // rapports & exports
-import { MdCalendarToday } from "react-icons/md";
+import { MdCalendarToday, MdPerson } from "react-icons/md";
 
 /* === Auth === */
 
@@ -37,8 +38,18 @@ const routes = [
     name: "Dashboard",
     layout: "/admin",
     path: "default",
-    icon: <MdHome className="h-6 w-6" />,
+    icon: MdHome,
     component: <MainDashboard />,
+  },
+
+  /* Profile Overview */
+  {
+    name: "Profile",
+    layout: "/admin",
+    path: "profile",
+    icon: MdPerson,
+    component: <ProfileOverview />,
+    secondary: true, // keep reachable but hidden from main navigation
   },
 
   /* 2.2 Gestion des Clients (Garderies / Crèches / Écoles) */
