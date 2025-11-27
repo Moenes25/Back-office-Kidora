@@ -26,5 +26,6 @@ public class Constants {
     public static final String CRECHE_ACTIVE="/crecheactive";
     public static final String GARDERIE_ACTIVE="/garderieactive";
     public static final String CROISSANCE = "/croissance";
+    public static final String REPARTITION_ANNUELLE = "/repartition-annuelle";
 
 }
