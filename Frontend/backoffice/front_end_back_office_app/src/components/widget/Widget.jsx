@@ -77,11 +77,7 @@ const WidgetKids = ({ icon, title, subtitle, tone = "bubblegum", animated = true
       ].join(" ")}
       style={animated ? { animationDelay: `${delay}ms` } : undefined}
     >
-      <span className="pointer-events-none absolute -top-4 -right-4 rotate-12 z-10">
-        <span className="inline-flex items-center justify-center rounded-2xl px-3 py-1 text-sm font-black bg-white shadow-md">
-          🎈 KI DORA
-        </span>
-      </span>
+ 
 
       <div
         className={[

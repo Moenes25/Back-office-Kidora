@@ -2,7 +2,9 @@ package tn.kidora.spring.kidorabackoffice.controllers;
 
 import lombok.AllArgsConstructor;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,9 @@ import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
 import tn.kidora.spring.kidorabackoffice.services.EtabService;
 import tn.kidora.spring.kidorabackoffice.utils.Constants;
 import tn.kidora.spring.kidorabackoffice.entities.Type_Etablissement;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @AllArgsConstructor
@@ -64,6 +69,45 @@ public class EtabController {
     @PatchMapping(Constants.TOOGLE_STATUS + Constants.ID)
     public ResponseEntity<Etab_Dto> toggleEtablissementStatus(@PathVariable Integer id) {
         return etabService.toggleEtablissementStatus(id);
+    }
+
+    @GetMapping(Constants.CEMOIS)
+    public ResponseEntity<List<Etab_Dto>> getEtablissementsAbonnesCeMois() {
+        return etabService.getEtablissementsAbonnesCeMois();
+    }
+
+    @GetMapping(Constants.ECOLE_ACTIVE)
+    public ResponseEntity<List<Etab_Dto>> getEcoleActive() {
+        ResponseEntity<List<Etab_Dto>> response = etabService.getActiveEtablissements();
+        if (response.getBody().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Collections.emptyList());
+        }
+        List<Etab_Dto>  etablissementsDtos = response.getBody().stream()
+                                                           .filter(etab -> etab.getType().equals(Type_Etablissement.ECOLE))
+                                                           .collect(Collectors.toList());
+        return ResponseEntity.status(HttpStatus.OK).body(etablissementsDtos);
+    }
+    @GetMapping(Constants.CRECHE_ACTIVE)
+    public ResponseEntity<List<Etab_Dto>> getCrecheActive() {
+       ResponseEntity<List<Etab_Dto>> response = etabService.getActiveEtablissements();
+        if (response.getBody().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Collections.emptyList());
+        }
+        List<Etab_Dto>  etablissementsDtos = response.getBody().stream()
+                                                           .filter(etab -> etab.getType().equals(Type_Etablissement.CRECHE))
+                                                           .collect(Collectors.toList());
+        return ResponseEntity.status(HttpStatus.OK).body(etablissementsDtos);
+    }
+    @GetMapping(Constants.GARDERIE_ACTIVE)
+    public ResponseEntity<List<Etab_Dto>> getGarderieActive() {
+        ResponseEntity<List<Etab_Dto>> response = etabService.getActiveEtablissements();
+        if (response.getBody().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Collections.emptyList());
+        }
+        List<Etab_Dto>  etablissementsDtos = response.getBody().stream()
+                                                           .filter(etab -> etab.getType().equals(Type_Etablissement.GARDERIE))
+                                                           .collect(Collectors.toList());
+        return ResponseEntity.status(HttpStatus.OK).body(etablissementsDtos);
     }
 
 

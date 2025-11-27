@@ -9,12 +9,30 @@ import Card from "components/card";
 import BarChart from "components/charts/BarChart";
 import PieChart from "components/charts/PieChart";
 import WidgetKids from "components/widget/Widget";
-import ApexChart from "components/KpiBar";
-import { lineOptions, areaOptions, radarOptions, heatmapOptions, radialOptions } from "components/KpiBar";
+import KpiBar from "components/KpiBar";
 import AlertsPanel from "components/AlertsPanel";
 import AppointmentPlanner from "components/calendar/AppointmentPlanner";
 import AIIndicatorsPanel from "components/ai/AIIndicatorsPanel";
 
+import {
+  getCrecheActives,
+  getEcoleActives,
+  getGarderieActives,
+  getEtablissementsCeMois,
+} from "services/dashboardService";
+
+
+
+// icons (lucide via react-icons)
+import {
+  LuBuilding2,     // établissements
+  LuUsers2,        // parents
+  LuBaby,          // enfants
+  LuTrendingUp,    // chiffre d'affaires
+  LuActivity,      // activité
+  LuFileBarChart2, // rapports
+  LuGauge          // fallback
+} from "react-icons/lu";
 
 
 
@@ -23,27 +41,26 @@ import AIIndicatorsPanel from "components/ai/AIIndicatorsPanel";
 
 
 
-// icons
-import { PiUsersThree, PiBaby, PiChalkboardTeacher, PiMoney } from "react-icons/pi";
-import { MdChildCare, MdPersonAddAlt1, MdPersonOff, MdCheckCircle } from "react-icons/md";
-import { AiOutlineWarning } from "react-icons/ai";
 
 
 
-/* ---------------------------------------------------
-  MOCK DATA
---------------------------------------------------- */
-const kpis = {
-  totalClientsActifs: 312,
-  garderies: 140,
-  creches: 128,
-  ecoles: 44,
-  nouveauxCeMois: 18,
-  resiliesCeMois: 5,
-  tauxRetention: 0.93,
-  tauxUtilisation: 0.78,
-  tauxPaiement: 0.88,
+
+
+
+// sans types TS
+const ICONS = {
+  "Nombre Totale d'etablissements": <LuBuilding2 />,
+  "Nombre Totale de Parents":        <LuUsers2 />,
+  "Nombre Totale des Enfants":       <LuBaby />,
+  "Chiffres d'Affaires Totales":     <LuTrendingUp />,
+  "Nombre d'activité d'etablissement": <LuActivity />,
+  "Nombre de raports par jours":     <LuFileBarChart2 />,
 };
+
+const pickIcon = (title) => ICONS[title] ?? <LuGauge />;
+
+
+
 // à placer au-dessus des 3 configs (près des MOCK DATA)
 const MOTION = {
   chart: {
@@ -157,10 +174,7 @@ const radialGoalOptions = {
   tooltip: { enabled: true, y: { formatter: (v) => `${v}%` } },
 };
 
-<Card extra="relative p-5 rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
-  <h3 className="mb-3 text-lg font-extrabold">🎯 Objectif du mois</h3>
-  <ApexChart type="radialBar" options={radialGoalOptions} series={goalSeries} height={260} />
-</Card>
+
 
 
 
@@ -250,6 +264,75 @@ export const kpiPaiements = {
   },
 };
 
+/* ===== Helpers charts (sans fichier externe) ===== */
+const buildPolarArea = (labels, values) => ({
+  type: "polarArea",
+  series: values,
+  options: {
+    ...MOTION,
+    labels,
+    colors: TYPE_COLORS,
+    chart: { ...MOTION.chart, type: "polarArea", dropShadow: { enabled: true, top: 4, blur: 12, opacity: 0.18 } },
+    stroke: { width: 0 },
+    fill: { opacity: 0.92 },
+    yaxis: { show: false },
+    legend: { position: "bottom", fontSize: "12px" },
+    plotOptions: { polarArea: { rings: { strokeWidth: 1 }, spokes: { strokeWidth: 1 } } },
+  },
+});
+
+const buildBubbleGalaxy = (series) => ({
+  type: "bubble",
+  series,
+  options: {
+    ...MOTION,
+    chart: { ...MOTION.chart, type: "bubble", dropShadow: { enabled: true, top: 2, blur: 8, opacity: 0.18 } },
+    colors: TYPE_COLORS,
+    dataLabels: { enabled: false },
+    stroke: { width: 1 },
+    xaxis: { type: "numeric", tickAmount: 12, labels: { style: { colors: "#64748b" } } },
+    yaxis: { labels: { style: { colors: "#94a3b8" } } },
+    fill: {
+      opacity: 0.85,
+      gradient: { shade: "light", type: "vertical", opacityFrom: 0.95, opacityTo: 0.55, stops: [0, 60, 100] },
+    },
+    tooltip: { y: { formatter: (v) => `${v}` }, z: { title: "Taille: " } },
+  },
+});
+
+const buildRangeTimeline = (categories, series) => ({
+  type: "rangeBar",
+  series,
+  options: {
+    ...MOTION,
+    chart: { ...MOTION.chart, type: "rangeBar" },
+    plotOptions: { bar: { horizontal: true, borderRadius: 8, rangeBarGroupRows: true } },
+    colors: TYPE_COLORS,
+    xaxis: { type: "numeric", labels: { style: { colors: "#64748b" } } },
+    yaxis: { categories, labels: { style: { colors: "#94a3b8" } } },
+    grid: { borderColor: "rgba(2,6,23,.08)", strokeDashArray: 4 },
+    tooltip: { y: { formatter: (val) => (Array.isArray(val) ? `${val[1] - val[0]} h` : val) } },
+    legend: { position: "bottom" },
+  },
+});
+
+const buildTreemap = (data) => ({
+  type: "treemap",
+  series: [{ data }],
+  options: {
+    ...MOTION,
+    chart: { ...MOTION.chart, type: "treemap" },
+    colors: TYPE_COLORS,
+    plotOptions: { treemap: { enableShades: true, shadeIntensity: 0.25, useFillColorAsStroke: true } },
+    dataLabels: {
+      enabled: true,
+      style: { fontSize: "12px", fontWeight: 700 },
+      formatter: (txt, opt) => `${txt}\n${opt.value}`,
+    },
+    legend: { show: false },
+    tooltip: { y: { formatter: (v) => `${v.toLocaleString("fr-TN")}` } },
+  },
+});
 
 
 /* ---------- KPI mini charts (axes visibles) ---------- */
@@ -695,6 +778,45 @@ function WidgetFX() {
 --------------------------------------------------- */
 
 const Dashboard = () => {
+
+  /* ---------------------------------------------------
+  Widget DATA
+--------------------------------------------------- */
+const [kpis, setKpis] = useState({
+  totalClientsActifs: 0,
+  nouveauxCeMois: 0,
+  resiliesCeMois: 0,
+  ecoles: 0,
+  garderies: 0,
+  creches: 0,
+});
+
+useEffect(() => {
+  const fetchKpis = async () => {
+    try {
+      const [creches, ecoles, garderies, abonnesCeMois] = await Promise.all([
+        getCrecheActives(),
+        getEcoleActives(),
+        getGarderieActives(),
+        getEtablissementsCeMois(),
+      ]);
+
+      setKpis({
+  totalClientsActifs: creches.length + ecoles.length + garderies.length,
+  creches: creches.length,
+  ecoles: ecoles.length,
+  garderies: garderies.length,
+  nouveauxCeMois: abonnesCeMois.length,
+  resiliesCeMois: 0,
+});
+
+    } catch (error) {
+      console.error("Erreur lors du chargement des KPI:", error);
+    }
+  };
+
+  fetchKpis();
+}, []);
 const impayes = 1 - kpis.tauxPaiement;
 const [barFilter, setBarFilter] = useState("creches");
 
@@ -784,13 +906,31 @@ const availability = (() => {
       {/* *********************************************************** */}
 <WidgetFX />
 <div className="mt-3 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-6">
-  <WidgetKids stacked tone="grape"     delay={0}   icon={<PiUsersThree />}       title="Clients actifs"    subtitle={kpis.totalClientsActifs} />
-  <WidgetKids stacked tone="sunny"     delay={60}  icon={<MdPersonAddAlt1 />}    title="Nouveaux ce mois"  subtitle={kpis.nouveauxCeMois} />
-  <WidgetKids stacked tone="bubblegum" delay={120} icon={<AiOutlineWarning />}    title="Résiliés ce mois"  subtitle={kpis.resiliesCeMois} />
-  <WidgetKids stacked tone="sky"       delay={180} icon={<PiChalkboardTeacher />} title="Écoles actives"    subtitle={kpis.ecoles} />
-  <WidgetKids stacked tone="lime"      delay={240} icon={<MdChildCare />}         title="Garderies actives" subtitle={kpis.garderies} />
-  <WidgetKids stacked tone="grape"     delay={300} icon={<PiBaby />}              title="Crèches actives"   subtitle={kpis.creches} />
+  <WidgetKids stacked tone="grape"     delay={0}
+    icon={pickIcon("Nombre Totale d'etablissements")}
+    title="Nombre Totale d'etablissements" subtitle={kpis.totalClientsActifs} />
+
+  <WidgetKids stacked tone="sunny"     delay={60}
+    icon={pickIcon("Nombre Totale de Parents")}
+    title="Nombre Totale de Parents" subtitle={kpis.nouveauxCeMois} />
+
+  <WidgetKids stacked tone="bubblegum" delay={120}
+    icon={pickIcon("Nombre Totale des Enfants")}
+    title="Nombre Totale des Enfants" subtitle={kpis.resiliesCeMois} />
+
+  <WidgetKids stacked tone="sky"       delay={180}
+    icon={pickIcon("Chiffres d'Affaires Totales")}
+    title="Chiffres d'Affaires Totales" subtitle={kpis.ecoles} />
+
+  <WidgetKids stacked tone="lime"      delay={240}
+    icon={pickIcon("Nombre d'activité d'etablissement")}
+    title="Nombre d'activité d'etablissement" subtitle={kpis.garderies} />
+
+  <WidgetKids stacked tone="grape"     delay={300}
+    icon={pickIcon("Nombre de raports par jours")}
+    title="Nombre de raports par jours" subtitle={kpis.creches} />
 </div>
+
 
 
 
@@ -798,123 +938,9 @@ const availability = (() => {
       {/* 🔥 KPI BARS */}
       {/* *********************************************************** */}
 
-<div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-3">
-  {/* Line */}
- <Card extra="relative p-5 rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
-  <h3 className="mb-3 text-lg font-extrabold">📈 Croissance des inscriptions</h3>
-  <ApexChart
-    type="line"
-    options={{
-      ...lineOptions,
-      colors: TYPE_COLORS,                 // 1 couleur par série
-      xaxis: { categories: MONTHS_FR },    // mois FR
-    }}
-    series={[
-      { name: "Garderies", data: [12,15,14,18,20,22,24,23,19,17,16,18] },
-      { name: "Crèches",   data: [10,12,11,14,16,18,19,18,16,15,14,15] },
-      { name: "Écoles",    data: [ 3, 4, 4, 5,  6,  7,  8,  7,  6,  5,  5,  6] },
-    ]}
-    height={300}
-  />
-</Card>
+<div className="mt-5 gap-5 ">
+   <KpiBar />
 
- <Card extra="relative p-5 rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
-  <h3 className="mb-3 text-lg font-extrabold">
-    🍩 Répartition annuelle par type 
-  </h3>
-
-  <PieChart
-    series={[
-      [12,15,14,18,20,22,24,23,19,17,16,18].reduce((a,b)=>a+b,0), // Garderies
-      [10,12,11,14,16,18,19,18,16,15,14,15].reduce((a,b)=>a+b,0), // Crèches
-      [ 3, 4, 4, 5, 6, 7, 8, 7, 6, 5, 5, 6].reduce((a,b)=>a+b,0), // Écoles
-    ]}
-    options={{
-      labels: TYPE_LABELS,        // ["Garderies", "Crèches", "Écoles"]
-      colors: TYPE_COLORS,        // ["#60a5fa", "#a78bfa", "#34d399"] par ex.
-      legend: { position: "bottom" },
-      dataLabels: { enabled: false },
-      // (optionnel) si c'est un donut et tu veux un total au centre :
-      plotOptions: {
-        pie: {
-          donut: {
-            size: "70%",
-            labels: { show: true, total: { show: true, label: "Total" } }
-          }
-        }
-      }
-    }}
-  />
-</Card>
-  {/* Heatmap (tickets / jour x priorité) */}
-<Card extra="relative p-5  rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
-  <h3 className="mb-3 text-lg font-extrabold">🔥 Tickets par jour</h3>
-  <ApexChart
-    type="bar"
-    options={{
-      chart: { type: "bar", stacked: true, toolbar: { show: false }, animations: { enabled: true } },
-      plotOptions: { bar: { columnWidth: "55%", borderRadius: 10 } },
-      xaxis: { categories: ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"] },
-      dataLabels: { enabled: false },
-      colors: ["#60a5fa","#a78bfa","#34d399"],
-      grid: { borderColor: "rgba(0,0,0,.08)", strokeDashArray: 4 },
-      tooltip: { y: { formatter: (v) => `${v} ticket(s)` } },
-      legend: { position: "bottom" },
-      fill: { opacity: 0.95 },
-    }}
-    series={[
-      { name: "Garderies", data: [3,4,2,6,5,2,1] },
-      { name: "Crèches",   data: [4,5,3,7,6,3,2] },
-      { name: "Écoles",    data: [2,3,2,4,3,1,1] },
-    ]}
-    height={300}
-  />
-</Card>
-
-  {/* Area */}
-<Card extra="relative p-5 hidden rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
-  <h3 className="mb-3 text-lg font-extrabold">🌊 Usage mensuel</h3>
-  <ApexChart
-    type="area"
-    options={{
-      ...areaOptions,
-      colors: TYPE_COLORS,
-      xaxis: { categories: MONTHS_FR },
-    }}
-    series={[
-      { name: "Garderies", data: [68,70,72,74,76,78,80,79,77,75,73,72] },
-      { name: "Crèches",   data: [64,66,68,70,72,74,76,75,73,71,69,68] },
-      { name: "Écoles",    data: [58,60,62,64,66,68,70,69,67,65,63,62] },
-    ]}
-    height={360}
-  />
-</Card>
-
-
-  {/* RadialBar (progress) */}
-<Card extra="relative p-5  hidden rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
-  <h3 className="mb-3 text-lg font-extrabold">🎯 Objectif du mois</h3>
-  <ApexChart type="radialBar" options={radialGoalOptions} series={goalSeries} height={360} />
-</Card>
-
-  {/* Radar (satisfaction par critère) */}
- <Card extra="relative p-5 hidden rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
-  <h3 className="mb-3 text-lg font-extrabold">⭐ Satisfaction (sondage)</h3>
-  <ApexChart
-    type="radar"
-    options={{
-      ...radarOptions,
-      colors: TYPE_COLORS,
-      xaxis: { categories: ["Qualité","Support","Prix","Fiabilité","UX"] },
-    }}
-    series={[
-      { name: "Garderies", data: [62, 65, 68, 68, 64] },
-      { name: "Crèches",   data: [76, 77, 75, 70, 72] },
-      { name: "Écoles",    data: [80, 83, 72, 86, 81] },
-    ]}
-    height={300}
-  />
-</Card>
 
 </div>
 

@@ -9,8 +9,6 @@ import { HiOutlineRefresh } from "react-icons/hi";
 import { RiPauseCircleLine, RiDeleteBinLine } from "react-icons/ri";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
-import { EtabAPI } from "services/etablissements";
-
 
 /* ----------------------------------------------------------------
    Données démo (complètes)
@@ -330,6 +328,15 @@ const ClientsPage = () => {
     }
   };
 
+  // helper: tri via clic sur en-tête
+  const toggleSort = (key) => {
+    setSortKey((prev) => (prev === key ? prev : key));
+    setSortAsc((prev) => (sortKey === key ? !prev : true));
+  };
+
+  const headerSortIcon = (key) =>
+    sortKey !== key ? "↕" : sortAsc ? "▲" : "▼";
+
   return (
     <div className="space-y-6">
       {/* HEADER */}
@@ -386,170 +393,161 @@ const ClientsPage = () => {
                 ))}
               </select>
             </div>
+
+            {/* tri actuel (toujours dispo) */}
+            <div className="inline-flex items-center gap-1 rounded-xl border border-black/10 bg-white px-2 py-1.5 shadow-sm">
+              <span className="text-xs font-semibold opacity-70">Trier par</span>
+              <select
+                value={sortKey}
+                onChange={(e) => setSortKey(e.target.value)}
+                className="bg-transparent text-sm outline-none"
+              >
+                <option value="name">Nom</option>
+                <option value="city">Ville</option>
+                <option value="type">Type</option>
+                <option value="status">Statut</option>
+                <option value="plan">Formule</option>
+                <option value="subscriptionDate">Date d’abonnement</option>
+              </select>
+              <button
+                onClick={() => setSortAsc((s) => !s)}
+                className="rounded-md border border-black/10 bg-white px-2 py-1 text-xs shadow-sm"
+                title={sortAsc ? "Ordre croissant" : "Ordre décroissant"}
+              >
+                {sortAsc ? "▲" : "▼"}
+              </button>
+            </div>
           </div>
         </div>
       </Card>
 
-      {/* LISTE EN CARTES */}
-      <Card extra="p-4">
-        <div className="mb-3 flex items-center justify-between gap-2">
+      {/* LISTE EN TABLEAU (REMPLACE les cards) */}
+      <Card extra="p-0 overflow-hidden">
+        <div className="px-4 pt-4 flex items-center justify-between">
           <div className="text-sm text-gray-500">
             {filtered.length} client(s) • page {page} / {Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))}
           </div>
-
-          <div className="flex items-center gap-2">
-            <label className="text-xs text-gray-500">Trier par</label>
-            <select
-              value={sortKey}
-              onChange={(e) => setSortKey(e.target.value)}
-              className="rounded-lg border border-black/10 bg-white px-2 py-1 text-sm shadow-sm"
-            >
-              <option value="name">Nom</option>
-              <option value="city">Ville</option>
-              <option value="type">Type</option>
-              <option value="status">Statut</option>
-            </select>
-
-            <button
-              onClick={() => setSortAsc((s) => !s)}
-              className="rounded-lg border border-black/10 bg-white px-2 py-1 text-sm shadow-sm"
-              title={sortAsc ? "Ordre croissant" : "Ordre décroissant"}
-            >
-              {sortAsc ? "▲" : "▼"}
-            </button>
-          </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {pageRows.map((r, i) => {
-            const ui = STATUS_UI[r.status] || {};
-            const isLate = r.status === "En retard de paiement";
-
-            return (
-              <div
-                key={r.id}
-                className={[
-                  "group relative overflow-hidden rounded-2xl bg-white p-4",
-                  "border shadow-sm transition-all",
-                  ui.border || "border-gray-200",
-                  ui.ring ? `ring-1 ${ui.ring}` : "",
-                  "hover:-translate-y-[2px] hover:shadow-lg",
-                  isLate ? "animate-[shake_0.5s_ease-in-out_120ms_1]" : "",
-                  "dark:border-navy-700 dark:bg-navy-800",
-                ].join(" ")}
-                style={{ animation: `popIn .35s ease-out both`, animationDelay: `${i * 60}ms` }}
-              >
-                {/* accent */}
-                <span className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-indigo-500 to-sky-400" />
-
-                {/* header */}
-                <div className="mb-2 flex items-start justify-between gap-2">
-                  <div>
-                    <h3 className="text-base font-extrabold text-navy-700 dark:text-white">{r.name}</h3>
-                    <div className="text-[11px] text-gray-500">{r.id}</div>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-1">
-                    <TypeBadge type={r.type} />
-                    <StatusBadge status={r.status} />
-                  </div>
-                </div>
-
-                {/* infos principales organisées */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <div className="text-xs text-gray-500">Ville</div>
-                    <div className="font-semibold">{r.city}</div>
-                    {r.address && (
-                      <>
-                        <div className="mt-1 text-xs text-gray-500">Adresse</div>
-                        <div className="font-medium">{r.address}</div>
-                      </>
-                    )}
-                  </div>
-
-                  <div>
-                    <div className="text-xs text-gray-500">Abonnement</div>
-                    <div className="font-semibold">{r.plan}</div>
-                    <div className="text-[11px] text-gray-500">depuis {r.subscriptionDate}</div>
-                  </div>
-
-                  {r.phone && (
-                    <div className="rounded-xl bg-gray-50 px-3 py-2 font-medium dark:bg-white/5 flex items-center gap-2">
-                      <FiPhone /> <a className="hover:underline" href={`tel:${r.phone}`}>{r.phone}</a>
+        <div className="mt-3 overflow-x-auto">
+          <table className="min-w-[980px] w-full border-collapse">
+            <thead className="bg-gray-50 text-xs uppercase text-gray-600 sticky top-0 z-10">
+              <tr>
+                <Th onClick={() => toggleSort("id")} label="ID" sortIcon={headerSortIcon("id")} />
+                <Th onClick={() => toggleSort("name")} label="Nom" sortIcon={headerSortIcon("name")} />
+                <Th onClick={() => toggleSort("type")} label="Type" sortIcon={headerSortIcon("type")} />
+                <Th onClick={() => toggleSort("city")} label="Ville" sortIcon={headerSortIcon("city")} />
+                <Th onClick={() => toggleSort("plan")} label="Formule" sortIcon={headerSortIcon("plan")} />
+                <Th onClick={() => toggleSort("subscriptionDate")} label="Abonné depuis" sortIcon={headerSortIcon("subscriptionDate")} />
+                <Th onClick={() => toggleSort("status")} label="Statut" sortIcon={headerSortIcon("status")} />
+                <th className="px-3 py-2 text-left">Contact</th>
+                <th className="px-3 py-2 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm">
+              {pageRows.map((r, i) => (
+                <tr
+                  key={r.id}
+                  className="border-b last:border-0 hover:bg-gray-50 transition-colors"
+                  style={{ animation: `fadeIn .25s ease-out both`, animationDelay: `${i * 40}ms` }}
+                >
+                  <td className="px-3 py-2 whitespace-nowrap text-xs font-mono text-gray-600">{r.id}</td>
+                  <td className="px-3 py-2 font-semibold text-navy-700">
+                    <button
+                      onClick={() => setSelected(r)}
+                      className="hover:underline"
+                      title="Voir les détails"
+                    >
+                      {r.name}
+                    </button>
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap"><TypeBadge type={r.type} /></td>
+                  <td className="px-3 py-2">{r.city}</td>
+                  <td className="px-3 py-2">{r.plan}</td>
+                  <td className="px-3 py-2 whitespace-nowrap">{r.subscriptionDate}</td>
+                  <td className="px-3 py-2 whitespace-nowrap"><StatusBadge status={r.status} /></td>
+                  <td className="px-3 py-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {r.phone && (
+                        <a className="inline-flex items-center gap-1 hover:underline" href={`tel:${r.phone}`}>
+                          <FiPhone /> {r.phone}
+                        </a>
+                      )}
+                      {r.email && (
+                        <a className="inline-flex items-center gap-1 hover:underline" href={`mailto:${r.email}`}>
+                          <FiMail /> {r.email}
+                        </a>
+                      )}
+                      {r.url_localisation && (
+                        <a className="inline-flex items-center gap-1 hover:underline" href={r.url_localisation} target="_blank" rel="noreferrer">
+                          <FiMapPin /> Maps
+                        </a>
+                      )}
                     </div>
-                  )}
-                  {r.email && (
-                    <div className="rounded-xl bg-gray-50 px-3 py-2 font-medium dark:bg-white/5 flex items-center gap-2">
-                      <FiMail /> <a className="hover:underline" href={`mailto:${r.email}`}>{r.email}</a>
-                    </div>
-                  )}
-
-                  {r.url_localisation && (
-                    <div className="col-span-2">
-                      <a
-                        href={r.url_localisation}
-                        target="_blank" rel="noreferrer"
-                        className="inline-flex items-center gap-2 rounded-lg border border-black/10 bg-white px-3 py-1.5 text-xs font-semibold shadow-sm hover:bg-gray-50"
-                        title="Ouvrir la localisation"
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-1 justify-end">
+                      <button
+                        onClick={() => setSelected(r)}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 bg-white text-xs shadow-sm"
+                        title="Détails"
                       >
-                        <FiMapPin /> Localisation
-                      </a>
+                        👁️
+                      </button>
+                      <button
+                        onClick={() => startEdit(r)}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 bg-white text-xs shadow-sm"
+                        title="Modifier"
+                      >
+                        <FiEdit2 />
+                      </button>
+                      <button
+                        onClick={() => deleteClient(r)}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-rose-600 text-white text-xs shadow-sm hover:bg-rose-700"
+                        title="Supprimer"
+                      >
+                        <FiTrash2 />
+                      </button>
+                      {/* actions statut rapides */}
+                      <button
+                        onClick={() => updateStatus(r.id, "Actif")}
+                        className="hidden sm:inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700"
+                        title="Marquer Actif"
+                      >
+                        <HiOutlineRefresh /> Actif
+                      </button>
+                      <button
+                        onClick={() => updateStatus(r.id, "Suspendu")}
+                        className="hidden sm:inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700"
+                        title="Suspendre"
+                      >
+                        <RiPauseCircleLine /> Suspendre
+                      </button>
+                      <button
+                        onClick={() => updateStatus(r.id, "Résilié")}
+                        className="hidden sm:inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700"
+                        title="Résilier"
+                      >
+                        <RiDeleteBinLine /> Résilier
+                      </button>
                     </div>
-                  )}
-                </div>
+                  </td>
+                </tr>
+              ))}
 
-                {/* actions */}
-                <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
-                  <button
-                    onClick={() => setSelected(r)}
-                    className="rounded-lg border border-black/10 bg-white px-3 py-1.5 text-xs font-semibold shadow-sm hover:bg-gray-50"
-                  >
-                    Détails
-                  </button>
-                  <button
-                    onClick={() => updateStatus(r.id, "Actif")}
-                    className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 shadow-sm"
-                  >
-                    <HiOutlineRefresh className="-mt-[2px]" /> Renouveler
-                  </button>
-                  <button
-                    onClick={() => updateStatus(r.id, "Suspendu")}
-                    className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100 shadow-sm"
-                  >
-                    <RiPauseCircleLine className="-mt-[2px]" /> Suspendre
-                  </button>
-                  <button
-                    onClick={() => updateStatus(r.id, "Résilié")}
-                    className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100 shadow-sm"
-                  >
-                    <RiDeleteBinLine className="-mt-[2px]" /> Résilier
-                  </button>
-                </div>
-
-                {/* actions flottantes */}
-                <div className="absolute bottom-3 left-3 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
-                    onClick={() => startEdit(r)}
-                    title="Modifier"
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/90 backdrop-blur border border-black/10 shadow hover:bg-white"
-                  >
-                    <FiEdit2 className="opacity-70" />
-                  </button>
-                  <button
-                    onClick={() => deleteClient(r)}
-                    title="Supprimer"
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-red-600 text-white shadow hover:bg-red-700"
-                  >
-                    <FiTrash2 />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+              {pageRows.length === 0 && (
+                <tr>
+                  <td colSpan={9} className="px-3 py-10 text-center text-sm text-gray-500">
+                    Aucun résultat. Ajustez vos filtres.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
 
         {/* pagination */}
-        <div className="mt-4 flex items-center justify-between gap-3">
+        <div className="p-4 flex items-center justify-between gap-3">
           <div className="text-xs text-gray-500">
             Page <span className="font-semibold">{page}</span> / {pageCount} • {filtered.length} clients
           </div>
@@ -812,7 +810,8 @@ const ClientsPage = () => {
                   placeholder="Rue, numéro, ville…"
                 />
               </label>
-                  {/* URL localisation */}
+
+              {/* URL localisation */}
               <label className="text-sm">
                 <span className="mb-1 block text-xs text-gray-500">URL localisation (Google Maps)</span>
                 <input
@@ -836,8 +835,6 @@ const ClientsPage = () => {
                 />
               </label>
 
-          
-
               {/* Email */}
               <label className="text-sm">
                 <span className="mb-1 block text-xs text-gray-500">Email</span>
@@ -853,34 +850,28 @@ const ClientsPage = () => {
                 />
               </label>
 
-
-<label className="text-sm">
-  <span className="mb-1 block text-xs text-gray-500">Mot de passe</span>
-
-  {/* parent positionné */}
-  <div className="relative">
-    <input
-      type={showPwd ? "text" : "password"}
-      name="clientPassword"
-      autoComplete="new-password"
-      value={newClient.password}
-      onChange={(e) => setNewClient(v => ({ ...v, password: e.target.value }))}
-      className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm shadow-sm outline-none pr-10"
-      placeholder="••••••••"
-    />
-
-    {/* icône œil */}
-    <button
-      type="button"
-      onClick={() => setShowPwd(s => !s)}
-      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md border border-black/10 bg-white px-2 py-1 text-xs shadow-sm"
-      aria-label={showPwd ? "Masquer le mot de passe" : "Afficher le mot de passe"}
-    >
-      {showPwd ? "🙈" : "👁️"}
-    </button>
-  </div>
-</label>
-
+              <label className="text-sm">
+                <span className="mb-1 block text-xs text-gray-500">Mot de passe</span>
+                <div className="relative">
+                  <input
+                    type={showPwd ? "text" : "password"}
+                    name="clientPassword"
+                    autoComplete="new-password"
+                    value={newClient.password}
+                    onChange={(e) => setNewClient(v => ({ ...v, password: e.target.value }))}
+                    className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm shadow-sm outline-none pr-10"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPwd(s => !s)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md border border-black/10 bg-white px-2 py-1 text-xs shadow-sm"
+                    aria-label={showPwd ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                  >
+                    {showPwd ? "🙈" : "👁️"}
+                  </button>
+                </div>
+              </label>
 
               <label className="text-sm">
                 <span className="mb-1 block text-xs text-gray-500">Date d’abonnement</span>
@@ -946,6 +937,17 @@ const ClientsPage = () => {
   );
 };
 
+/* Cellule d'en-tête cliquable pour tri */
+const Th = ({ label, sortIcon, onClick }) => (
+  <th
+    className="px-3 py-2 text-left font-semibold select-none cursor-pointer"
+    onClick={onClick}
+    title="Cliquer pour trier"
+  >
+    <span className="inline-flex items-center gap-1">{label} <span className="text-[10px] opacity-60">{sortIcon}</span></span>
+  </th>
+);
+
 /* animations */
 const StyleOnce = () => {
   useEffect(() => {
@@ -956,6 +958,7 @@ const StyleOnce = () => {
       @keyframes slideIn { from { transform: translateX(20px); opacity: 0 } to { transform: translateX(0); opacity: 1 } }
       @keyframes popIn { 0%{ transform: translateY(6px) scale(.98); opacity: 0 } 60%{ transform: translateY(0) scale(1.01); opacity: 1 } 100%{ transform: translateY(0) scale(1); } }
       @keyframes shake { 0%,100% { transform: translateX(0) } 25% { transform: translateX(-2px) } 50% { transform: translateX(2px) } 75% { transform: translateX(-1px) } }
+      @keyframes fadeIn { from{opacity:0; transform: translateY(4px)} to{opacity:1; transform: translateY(0)} }
     `;
     document.head.appendChild(s);
   }, []);

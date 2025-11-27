@@ -1,6 +1,9 @@
 package tn.kidora.spring.kidorabackoffice.entities;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -31,4 +34,8 @@ public class Etablissement {
     @JoinColumn(name = "user_id", nullable = false) 
     @ToString.Exclude
     User user; 
+
+    @OneToMany(mappedBy = "etablissement", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ToString.Exclude
+    private List<Abonnement> abonnements = new ArrayList<>();
 }
