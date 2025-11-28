@@ -1,6 +1,9 @@
 // src/views/.../PaiementsPage.jsx
 import React from "react";
 
+import { FiCalendar, FiClock, FiLayers, FiCheckCircle } from "react-icons/fi";
+
+
 /* ----------------------------- utils dates ----------------------------- */
 const dayNames = ["DIM", "LUN", "MAR", "MER", "JEU", "VEN", "SAM"];
 const monthNames = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
@@ -364,6 +367,50 @@ function EventCard({ ev, onEdit }) {
     </button>
   );
 }
+function KPI({ title, value, icon, gradient }) {
+  return (
+    <div className="
+      relative overflow-hidden rounded-2xl border border-white/50 bg-white/70 backdrop-blur-md
+      shadow-[0_14px_48px_rgba(2,6,23,.12)] min-h-[120px]
+    ">
+      {/* film de couleur - SOUS le contenu */}
+      <div className="absolute inset-0 opacity-25 z-0" style={{ background: gradient }} />
+
+      {/* petits effets - SOUS le contenu */}
+      <div className="pointer-events-none absolute -top-6 -right-6 h-28 w-28 rounded-full bg-white/60 blur-2xl kpi-float z-0" />
+      <div className="pointer-events-none absolute -left-1/3 -top-1/2 h-[220%] w-1/3 rotate-[14deg] bg-white/40 blur-md kpi-shine z-0" />
+
+      {/* CONTENU - AU-DESSUS */}
+      <div className="relative z-10 flex items-center gap-3 p-4">
+        <div
+          className="grid h-12 w-12 place-items-center rounded-xl text-white shadow-lg ring-1 ring-white/50"
+          style={{ background: gradient }}
+        >
+          {icon}
+        </div>
+        <div>
+          <div className="text-3xl font-extrabold tracking-tight text-slate-900">
+            {Number.isFinite(value) ? value : 0}
+          </div>
+          <div className="mt-0.5 text-xs font-medium text-slate-600">{title}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+/* styles ultra-légers pour l’anim */
+function KPIStyles() {
+  return (
+    <style>{`
+      @keyframes kpiFloat { 0%{transform:translateY(0)} 50%{transform:translateY(6px)} 100%{transform:translateY(0)} }
+      @keyframes kpiShine { 0%{transform:translateX(-40%)} 100%{transform:translateX(180%)} }
+      .kpi-float{ animation: kpiFloat 4s ease-in-out infinite; }
+      .kpi-shine{ animation: kpiShine 2.2s ease-in-out infinite; }
+    `}</style>
+  );
+}
 
 
 /* --------------------------------- page --------------------------------- */
@@ -416,6 +463,42 @@ const [events, setEvents] = React.useState(() => [
     setEvents((arr) => arr.filter((e) => e.id !== ev.id));
     setOpen(false);
   };
+// bornes de la semaine courante (inchangé)
+const weekStartISO = toISODate(weekStart);
+const weekEndISO   = toISODate(addDays(weekStart, 6));
+const todayISO     = toISODate(new Date());
+
+// Tous les évènements de la semaine affichée (inchangé)
+const weekEvents = React.useMemo(() => {
+  return events.filter(e => (e.date || "") >= weekStartISO && (e.date || "") <= weekEndISO);
+}, [events, weekStartISO, weekEndISO]);
+
+// ➜ AJOUT : évènements visibles (semaine + type sélectionné)
+const visibleWeekEvents = React.useMemo(() => {
+  return weekEvents.filter(e => e.type === filterType);
+}, [weekEvents, filterType]);
+
+// ➜ Utilitaires de durée (inchangé)
+const minutesFrom = (e) => {
+  if (!e.start || !e.end) return 0;
+  const [sh, sm] = e.start.split(":").map(Number);
+  const [eh, em] = e.end.split(":").map(Number);
+  return Math.max(0, (eh*60+em) - (sh*60+sm));
+};
+
+// ➜ KPIs recalculés sur la vue visible
+const totalHours       = Math.round(visibleWeekEvents.reduce((acc, ev) => acc + minutesFrom(ev), 0) / 60);
+const typeLabel        = colorByType[filterType]?.label ?? "Type";
+const countForType     = visibleWeekEvents.length;                        // était weekEvents.filter(...)
+const todayCount       = visibleWeekEvents.filter(e => e.date === todayISO).length;
+
+// (Optionnel) si tu veux que le sélecteur de type montre les comptes de la **semaine courante** et pas “tous temps” :
+const countsThisWeek = React.useMemo(() => {
+  const c = { creches: 0, garderies: 0, ecoles: 0 };
+  weekEvents.forEach(e => { c[e.type] = (c[e.type] || 0) + 1; });
+  return c;
+}, [weekEvents]);
+
 
   // helpers
   const goToday = () => setViewDate(new Date());
@@ -431,6 +514,17 @@ const [events, setEvents] = React.useState(() => [
 
   return (
     <div className="p-6 relative">
+
+      <KPIStyles />
+
+<div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <KPI title="Évènements (semaine)" value={visibleWeekEvents.length} icon={<FiCalendar className="text-2xl" />} gradient="linear-gradient(135deg,#6366f1,#06b6d4)" />
+  <KPI title="Aujourd’hui"           value={todayCount}              icon={<FiClock className="text-2xl" />}    gradient="linear-gradient(135deg,#f59e0b,#ef4444)" />
+  <KPI title={typeLabel}             value={countForType}            icon={<FiLayers className="text-2xl" />}   gradient="linear-gradient(135deg,#10b981,#22d3ee)" />
+  <KPI title="Heures planifiées"     value={totalHours}              icon={<FiCheckCircle className="text-2xl" />} gradient="linear-gradient(135deg,#64748b,#94a3b8)" />
+</div>
+
+
       {/* halo fond */}
       <div className="pointer-events-none absolute inset-x-0 -top-24 bottom-0 -z-10 opacity-60 blur-3xl"
            style={{ background: "radial-gradient(900px 420px at 10% -10%, rgba(99,102,241,.15), transparent 60%)" }} />
