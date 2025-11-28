@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useAuth } from "context/AuthContext";
 import { Link } from "react-router-dom";
-import manageImg from "../../assets/img/auth/manage.png";
+import FloatingInput from "components/fields/FloatingInput";
+import { MdMail } from "react-icons/md";
+import { FaLock } from "react-icons/fa6";
 import logoImg from "../../assets/img/auth/logo.png";
+import { FaSignInAlt } from "react-icons/fa";
 
 export default function Login() {
   const { login, loading } = useAuth();
@@ -25,7 +28,7 @@ export default function Login() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-purple-500 via-sky-600 to-blue-500 px-4 py-12 ">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#667eea,#764ba2)] px-4 py-12 ">
       {/* Floating shapes */}
       <div className="animate-pulse-slow absolute left-10 top-10 h-72 w-72 rounded-full bg-white/10 shadow-lg"></div>
       <div className="animate-pulse-slow absolute bottom-20 right-10 h-96 w-96 rounded-full bg-white/10 shadow-lg"></div>
@@ -33,79 +36,63 @@ export default function Login() {
       <div className="animate-pulse-slow absolute right-16 top-16 h-48 w-48 rounded-full bg-white/10 shadow-lg"></div>
 
       {/* Main container */}
-      <div className="relative z-10 flex w-full max-w-5xl overflow-hidden rounded-3xl border border-white/20 bg-white/10 shadow-xl backdrop-blur-xl">
-        {/* LEFT SECTION – Info */}
-        <div className="hidden w-1/2 flex-col justify-center bg-white/5 p-12 text-white lg:flex">
-          <h1 className="mb-4 text-4xl font-bold">
-            Manage Kidora
-            <br />
-            the best way
-          </h1>
-          <p className="text-lg leading-relaxed text-white/80">
-            Manage and oversee your school projects efficiently.
-          </p>
-
-          <div className="">
-            <img src={manageImg} alt="Manage" className="w-[350px] " />
-          </div>
-        </div>
-
+      <div className="xl relative z-10 flex w-full max-w-lg overflow-hidden rounded-3xl border border-white/20 bg-white/10 shadow-xl backdrop-blur-xl">
         {/* RIGHT SECTION – Login form */}
-        <div className="flex w-full flex-col justify-center bg-white p-10 lg:w-1/2">
-          <h2 className="mb-6 text-center text-3xl font-bold text-purple-700">
-            <img
-              src={logoImg}
-              alt="Manage"
-              className="mx-auto mt-4 w-[100px]"
-            />
-            Login
-          </h2>
+        <div className="flex w-full flex-col justify-center bg-white p-10 ">
+          <div className="flex w-full items-center justify-center">
+            <img src={logoImg} alt="Manage" className="w-[250px]  " />
+          </div>
 
           {errorMsg && (
             <p className="mb-4 text-center text-red-600">{errorMsg}</p>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="mb-1 block font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                type="email"
-                className="w-full rounded-xl border border-gray-300 p-3 outline-none focus:border-purple-500"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <h2 className="text-transparent mb-2 bg-gradient-to-r from-indigo-500 to-sky-400 bg-clip-text text-2xl font-bold">
+              Login
+            </h2>
+            <FloatingInput
+              id="login-email"
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              icon={<MdMail />}
+              className="text-gray-700"
+            />
 
-            <div>
-              <label className="mb-1 block font-medium text-gray-700">
-                Password
-              </label>
-              <input
-                type="password"
-                className="w-full rounded-xl border border-gray-300 p-3 outline-none focus:border-purple-500"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+            <FloatingInput
+              id="login-password"
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              icon={<FaLock />}
+              className="text-gray-700"
+            />
 
             <button
               disabled={loading}
               className="w-full rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 p-3 font-semibold text-white transition hover:from-purple-600 hover:to-blue-600 "
             >
+              <FaSignInAlt className="mr-2 inline" />
               {loading ? "Logging in..." : "Login"}
             </button>
 
-            <p className="mt-4 text-center text-gray-600">
-              Don't have an account?{" "}
+            <div className="flex justify-between p-2 text-sm text-gray-800">
+              <Link
+                to="/auth/forgot-password"
+                className="underline-none cursor-pointer font-semibold text-gray-700 hover:text-blueSecondary hover:underline"
+              >
+                Forgot Password?
+              </Link>
               <Link
                 to="/auth/register"
-                className="font-semibold text-blue-700 underline"
+                className="underline-none cursor-pointer font-semibold text-gray-700 hover:text-red-700 hover:underline"
               >
-                Create Account
+                Don't have an account?
               </Link>
-            </p>
+            </div>
           </form>
         </div>
       </div>

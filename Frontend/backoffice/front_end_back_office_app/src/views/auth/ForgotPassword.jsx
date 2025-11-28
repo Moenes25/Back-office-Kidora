@@ -1,0 +1,160 @@
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import FloatingInput from "components/fields/FloatingInput";
+import { MdMail } from "react-icons/md";
+import logoImg from "../../assets/img/auth/logo.png";
+import { IoIosArrowRoundBack, IoIosSend } from "react-icons/io";
+
+export default function ForgotPassword() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const CODE_TTL_MS = 1000 * 60 * 10; // 10 minutes TTL for verification code
+
+  const generateCode = () =>
+    String(Math.floor(100000 + Math.random() * 900000)); // 6-digit code
+
+  const storeCode = (email, code) => {
+    const data = { code, expiresAt: Date.now() + CODE_TTL_MS, email };
+    localStorage.setItem(`forgot_code:${email}`, JSON.stringify(data));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMsg("");
+    setSuccess("");
+    setLoading(true);
+
+    try {
+      // Try server side first (if your backend exposes this API)
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (res.ok) {
+        // backend handled sending the email. Still navigate to verify page.
+        setSuccess("Check your email, we've sent reset instructions.");
+        navigate(`/auth/verify?email=${encodeURIComponent(email)}`);
+      } else {
+        // Fallback: no backend or backend declined; simulate
+        const code = generateCode();
+        storeCode(email, code);
+        // For development/demo: log the code. In production, remove this and rely on real email sending.
+        console.info(`[Mock Email] Verification code for ${email}: ${code}`);
+        setSuccess(
+          "If an account exists, a reset code has been sent. Check your email."
+        );
+        navigate(`/auth/verify?email=${encodeURIComponent(email)}`);
+      }
+    } catch (err) {
+      // fallback client-side generation
+      const code = generateCode();
+      storeCode(email, code);
+      console.info(`[Mock Email] Verification code for ${email}: ${code}`);
+      setSuccess(
+        "If an account exists, a reset code has been sent. Check your email."
+      );
+      navigate(`/auth/verify?email=${encodeURIComponent(email)}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#667eea,#764ba2)] px-4 py-12 ">
+      {/* Floating shapes */}
+      <div className="animate-pulse-slow absolute left-10 top-10 h-72 w-72 rounded-full bg-white/10 shadow-lg"></div>
+      <div className="animate-pulse-slow absolute bottom-20 right-10 h-96 w-96 rounded-full bg-white/10 shadow-lg"></div>
+      <div className="animate-pulse-slow absolute bottom-16 left-16 h-40 w-40 rounded-full bg-white/10 shadow-lg"></div>
+      <div className="animate-pulse-slow absolute right-16 top-16 h-48 w-48 rounded-full bg-white/10 shadow-lg"></div>
+
+      {/* Main container */}
+      <div className="xl relative z-10 flex w-full max-w-lg overflow-hidden rounded-3xl border border-white/20 bg-white/10 shadow-xl backdrop-blur-xl">
+        {/* RIGHT SECTION – Forgot password form */}
+        <div className="flex w-full flex-col justify-center bg-white p-10 ">
+          <div className="flex w-full flex-col items-center justify-center text-center">
+            <img
+              src={logoImg}
+              alt="Manage"
+              className="mb-2 h-[150px] w-[150px] rounded-full bg-[linear-gradient(135deg,#667eea,#764ba2)]  shadow-lg"
+            />
+            <h2 className="text-transparent mb-2 bg-[linear-gradient(135deg,#667eea,#764ba2)] bg-clip-text text-2xl font-bold">
+              Forgot Password?
+            </h2>
+            <p className="mb-3 max-w-sm text-gray-600">
+              Enter your email and we'll send a link to reset your password.
+            </p>
+          </div>
+
+          {errorMsg && (
+            <p className="mb-4 text-center text-red-600">{errorMsg}</p>
+          )}
+          {success && (
+            <div className="mb-4 rounded-lg bg-emerald-50 px-4 py-2 text-sm text-emerald-700">
+              {success}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="mt-4 space-y-8">
+            <FloatingInput
+              id="forgot-email"
+              label="Email address"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              icon={<MdMail />}
+              className="text-gray-700"
+              required
+            />
+            <button
+              disabled={loading}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 p-3 font-semibold text-white transition hover:from-purple-600 hover:to-blue-600"
+              aria-busy={loading}
+            >
+              <IoIosSend className="inline" />
+              {loading ? "Sending..." : "Send Reset Link"}
+            </button>
+
+            <div className="flex justify-between p-2 text-sm text-gray-800">
+              <Link
+                to="/auth/login"
+                className="flex items-center gap-2 font-semibold text-gray-700 hover:text-blue-600 hover:underline"
+              >
+                <IoIosArrowRoundBack size={20} />
+                Back to Login
+              </Link>
+              <Link
+                to="/auth/register"
+                className="font-semibold text-gray-700 hover:text-indigo-600 hover:underline"
+              >
+                Create Account
+              </Link>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes pulse-slow {
+          0%,
+          100% {
+            transform: translateY(0) scale(1);
+            opacity: 0.5;
+          }
+          50% {
+            transform: translateY(-20px) scale(1.05);
+            opacity: 0.9;
+          }
+        }
+        .animate-pulse-slow {
+          animation: pulse-slow 7s ease-in-out infinite;
+        }
+      `}</style>
+    </div>
+  );
+}

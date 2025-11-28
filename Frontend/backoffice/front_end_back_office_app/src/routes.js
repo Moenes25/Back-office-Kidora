@@ -42,16 +42,6 @@ const routes = [
     component: <MainDashboard />,
   },
 
-  /* Profile Overview */
-  {
-    name: "Profile",
-    layout: "/admin",
-    path: "profile",
-    icon: MdPerson,
-    component: <ProfileOverview />,
-    secondary: true, // keep reachable but hidden from main navigation
-  },
-
   /* 2.2 Gestion des Clients (Garderies / Crèches / Écoles) */
   {
     name: "Entreprises",
@@ -106,6 +96,15 @@ const routes = [
     path: "ia",
     icon: <MdPsychology className="h-6 w-6" />,
     component: <IAPage />,
+  },
+  /* Profile Overview */
+  {
+    name: "Profile",
+    layout: "/admin",
+    path: "profile",
+    icon: MdPerson,
+    component: <ProfileOverview />,
+    secondary: true, // keep reachable but hidden from main navigation
   },
 ];
 

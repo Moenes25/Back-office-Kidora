@@ -9,6 +9,8 @@ import AuthLayout from "views/auth";
 const App = () => {
   return (
     <Routes>
+      {/* Verification & reset routes (standalone under /auth) */}
+
       <Route path="auth/*" element={<AuthLayout />} />
       <Route
         path="admin/*"

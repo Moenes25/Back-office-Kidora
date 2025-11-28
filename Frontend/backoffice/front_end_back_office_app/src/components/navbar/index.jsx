@@ -10,9 +10,9 @@ export default function Navbar({ brandText, onOpenSidenav }) {
 
   return (
     <nav>
-      <section className="sticky right-0 top-0 z-40 mb-10 flex w-full items-center justify-between p-4 backdrop-blur-md dark:bg-navy-800/80">
+      <section className="sticky top-2 z-40 mb-3 flex w-full flex-row flex-wrap items-center justify-between rounded-xl bg-[linear-gradient(135deg,#667eea,#764ba2)] px-4 py-2 text-white shadow-xl md:mb-4 xl:mb-6">
         {/* Title */}
-        <h1 className="text-xl font-semibold text-navy-700 dark:text-white">
+        <h1 className="text-xl font-semibold text-white dark:text-white">
           {brandText}
         </h1>
 

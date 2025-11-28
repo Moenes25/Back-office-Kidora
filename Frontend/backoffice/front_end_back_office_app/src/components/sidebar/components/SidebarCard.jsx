@@ -26,12 +26,7 @@ const FreeCard = () => {
         </svg>
       </div>
 
-      <div className="mt-16 flex h-fit flex-col items-center">
-        
-   
-
-      
-      </div>
+      <div className="mt-16 flex h-fit flex-col items-center"></div>
     </div>
   );
 };

@@ -60,7 +60,11 @@ export default function Admin(props) {
   return (
     <div className="relative flex h-full w-full">
       {/* SIDEBAR */}
-      <Sidebar open={open} onClose={() => setOpen(false)} />
+      <Sidebar
+        routes={routes.filter((r) => !r.secondary)}
+        open={open}
+        onClose={() => setOpen(false)}
+      />
 
       {/* ⭐ OVERLAY BLUR POUR MOBILE / TABLETTE ⭐ */}
       {open && (
@@ -71,9 +75,9 @@ export default function Admin(props) {
       )}
 
       {/* MAIN CONTENT */}
-      <div className="relative z-0 h-full w-full bg-lightPrimary dark:!bg-navy-900">
-        <main className=" h-full flex-none transition-all md:pr-2 xl:ml-[264px]">
-          <div className="h-full">
+      <div className="relative z-0  h-full w-full bg-lightPrimary dark:!bg-navy-900">
+        <main className=" mx-3 mt-3 h-full flex-none transition-all md:pr-2 xl:ml-[264px]">
+          <div className="h-full ">
             <Navbar
               onOpenSidenav={() => setOpen(true)}
               brandText={currentRoute}
@@ -81,7 +85,7 @@ export default function Admin(props) {
               {...rest}
             />
 
-            <div className="pt-5s mx-auto mb-auto h-full min-h-[84vh] p-2 md:pr-2">
+            <div className="pt-5s mx-auto mb-auto mt-24 h-full min-h-[84vh] p-2 md:pr-2">
               <Routes>
                 {getRoutes(routes)}
                 <Route
