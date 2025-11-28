@@ -20,4 +20,7 @@ public class Etab_Dto {
     Integer userId;
     String userNom;
     String userEmail;
+    Integer nombreEducateurs;
+    Integer nombreParents;
+    Integer nombreEnfants;
 }

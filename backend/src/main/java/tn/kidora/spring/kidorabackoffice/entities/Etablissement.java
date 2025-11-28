@@ -30,6 +30,9 @@ public class Etablissement {
     String email;
     String password ;
     Boolean isActive;
+    Integer nombreEducateurs;
+    Integer nombreParents;
+    Integer nombreEnfants;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false) 
     @ToString.Exclude
