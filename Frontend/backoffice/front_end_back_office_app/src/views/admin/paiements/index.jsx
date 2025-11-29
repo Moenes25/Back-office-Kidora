@@ -367,6 +367,55 @@ function EventCard({ ev, onEdit }) {
     </button>
   );
 }
+  function useInView(ref, rootMargin = "0px") {
+  const [inView, setInView] = React.useState(false);
+  React.useEffect(() => {
+    if (!ref.current) return;
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { rootMargin });
+    io.observe(ref.current);
+    return () => io.disconnect();
+  }, [ref, rootMargin]);
+  return inView;
+}
+
+function AnimatedNumber({
+  value,
+  duration = 800,
+  format = (n) => n.toLocaleString("fr-FR"),
+  startOnView = true,
+  from = 0,
+}) {
+  const spanRef = React.useRef(null);
+  const inView = useInView(spanRef);
+  const [display, setDisplay] = React.useState(from);
+  const prefersReduced =
+    typeof window !== "undefined" &&
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  React.useEffect(() => {
+    if (startOnView && !inView) return;
+    if (prefersReduced) { setDisplay(Number(value) || 0); return; }
+
+    let raf, startTs;
+    const to = Number(value) || 0;
+    const startVal = from;
+    const delta = to - startVal;
+    const ease = (t) => 1 - Math.pow(1 - t, 3); // easeOutCubic
+
+    const step = (ts) => {
+      if (!startTs) startTs = ts;
+      const p = Math.min(1, (ts - startTs) / duration);
+      setDisplay(Math.round(startVal + delta * ease(p)));
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [value, duration, startOnView, inView, prefersReduced, from]);
+
+  return <span ref={spanRef}>{format(display)}</span>;
+}
 function KPI({ title, value, icon, gradient }) {
   return (
     <div className="
@@ -390,7 +439,7 @@ function KPI({ title, value, icon, gradient }) {
         </div>
         <div>
           <div className="text-3xl font-extrabold tracking-tight text-slate-900">
-            {Number.isFinite(value) ? value : 0}
+            <AnimatedNumber value={Number.isFinite(value) ? value : 0} />
           </div>
           <div className="mt-0.5 text-xs font-medium text-slate-600">{title}</div>
         </div>
@@ -512,16 +561,19 @@ const countsThisWeek = React.useMemo(() => {
     return c;
   }, [events]);
 
+
+
   return (
     <div className="p-6 relative">
 
       <KPIStyles />
 
 <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-  <KPI title="Évènements (semaine)" value={visibleWeekEvents.length} icon={<FiCalendar className="text-2xl" />} gradient="linear-gradient(135deg,#6366f1,#06b6d4)" />
-  <KPI title="Aujourd’hui"           value={todayCount}              icon={<FiClock className="text-2xl" />}    gradient="linear-gradient(135deg,#f59e0b,#ef4444)" />
-  <KPI title={typeLabel}             value={countForType}            icon={<FiLayers className="text-2xl" />}   gradient="linear-gradient(135deg,#10b981,#22d3ee)" />
-  <KPI title="Heures planifiées"     value={totalHours}              icon={<FiCheckCircle className="text-2xl" />} gradient="linear-gradient(135deg,#64748b,#94a3b8)" />
+  <KPI title="Évènements (semaine)" value={visibleWeekEvents.length} icon={<FiCalendar className="text-2xl" />} gradient="linear-gradient(135deg,#6366f1,#06b6d4)"   // ↓ force un nouveau montage si semaine/onglet changent
+  key={`kpi-week-${weekStartISO}-${filterType}-count`} />
+  <KPI title="Aujourd’hui"           value={todayCount}              icon={<FiClock className="text-2xl" />}    gradient="linear-gradient(135deg,#f59e0b,#ef4444)"   key={`kpi-week-${weekStartISO}-${filterType}-today`} />
+  <KPI title={typeLabel}             value={countForType}            icon={<FiLayers className="text-2xl" />}   gradient="linear-gradient(135deg,#10b981,#22d3ee)" key={`kpi-week-${weekStartISO}-${filterType}-type`} />
+  <KPI title="Heures planifiées"     value={totalHours}              icon={<FiCheckCircle className="text-2xl" />} gradient="linear-gradient(135deg,#64748b,#94a3b8)"  key={`kpi-week-${weekStartISO}-${filterType}-hours`} />
 </div>
 
 

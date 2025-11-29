@@ -1,8 +1,8 @@
 /* eslint-disable */
 import React, { useEffect, useMemo, useState } from "react";
-import { FiEye, FiEdit2, FiTrash2, FiPlus, FiX, FiUploadCloud, FiLock, FiUnlock, FiSearch , FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiEye, FiEdit2, FiTrash2, FiPlus, FiX, FiUploadCloud, FiLock, FiUnlock, FiSearch , FiChevronLeft, FiChevronRight , FiFilter  } from "react-icons/fi";
 
-import { motion, useMotionValue, useTransform, animate } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
 import { FiUsers, FiUserCheck, FiUserX, FiGrid } from "react-icons/fi";
 
 
@@ -36,7 +36,7 @@ const initials = (name = "") =>
 /* ====== Carte ====== */
 function UiverseCard({
   name, role, email, avatar, cardBg,
-  onView, onEdit, onDelete, height = 360
+  onView, onEdit, onDelete, height = 300
 }) {
   const DEFAULT_BG = "linear-gradient(135deg,#22d3ee 0%,#a78bfa 45%,#34d399 100%)";
   const bg = cardBg || DEFAULT_BG;
@@ -220,62 +220,7 @@ function ConfirmDialog({ open, title, text, confirmLabel="Oui, supprimer", cance
     </div>
   );
 }
-function FilterBar({
-  q, setQ,
-  type, setType,
-  status, setStatus,
-  sortKey, setSortKey,
-  sortDir, setSortDir,
-  roleOptions = ["Tous"],
-}) {
-  return (
-    <div className="filterbar">
-      <div className="f-search">
-        <FiSearch />
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Rechercher par nom, rôle, email…"
-        />
-      </div>
 
-      <div className="f-select">
-        <span>Type</span>
-        <select value={type} onChange={(e) => setType(e.target.value)}>
-          {roleOptions.map((opt) => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="f-select">
-        <span>Statut</span>
-        <select value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option>Tous</option>
-          <option>Actif</option>
-          <option>Inactif</option>
-        </select>
-      </div>
-
-      <div className="f-select f-sort">
-        <span>Trier par</span>
-        <select value={sortKey} onChange={(e) => setSortKey(e.target.value)}>
-          <option value="name">Nom</option>
-          <option value="email">Email</option>
-          <option value="role">Rôle</option>
-        </select>
-        <button
-          className="dir"
-          type="button"
-          onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
-          title={sortDir === "asc" ? "Ordre croissant" : "Ordre décroissant"}
-        >
-          {sortDir === "asc" ? "▲" : "▼"}
-        </button>
-      </div>
-    </div>
-  );
-}
 function MotionNumber({ value, className }) {
   const mv = useMotionValue(0);
   const rounded = useTransform(mv, v => Math.round(v));
@@ -316,11 +261,152 @@ const KPI = ({ title, value, icon, gradient }) => (
     <div className="uk-kpi-ring" />
   </motion.div>
 );
+/* ===== Toolbar (recherche + boutons) ===== */
+function SupportToolbar({
+  q, setQ,
+  onToggleFilters,
+  primaryLabel = "Ajouter",
+  onPrimary,
+  onExport, // optionnel
+}) {
+  return (
+    <div className="mt-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-10">
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Champ de recherche (copié du style Support) */}
+        <div className="group flex items-center gap-2 rounded-2xl border border-white/20 bg-white/70 px-3 py-2 text-sm shadow-[0_10px_30px_rgba(2,6,23,.10)] backdrop-blur-xl">
+          <FiSearch className="opacity-60" />
+          <input
+            value={q}
+            onChange={(e)=>setQ(e.target.value)}
+            placeholder="Rechercher…"
+            className="w-72 bg-transparent outline-none placeholder:text-gray-400"
+          />
+        </div>
+
+        {/* Bouton Filtres */}
+        <button
+          onClick={onToggleFilters}
+          className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-gradient-to-r from-indigo-500/10 to-sky-400/10 px-3 py-2 text-sm font-semibold text-indigo-700 shadow-[0_10px_24px_rgba(2,6,23,.1)] backdrop-blur hover:from-indigo-500/20 hover:to-sky-400/20"
+        >
+          <FiFilter /> Filtres
+        </button>
+
+        {/* Export optionnel */}
+        {onExport && (
+          <button
+            onClick={onExport}
+            className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-gradient-to-r from-emerald-500/10 to-teal-400/10 px-3 py-2 text-sm font-semibold text-emerald-700 shadow-[0_10px_24px_rgba(2,6,23,.1)] backdrop-blur hover:from-emerald-500/20 hover:to-teal-400/20"
+          >
+            <FiDownload /> Export CSV
+          </button>
+        )}
+      </div>
+
+      {/* CTA principal (même vibe que support) */}
+      <button
+        onClick={onPrimary}
+        className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-sky-600 px-4 py-2 text-sm font-extrabold text-white shadow-[0_16px_40px_rgba(37,99,235,.35)] hover:brightness-110"
+      >
+        <FiPlus /> {primaryLabel}
+      </button>
+    </div>
+  );
+}
+
+/* ===== Drawer de filtres (le même que Support, adapté à l'équipe) ===== */
+function SupportFilterDrawer({
+  open,
+  onClose,
+  type, setType,
+  status, setStatus,
+  sortKey, setSortKey,
+  sortDir, setSortDir,
+  roleOptions = ["Tous"],
+}) {
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{opacity:0, y:-6, scale:0.98}}
+          animate={{opacity:1, y:0, scale:1}}
+          exit={{opacity:0, y:-6, scale:0.98}}
+          className="mt-3 w-full max-w-xl rounded-2xl border border-white/30 bg-white/80 p-4 shadow-2xl backdrop-blur-xl"
+        >
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {/* Type (rôle) */}
+            <label className="text-sm">
+              <div className="mb-1 text-xs text-gray-500">Rôle</div>
+              <select
+                className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm"
+                value={type}
+                onChange={(e)=>setType(e.target.value)}
+              >
+                {roleOptions.map((opt) => <option key={opt}>{opt}</option>)}
+              </select>
+            </label>
+
+            {/* Statut (démo) */}
+            <label className="text-sm">
+              <div className="mb-1 text-xs text-gray-500">Statut</div>
+              <select
+                className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm"
+                value={status}
+                onChange={(e)=>setStatus(e.target.value)}
+              >
+                {["Tous","Actif","Inactif"].map(s => <option key={s}>{s}</option>)}
+              </select>
+            </label>
+
+            {/* Tri par */}
+            <label className="text-sm">
+              <div className="mb-1 text-xs text-gray-500">Trier par</div>
+              <div className="flex items-center gap-2">
+                <select
+                  className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm"
+                  value={sortKey}
+                  onChange={(e)=>setSortKey(e.target.value)}
+                >
+                  <option value="name">Nom</option>
+                  <option value="email">Email</option>
+                  <option value="role">Rôle</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={()=>setSortDir(d=>d==="asc"?"desc":"asc")}
+                  className="h-10 w-10 rounded-xl border border-black/10 bg-white text-sm shadow-sm"
+                  title={sortDir==="asc" ? "Ordre croissant" : "Ordre décroissant"}
+                >
+                  {sortDir==="asc" ? "▲" : "▼"}
+                </button>
+              </div>
+            </label>
+          </div>
+
+          <div className="mt-3 flex items-center justify-end gap-2">
+            <button
+              onClick={()=>{ setType("Tous"); setStatus("Tous"); setSortKey("name"); setSortDir("asc"); }}
+              className="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm font-semibold shadow-sm"
+            >
+              Réinitialiser
+            </button>
+            <button
+              onClick={onClose}
+              className="rounded-xl bg-indigo-600 px-3 py-2 text-sm font-bold text-white shadow"
+            >
+              Appliquer
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
 
 
 /* ====== Page ====== */
 export default function EquipeKidoraUiverse() {
   const [team, setTeam] = useState(teamMock);
+  const [openFilters, setOpenFilters] = useState(false);
 
   // Modales
   const [openAdd, setOpenAdd] = useState(false);
@@ -440,23 +526,31 @@ useEffect(() => { setPage(1); }, [q, type, status, sortKey, sortDir, team.length
   />
 </div>
 
-    <div className="uk-header">
-  <button className="uk-addbtn" onClick={() => setOpenAdd(true)}>
-    <FiPlus /> Ajouter un membre
-  </button>
-</div>
-
-
-
-
-<FilterBar
-  q={q} setQ={setQ}
+{/* Toolbar au style Support & Tickets */}
+<SupportToolbar
+  q={q}
+  setQ={setQ}
+  onToggleFilters={()=>setOpenFilters(v=>!v)}
+  primaryLabel="Ajouter un membre"
+  onPrimary={()=>setOpenAdd(true)}
+  // onExport={exportCSV} // si tu veux un export, sinon enlève
+/>
+{/* Drawer Filtres identique au support */}
+<SupportFilterDrawer
+  open={openFilters}
+  onClose={()=>setOpenFilters(false)}
   type={type} setType={setType}
   status={status} setStatus={setStatus}
   sortKey={sortKey} setSortKey={setSortKey}
   sortDir={sortDir} setSortDir={setSortDir}
   roleOptions={roleOptions}
 />
+
+
+
+
+
+
 
 <div className="uk-grid">
   {pagedTeam.map((m) => (
@@ -595,7 +689,7 @@ function StyleOnce() {
   background:linear-gradient(45deg, #7c3aed 0%, #06b6d4 60%, #7c3aed 100%);
   transform:rotate(-45deg) translateY(-24px);
   display:flex;align-items:center;justify-content:center;color:#fff;
-  font:800 12px/1 ui-sans-serif;letter-spacing:.09em;text-transform:uppercase;
+  font:800 12px/1 ;
   box-shadow:0 5px 10px rgba(0,0,0,.23);
 }
 .uk-ribbon::after{content:'';position:absolute;width:10px;height:10px;bottom:0;left:0;z-index:-1;box-shadow:170px -170px rgba(0,0,0,.15)}
@@ -615,8 +709,8 @@ function StyleOnce() {
 .cb-avatar.huge{width:130px;height:130px}
 .cb-avatar img{width:100% !important;height:100% !important;object-fit:cover;display:block;border-radius:inherit}
 .cb-avatar span{font:900 24px/1 ui-sans-serif;letter-spacing:.6px}
-.cb-name{color:#fff;font:900 20px/1.2 ui-sans-serif;text-align:center;margin-top:10px;text-shadow:0 1px 0 rgba(0,0,0,.15)}
-.cb-mail{color:rgba(255,255,255,.98);font:800 14px/1.35 ui-sans-serif;text-align:center}
+.cb-name{color:#fff;font:900 25px/1.2 ui-sans-serif;text-align:center;margin-top:10px;text-shadow:0 1px 0 rgba(0,0,0,.15)}
+.cb-mail{color:rgba(255,255,255,.98);font:800 20px/1.35 ;text-align:center}
 
 /* Actions */
 .cb-actions{position:absolute;left:14px;right:14px;bottom:14px;display:flex;gap:12px;justify-content:center}
@@ -767,6 +861,11 @@ function StyleOnce() {
   box-shadow: 0 10px 20px rgba(0,0,0,.15); border:1px solid rgba(255,255,255,.45);
 }
 .uk-kpi-ring{ position:absolute; inset:0; border-radius:18px; pointer-events:none; box-shadow: inset 0 0 0 1px rgba(255,255,255,.55); }
+/* focus halo pour la recherche (identique Support) */
+.filterbar .f-search:has(input:focus),
+.group:has(input:focus){
+  box-shadow: 0 8px 24px rgba(2,6,23,.12), 0 0 0 4px rgba(99,102,241,.18);
+}
 
 
 

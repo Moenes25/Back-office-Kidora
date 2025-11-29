@@ -208,6 +208,14 @@ export default function TicketsSupportFR_3D() {
     }
     return data;
   }, [rows, q, vue, filters]);
+const PAGE_SIZE = 4;
+const [page, setPage] = useState(1);
+
+React.useEffect(() => { setPage(1); }, [q, vue, filters]); // reset quand on filtre/cherche
+
+const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+const start = (page - 1) * PAGE_SIZE;
+const pageRows = filtered.slice(start, start + PAGE_SIZE);
 
   /* ------- CSV ------- */
   const exportCSV = () => {
@@ -359,7 +367,9 @@ export default function TicketsSupportFR_3D() {
 
       {/* Tableau (cartes 3D par ligne) */}
       <div className="mt-4 overflow-x-auto rounded-2xl border border-white/30 bg-white/70 p-2 shadow-[0_30px_80px_rgba(2,6,23,.12)] backdrop-blur-xl">
-        <table className="uk-table w-full min-w-[980px] border-separate [border-spacing:0_12px] text-left">
+
+  {/* -------- TABLE -------- */}
+  <table className="uk-table w-full min-w-[980px] border-separate [border-spacing:0_12px] text-left">
           <thead  className="
       sticky top-0 z-10 bg-gray-100/90 backdrop-blur
       text-[11px] uppercase tracking-wide text-gray-700
@@ -373,31 +383,35 @@ export default function TicketsSupportFR_3D() {
             </tr>
           </thead>
           <tbody className="relative z-0 text-sm">
-            {filtered.map((r,i)=>(
-              <Row3D key={`${r.id}-${i}`}>
-                <td className="px-4 py-4 font-mono text-xs text-gray-600">{r.id}</td>
-                <td className="px-4 py-4">{r.demandeur}</td>
-                <td className="px-4 py-4 text-slate-800">{r.sujet}</td>
-                <td className="px-4 py-4"><BadgePriorite p={r.priorite}/></td>
-                <td className="px-4 py-4">
-                  <div className="flex items-center gap-2">
-                    <img className="h-7 w-7 rounded-full shadow" src={AGENTS[r.agent]} alt={r.agent}/>
-                    {r.agent}
-                  </div>
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap">{r.date}</td>
-                <td className="px-4 py-4"><BadgeStatut s={r.statut}/></td>
-                <td className="px-4 py-4">
-                  <div className="flex items-center justify-end gap-1">
-                    <MenuActions
-                      onResolve={()=>setStatut(i,"Résolu")}
-                      onArchive={()=>setStatut(i,"Archivé")}
-                      onDelete={()=>supprimer(i)}
-                    />
-                  </div>
-                </td>
-              </Row3D>
-            ))}
+          {pageRows.map((r, idx) => {
+  const absoluteIndex = start + idx; // index global dans rows
+  return (
+    <Row3D key={`${r.id}-${absoluteIndex}`}>
+      <td className="px-4 py-4 font-mono text-xs text-gray-600">{r.id}</td>
+      <td className="px-4 py-4">{r.demandeur}</td>
+      <td className="px-4 py-4 text-slate-800">{r.sujet}</td>
+      <td className="px-4 py-4"><BadgePriorite p={r.priorite} /></td>
+      <td className="px-4 py-4">
+        <div className="flex items-center gap-2">
+          <img className="h-7 w-7 rounded-full shadow" src={AGENTS[r.agent]} alt={r.agent} />
+          {r.agent}
+        </div>
+      </td>
+      <td className="px-4 py-4 whitespace-nowrap">{r.date}</td>
+      <td className="px-4 py-4"><BadgeStatut s={r.statut} /></td>
+      <td className="px-4 py-4">
+        <div className="flex items-center justify-end gap-1">
+          <MenuActions
+            onResolve={() => setStatut(absoluteIndex, "Résolu")}
+            onArchive={() => setStatut(absoluteIndex, "Archivé")}
+            onDelete={() => supprimer(absoluteIndex)}
+          />
+        </div>
+      </td>
+    </Row3D>
+  );
+})}
+
             {filtered.length === 0 && (
               <tr>
                 <td colSpan={8} className="px-4 py-12 text-center text-sm text-gray-500">
@@ -407,6 +421,41 @@ export default function TicketsSupportFR_3D() {
             )}
           </tbody>
         </table>
+         {/* -------- PAGINATION (frère du <table>) -------- */}
+  <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-2 pb-2">
+    <div className="text-xs text-gray-600">
+      {filtered.length === 0
+        ? "0 résultat"
+        : `${start + 1}–${Math.min(start + PAGE_SIZE, filtered.length)} sur ${filtered.length} ticket(s)`}
+    </div>
+
+    <div className="flex items-center gap-1">
+      <button onClick={()=>setPage(1)} disabled={page===1}
+              className="h-9 w-9 rounded-lg border border-black/10 bg-white text-sm shadow-sm disabled:opacity-40">«</button>
+      <button onClick={()=>setPage(p=>Math.max(1,p-1))} disabled={page===1}
+              className="h-9 w-9 rounded-lg border border-black/10 bg-white text-sm shadow-sm disabled:opacity-40">‹</button>
+
+      {Array.from({length: Math.min(5, pageCount)}, (_,i) => {
+        let startWin = Math.max(1, Math.min(page-2, pageCount-4));
+        if (pageCount <= 5) startWin = 1;
+        const n = startWin + i;
+        return (
+          <button key={n} onClick={()=>setPage(n)}
+            className={[
+              "h-9 w-9 rounded-lg border text-sm font-semibold shadow-sm",
+              n===page ? "bg-indigo-600 text-white border-indigo-600" : "bg-white border-black/10"
+            ].join(" ")}
+          >{n}</button>
+        );
+      })}
+
+      <button onClick={()=>setPage(p=>Math.min(pageCount,p+1))} disabled={page===pageCount}
+              className="h-9 w-9 rounded-lg border border-black/10 bg-white text-sm shadow-sm disabled:opacity-40">›</button>
+      <button onClick={()=>setPage(pageCount)} disabled={page===pageCount}
+              className="h-9 w-9 rounded-lg border border-black/10 bg-white text-sm shadow-sm disabled:opacity-40">»</button>
+    </div>
+  </div>
+
       </div>
 
       {/* Modal Ajouter */}

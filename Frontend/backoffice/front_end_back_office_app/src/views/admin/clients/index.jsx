@@ -1,9 +1,14 @@
 /* eslint-disable */
 import React, { useMemo, useState, useEffect } from "react";
 import Card from "components/card";
-import { FiSearch, FiFilter, FiPrinter, FiChevronLeft, FiChevronRight, FiPlus,
-FiEdit2, FiTrash2, FiEye, FiEyeOff, FiPhone, FiMail, FiMapPin, FiLink,
-FiUsers, FiCheckCircle, FiAlertTriangle, FiPauseCircle, FiCalendar } from "react-icons/fi";
+import {
+  FiSearch, FiFilter, FiPrinter, FiChevronLeft, FiChevronRight, FiPlus,
+  FiEdit2, FiTrash2, FiEye, FiEyeOff, FiPhone, FiMail, FiMapPin, FiLink,
+  FiUsers, FiCheckCircle, FiAlertTriangle, FiPauseCircle, FiCalendar, FiDownload
+} from "react-icons/fi";
+
+import { AnimatePresence, motion } from "framer-motion";
+
 import { HiOutlineRefresh } from "react-icons/hi";
 import { RiPauseCircleLine, RiDeleteBinLine } from "react-icons/ri";
 import Swal from "sweetalert2";
@@ -157,6 +162,53 @@ const TypeBadge = ({ type }) => {
   return <span className={`px-3 py-2 rounded-full text-[11px] shadow-xl font-semibold ${t.chip}`}>{t.label}</span>;
 };
 
+function useInView(ref, rootMargin = "0px") {
+  const [inView, setInView] = React.useState(false);
+  React.useEffect(() => {
+    if (!ref.current) return;
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { rootMargin });
+    io.observe(ref.current);
+    return () => io.disconnect();
+  }, [ref, rootMargin]);
+  return inView;
+}
+
+function AnimatedNumber({ value, duration = 800, format = (n)=>n.toLocaleString(), startOnView = true }) {
+  const spanRef = React.useRef(null);
+  const inView = useInView(spanRef, "0px");
+  const [display, setDisplay] = React.useState(0);
+  const prefersReduced =
+    typeof window !== "undefined" &&
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  React.useEffect(() => {
+    // si on veut attendre la visibilité
+    if (startOnView && !inView) return;
+    // si motion réduit : pas d'animation
+    if (prefersReduced) { setDisplay(value); return; }
+
+    let raf, start;
+    const from = 0;
+    const to = Number(value) || 0;
+    const ease = (t) => 1 - Math.pow(1 - t, 3); // easeOutCubic
+
+    const step = (ts) => {
+      if (!start) start = ts;
+      const p = Math.min(1, (ts - start) / duration);
+      const curr = Math.round(from + (to - from) * ease(p));
+      setDisplay(curr);
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [value, duration, startOnView, inView, prefersReduced]);
+
+  return <span ref={spanRef}>{format(display)}</span>;
+}
+
+
 function KPI({ title, value, icon, gradient }) {
   return (
     <div className="
@@ -178,7 +230,7 @@ function KPI({ title, value, icon, gradient }) {
         </div>
         <div>
           <div className="text-3xl font-extrabold tracking-tight text-slate-900">
-            {Number.isFinite(value) ? value : 0}
+            <AnimatedNumber value={Number.isFinite(value) ? value : 0} />
           </div>
           <div className="mt-0.5 text-xs font-medium text-slate-600">{title}</div>
         </div>
@@ -198,6 +250,229 @@ function KPIStyles() {
   );
 }
 
+/* ===== Toolbar (style Support) ===== */
+function SupportToolbar({
+  q, setQ,
+  onToggleFilters,
+  onPrimary, primaryLabel = "Ajouter",
+  onExport, // optionnel
+}) {
+  return (
+    <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Recherche */}
+        <div className="group flex items-center gap-2 rounded-2xl border border-white/20 bg-white/70 px-3 py-2 text-sm shadow-[0_10px_30px_rgba(2,6,23,.10)] backdrop-blur-xl">
+          <FiSearch className="opacity-60" />
+          <input
+            value={q}
+            onChange={(e)=>setQ(e.target.value)}
+            placeholder="Rechercher un client…"
+            className="w-72 bg-transparent outline-none placeholder:text-gray-400"
+          />
+        </div>
+
+        {/* Filtres */}
+        <button
+          onClick={onToggleFilters}
+          className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-gradient-to-r from-indigo-500/10 to-sky-400/10 px-3 py-2 text-sm font-semibold text-indigo-700 shadow-[0_10px_24px_rgba(2,6,23,.1)] backdrop-blur hover:from-indigo-500/20 hover:to-sky-400/20"
+        >
+          <FiFilter /> Filtres
+        </button>
+
+        {/* Export CSV (facultatif) */}
+        {onExport && (
+          <button
+            onClick={onExport}
+            className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-gradient-to-r from-emerald-500/10 to-teal-400/10 px-3 py-2 text-sm font-semibold text-emerald-700 shadow-[0_10px_24px_rgba(2,6,23,.1)] backdrop-blur hover:from-emerald-500/20 hover:to-teal-400/20"
+          >
+            <FiDownload /> Export CSV
+          </button>
+        )}
+      </div>
+
+      {/* CTA principal */}
+      <button
+        onClick={onPrimary}
+        className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-sky-600 px-4 py-2 text-sm font-extrabold text-white shadow-[0_16px_40px_rgba(37,99,235,.35)] hover:brightness-110"
+      >
+        <FiPlus /> {primaryLabel}
+      </button>
+    </div>
+  );
+}
+
+/* ===== Drawer de filtres (style Support) ===== */
+function SupportFilterDrawer({
+  open, onClose,
+  typeFilter, setTypeFilter,
+  statusFilter, setStatusFilter,
+  sortKey, setSortKey,
+  sortAsc, setSortAsc,
+}) {
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{opacity:0, y:-6, scale:0.98}}
+          animate={{opacity:1, y:0, scale:1}}
+          exit={{opacity:0, y:-6, scale:0.98}}
+          className="mt-3 w-full max-w-xl rounded-2xl border border-white/30 bg-white/80 p-4 shadow-2xl backdrop-blur-xl"
+        >
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {/* Type */}
+            <label className="text-sm">
+              <div className="mb-1 text-xs text-gray-500">Type</div>
+              <select
+                className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm"
+                value={typeFilter}
+                onChange={(e)=>setTypeFilter(e.target.value)}
+              >
+                <option value="all">Tous</option>
+                <option value="creches">Crèches</option>
+                <option value="garderies">Garderies</option>
+                <option value="ecoles">Écoles</option>
+              </select>
+            </label>
+
+            {/* Statut */}
+            <label className="text-sm">
+              <div className="mb-1 text-xs text-gray-500">Statut</div>
+              <select
+                className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm"
+                value={statusFilter}
+                onChange={(e)=>setStatusFilter(e.target.value)}
+              >
+                <option value="all">Tous</option>
+                {Object.keys(STATUS_UI).map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </label>
+
+            {/* Tri */}
+            <label className="text-sm sm:col-span-2">
+              <div className="mb-1 text-xs text-gray-500">Trier par</div>
+              <div className="flex items-center gap-2">
+                <select
+                  className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm"
+                  value={sortKey}
+                  onChange={(e)=>setSortKey(e.target.value)}
+                >
+                  <option value="name">Nom</option>
+                  <option value="city">Ville</option>
+                  <option value="type">Type</option>
+                  <option value="status">Statut</option>
+                  <option value="subscriptionDate">Date d’abonnement</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={()=>setSortAsc(v=>!v)}
+                  className="h-10 w-10 rounded-xl border border-black/10 bg-white text-sm shadow-sm"
+                  title={sortAsc ? "Ordre croissant" : "Ordre décroissant"}
+                >
+                  {sortAsc ? "▲" : "▼"}
+                </button>
+              </div>
+            </label>
+          </div>
+
+          <div className="mt-3 flex items-center justify-end gap-2">
+            <button
+              onClick={()=>{
+                setTypeFilter("all");
+                setStatusFilter("all");
+                setSortKey("name");
+                setSortAsc(true);
+              }}
+              className="rounded-xl border border-black/10 bg-white px-3 py-2 text-sm font-semibold shadow-sm"
+            >
+              Réinitialiser
+            </button>
+            <button
+              onClick={onClose}
+              className="rounded-xl bg-indigo-600 px-3 py-2 text-sm font-bold text-white shadow"
+            >
+              Appliquer
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+function makePageWindow(curr, total, span = 1) {
+  // ex: 1 … 3 4 [5] 6 7 … 20
+  const pages = new Set([1, total]);
+  for (let i = curr - span; i <= curr + span; i++) if (i >= 1 && i <= total) pages.add(i);
+  const arr = [...pages].sort((a,b)=>a-b);
+  const out = [];
+  for (let i = 0; i < arr.length; i++) {
+    out.push(arr[i]);
+    if (i < arr.length - 1 && arr[i+1] !== arr[i] + 1) out.push("…");
+  }
+  return out;
+}
+
+function SupportPagination({ page, pageCount, total, onPage }) {
+  const items = makePageWindow(page, pageCount, 1);
+  return (
+    <div className="ukp-wrap">
+      <div className="ukp-info">
+        Page <span className="font-semibold">{page}</span> / {pageCount} • {total} clients
+      </div>
+
+      <div className="ukp-actions">
+        <button
+          className="pg-btn"
+          onClick={() => onPage(1)}
+          disabled={page === 1}
+          aria-label="Première"
+        >
+          «
+        </button>
+        <button
+          className="pg-btn"
+          onClick={() => onPage(Math.max(1, page - 1))}
+          disabled={page === 1}
+          aria-label="Précédent"
+        >
+          <FiChevronLeft />
+        </button>
+
+        {items.map((it, i) =>
+          it === "…"
+            ? (
+              <span key={`e${i}`} className="pg-ellipsis">…</span>
+            ) : (
+              <button
+                key={it}
+                onClick={() => onPage(it)}
+                className={`pg-btn num ${it === page ? "active" : ""}`}
+                aria-current={it === page ? "page" : undefined}
+              >
+                {it}
+              </button>
+            )
+        )}
+
+        <button
+          className="pg-btn"
+          onClick={() => onPage(Math.min(pageCount, page + 1))}
+          disabled={page === pageCount}
+          aria-label="Suivant"
+        >
+          <FiChevronRight />
+        </button>
+        <button
+          className="pg-btn"
+          onClick={() => onPage(pageCount)}
+          disabled={page === pageCount}
+          aria-label="Dernière"
+        >
+          »
+        </button>
+      </div>
+    </div>
+  );
+}
 
 /* ----------------------------------------------------------------
    Composant principal
@@ -268,9 +543,29 @@ const ClientsPage = () => {
     setEditId(null);
     resetNew();
   };
+  const [openFilters, setOpenFilters] = useState(false);
+
+// (facultatif) export CSV des clients filtrés
+const exportCSV = () => {
+  const headers = ["ID","Nom","Type","Ville","Adresse","Téléphone","Email","URL","Date","Formule","Statut"];
+  const csv = [headers, ...filtered.map(r => [
+    r.id, r.name, r.type, r.city, r.address || "", r.phone || "",
+    r.email || "", r.url_localisation || "", r.subscriptionDate || "",
+    r.plan || "", r.status || ""
+  ])]
+  .map(line => line.map(v => `"${String(v).replace(/"/g,'""')}"`).join(";"))
+  .join("\n");
+
+  const blob = new Blob([`\uFEFF${csv}`], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "clients.csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
 
   // liste/pagination
-  const PAGE_SIZE = 8;
+  const PAGE_SIZE = 4;
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(null);
   useEffect(() => setPage(1), [typeFilter, statusFilter, search]);
@@ -413,139 +708,58 @@ const visibleCount = filtered.length;
   <KPI
     title="Clients (total)"
     value={stats.total}
+    startOnView={false}
     icon={<FiUsers className="text-2xl" />}
     gradient="linear-gradient(135deg,#6366f1,#06b6d4)"
   />
   <KPI
     title="Actifs"
     value={stats.actifs}
+    startOnView={false}
     icon={<FiCheckCircle className="text-2xl" />}
     gradient="linear-gradient(135deg,#10b981,#22d3ee)"
   />
   <KPI
     title="En essai"
     value={stats.essais}
+    startOnView={false}
     icon={<FiCalendar className="text-2xl" />}
     gradient="linear-gradient(135deg,#a78bfa,#06b6d4)"
   />
   <KPI
     title="En retard de paiement"
     value={stats.retards}
+    startOnView={false}
     icon={<FiAlertTriangle className="text-2xl" />}
     gradient="linear-gradient(135deg,#f59e0b,#ef4444)"
   />
 </div>
 
-{/* rangée 2 (optionnelle) */}
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-  <KPI
-    title="Suspendus"
-    value={stats.suspendus}
-    icon={<FiPauseCircle className="text-2xl" />}
-    gradient="linear-gradient(135deg,#64748b,#94a3b8)"
-  />
-  <KPI
-    title="Crèches"
-    value={stats.creches}
-    icon={<FiUsers className="text-2xl" />}
-    gradient="linear-gradient(135deg,#8b5cf6,#22d3ee)"
-  />
-  <KPI
-    title="Garderies"
-    value={stats.garderies}
-    icon={<FiUsers className="text-2xl" />}
-    gradient="linear-gradient(135deg,#f59e0b,#f97316)"
-  />
-  <KPI
-    title="Nouveaux ce mois"
-    value={stats.newThisMonth}
-    icon={<FiCalendar className="text-2xl" />}
-    gradient="linear-gradient(135deg,#22c55e,#06b6d4)"
-  />
-</div>
+
 
 
       {/* HEADER */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mt-2">
-        <button
-          onClick={() => { setShowAdd(true); setEditId(null); resetNew(); }}
-          className="relative inline-flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-4 py-2 text-sm font-bold shadow-sm hover:shadow-lg transition-all before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-r before:from-indigo-500/20 before:to-sky-400/20 before:opacity-0 hover:before:opacity-100 before:transition-opacity"
-        >
-          <span className="grid place-items-center h-6 w-6 rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white shadow">
-            <FiPlus />
-          </span>
-          Ajouter un client
-        </button>
-      </div>
+    {/* Toolbar style Support */}
+<SupportToolbar
+  q={search}
+  setQ={setSearch}
+  onToggleFilters={()=>setOpenFilters(v=>!v)}
+  onPrimary={() => { setShowAdd(true); setEditId(null); resetNew(); }}
+  primaryLabel="Ajouter un client"
+  onExport={exportCSV}      // enlève cette prop si tu ne veux pas l’export
+/>
 
-      {/* Filtres */}
-      <Card extra="p-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-2 rounded-xl border border-black/10 bg-white px-3 py-2 shadow-sm">
-            <FiSearch className="opacity-60" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher par nom, ville, ID…"
-              className="w-72 bg-transparent text-sm outline-none"
-            />
-          </div>
+{/* Drawer de filtres */}
+<SupportFilterDrawer
+  open={openFilters}
+  onClose={()=>setOpenFilters(false)}
+  typeFilter={typeFilter} setTypeFilter={setTypeFilter}
+  statusFilter={statusFilter} setStatusFilter={setStatusFilter}
+  sortKey={sortKey} setSortKey={setSortKey}
+  sortAsc={sortAsc} setSortAsc={setSortAsc}
+/>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex items-center gap-1 rounded-xl border border-black/10 bg-white px-2 py-1.5 shadow-sm">
-              <FiFilter className="opacity-60" />
-              <select
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-                className="bg-transparent text-sm outline-none"
-              >
-                <option value="all">Tous les types</option>
-                <option value="creches">Crèches</option>
-                <option value="garderies">Garderies</option>
-                <option value="ecoles">Écoles</option>
-              </select>
-            </div>
 
-            <div className="inline-flex items-center gap-1 rounded-xl border border-black/10 bg-white px-2 py-1.5 shadow-sm">
-              <span className="text-xs font-semibold opacity-70">Statut</span>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-transparent text-sm outline-none"
-              >
-                <option value="all">Tous</option>
-                {Object.keys(STATUS_UI).map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* tri actuel (toujours dispo) */}
-            <div className="inline-flex items-center gap-1 rounded-xl border border-black/10 bg-white px-2 py-1.5 shadow-sm">
-              <span className="text-xs font-semibold opacity-70">Trier par</span>
-              <select
-                value={sortKey}
-                onChange={(e) => setSortKey(e.target.value)}
-                className="bg-transparent text-sm outline-none"
-              >
-                <option value="name">Nom</option>
-                <option value="city">Ville</option>
-                <option value="type">Type</option>
-                <option value="status">Statut</option>
-                <option value="plan ">Formule</option>
-                <option value="subscriptionDate">Date d’abonnement</option>
-              </select>
-              <button
-                onClick={() => setSortAsc((s) => !s)}
-                className="rounded-md border border-black/10 bg-white px-2 py-1 text-xs shadow-sm"
-                title={sortAsc ? "Ordre croissant" : "Ordre décroissant"}
-              >
-                {sortAsc ? "▲" : "▼"}
-              </button>
-            </div>
-          </div>
-        </div>
-      </Card>
 
       {/* LISTE EN TABLEAU (REMPLACE les cards) */}
       <Card extra="p-0 overflow-hidden">
@@ -677,29 +891,13 @@ const visibleCount = filtered.length;
         </div>
 
         {/* pagination */}
-        <div className="p-4 flex items-center justify-between gap-3">
-          <div className="text-xs text-gray-500">
-            Page <span className="font-semibold">{page}</span> / {pageCount} • {filtered.length} clients
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 bg-white text-sm font-semibold shadow-sm disabled:opacity-40"
-              aria-label="Précédent"
-            >
-              <FiChevronLeft />
-            </button>
-            <button
-              onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
-              disabled={page === pageCount}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 bg-white text-sm font-semibold shadow-sm disabled:opacity-40"
-              aria-label="Suivant"
-            >
-              <FiChevronRight />
-            </button>
-          </div>
-        </div>
+       <SupportPagination
+  page={page}
+  pageCount={pageCount}
+  total={filtered.length}
+  onPage={(n) => setPage(n)}
+/>
+
       </Card>
 
       {/* DRAWER / FICHE */}
@@ -1326,6 +1524,47 @@ thead tr::before{
   z-index: 0;
 }
 thead th{ position: relative; z-index: 1; }
+/* ===== Support-like Pagination ===== */
+.ukp-wrap{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; padding:12px 16px; margin-top:4px;
+}
+.ukp-info{ font:700 12px/1.2 ui-sans-serif; color:#64748b; }
+
+.ukp-actions{ display:flex; align-items:center; gap:6px; }
+
+/* bouton générique */
+.pg-btn{
+  min-width:36px; height:36px; padding:0 10px;
+  display:inline-flex; align-items:center; justify-content:center;
+  border-radius:12px; border:1px solid rgba(2,6,23,.10);
+  background:linear-gradient(180deg,#fff,#f6f7fb);
+  font:800 13px ui-sans-serif;
+  box-shadow:0 1px 0 rgba(0,0,0,.05), 0 10px 18px rgba(2,6,23,.10);
+  transition:transform .15s var(--ease-pop), box-shadow .2s var(--ease-pop), background .2s;
+}
+.pg-btn:hover{ transform:translateY(-1px); box-shadow:var(--shadow-2); }
+.pg-btn:disabled{ opacity:.45; transform:none; box-shadow:none; cursor:not-allowed; }
+
+/* numéro actif = gradient support */
+.pg-btn.num.active{
+  color:#fff; border-color:transparent;
+  background:linear-gradient(135deg,#4f46e5,#06b6d4);
+  box-shadow:0 10px 24px rgba(79,70,229,.35);
+}
+
+/* ellipses (… ) */
+.pg-ellipsis{
+  min-width:36px; height:36px; display:inline-grid; place-items:center;
+  font:800 13px ui-sans-serif; color:#94a3b8;
+}
+
+/* accessibilité focus */
+.pg-btn:focus-visible{
+  outline:none;
+  box-shadow:var(--shadow-2), 0 0 0 4px rgba(99,102,241,.18);
+}
+
 
     `;
     document.head.appendChild(s);
