@@ -93,15 +93,15 @@ export default function Register() {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#667eea,#764ba2)] px-4 py-12">
       {/* Floating shapes */}
-      <div className="animate-pulse-slow absolute left-10 top-10 h-72 w-72 rounded-full bg-white/10 shadow-lg"></div>
-      <div className="animate-pulse-slow absolute bottom-20 right-10 h-96 w-96 rounded-full bg-white/10 shadow-lg"></div>
-      <div className="animate-pulse-slow absolute bottom-16 left-16 h-40 w-40 rounded-full bg-white/10 shadow-lg"></div>
-      <div className="animate-pulse-slow absolute right-16 top-16 h-48 w-48 rounded-full bg-white/10 shadow-lg"></div>
+      <div className="absolute rounded-full shadow-lg animate-pulse-slow left-10 top-10 h-72 w-72 bg-white/10"></div>
+      <div className="absolute rounded-full shadow-lg animate-pulse-slow bottom-20 right-10 h-96 w-96 bg-white/10"></div>
+      <div className="absolute w-40 h-40 rounded-full shadow-lg animate-pulse-slow bottom-16 left-16 bg-white/10"></div>
+      <div className="absolute w-48 h-48 rounded-full shadow-lg animate-pulse-slow right-16 top-16 bg-white/10"></div>
 
-      <div className="relative z-10 flex w-full max-w-lg overflow-hidden rounded-3xl border border-white/20 bg-white/10 shadow-xl backdrop-blur-xl">
+      <div className="relative z-10 flex w-full max-w-lg overflow-hidden border shadow-xl rounded-3xl border-white/20 bg-white/10 backdrop-blur-xl">
         {/* LEFT SECTION – Register Form */}
-        <div className="flex w-full flex-col justify-center gap-4 bg-white p-10 ">
-          <div className="flex w-full items-center justify-center">
+        <div className="flex flex-col justify-center w-full gap-4 p-10 bg-white ">
+          <div className="flex items-center justify-center w-full">
             <img src={logoImg} alt="Manage" className="w-[200px]  " />
           </div>
 
@@ -194,7 +194,7 @@ export default function Register() {
 
             <button
               disabled={loading}
-              className="w-full rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 p-3 font-semibold text-white transition hover:from-purple-600 hover:to-blue-600"
+              className="w-full p-3 font-semibold text-white transition rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
             >
               {loading ? "Creating..." : "Register"}
             </button>

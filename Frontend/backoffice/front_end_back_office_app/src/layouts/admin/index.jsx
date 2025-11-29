@@ -58,7 +58,7 @@ export default function Admin(props) {
 
   document.documentElement.dir = "ltr";
   return (
-    <div className="relative flex h-full w-full">
+    <div className="relative flex w-full h-full">
       {/* SIDEBAR */}
       <Sidebar
         routes={routes.filter((r) => !r.secondary)}
@@ -69,7 +69,7 @@ export default function Admin(props) {
       {/* ⭐ OVERLAY BLUR POUR MOBILE / TABLETTE ⭐ */}
       {open && (
         <div
-          className="bg-black/30 fixed inset-0 z-40 backdrop-blur-sm xl:hidden"
+          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm xl:hidden"
           onClick={() => setOpen(false)}
         ></div>
       )}
@@ -85,7 +85,7 @@ export default function Admin(props) {
               {...rest}
             />
 
-            <div className="pt-5s mx-auto mb-auto mt-24 h-full min-h-[84vh] p-2 md:pr-2">
+            <div className="pt-5s mx-auto mb-auto  h-full min-h-[84vh] p-2 md:pr-2">
               <Routes>
                 {getRoutes(routes)}
                 <Route
