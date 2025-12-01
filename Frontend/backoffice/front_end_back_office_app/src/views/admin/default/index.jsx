@@ -908,27 +908,27 @@ const availability = (() => {
 <div className="mt-3 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-6">
   <WidgetKids stacked tone="grape"     delay={0}
     icon={pickIcon("Nombre Totale d'etablissements")}
-    title="Nombre Totale d'etablissements" subtitle={kpis.totalClientsActifs} />
+    title="Nombre Totale d'etablissements" subtitle="155" />
 
   <WidgetKids stacked tone="sunny"     delay={60}
     icon={pickIcon("Nombre Totale de Parents")}
-    title="Nombre Totale de Parents" subtitle={kpis.nouveauxCeMois} />
+    title="Nombre Totale de Parents" subtitle="230" />
 
   <WidgetKids stacked tone="bubblegum" delay={120}
     icon={pickIcon("Nombre Totale des Enfants")}
-    title="Nombre Totale des Enfants" subtitle={kpis.resiliesCeMois} />
+    title="Nombre Totale des Enfants" subtitle="405" />
 
   <WidgetKids stacked tone="sky"       delay={180}
     icon={pickIcon("Chiffres d'Affaires Totales")}
-    title="Chiffres d'Affaires Totales" subtitle={kpis.ecoles} />
+    title="Chiffres d'Affaires Totales" subtitle="2055" />
 
   <WidgetKids stacked tone="lime"      delay={240}
     icon={pickIcon("Nombre d'activité d'etablissement")}
-    title="Nombre d'activité d'etablissement" subtitle={kpis.garderies} />
+    title="Nombre d'activité d'etablissement" subtitle="228" />
 
   <WidgetKids stacked tone="grape"     delay={300}
     icon={pickIcon("Nombre de raports par jours")}
-    title="Nombre de raports par jours" subtitle={kpis.creches} />
+    title="Nombre de raports par jours" subtitle="85" />
 </div>
 
 

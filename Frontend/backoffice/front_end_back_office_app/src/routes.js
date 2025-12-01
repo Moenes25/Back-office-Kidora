@@ -88,14 +88,7 @@ const routes = [
     component: <SupportPage />,
   },
 
-  /* 2.7 Rapports & Analytics */
-  {
-    name: "Rapports & Analytics",
-    layout: "/admin",
-    path: "rapports",
-    icon: <MdBarChart className="h-6 w-6" />,
-    component: <ReportsPage />,
-  },
+ 
 
   /* 3. Analyse IA */
   {
