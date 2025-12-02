@@ -14,7 +14,10 @@ import tn.kidora.spring.kidorabackoffice.repositories.EvenementRepository;
 import tn.kidora.spring.kidorabackoffice.services.EvenementService;
 import tn.kidora.spring.kidorabackoffice.utils.mapper.EvenementMapper;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.IsoFields;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -73,6 +76,7 @@ public class EvenementServiceImpl implements EvenementService {
     }
 
 
+
     @Override
     public void supprimerEvenement(Long id) {
         Evenement evenement = evenementRepository.findById(id)
@@ -102,7 +106,34 @@ public class EvenementServiceImpl implements EvenementService {
         return evenementMapper.toResponseDTO(evenementExistant);
     }
 
+    @Override
+    public long getNombreEvenementSemaineCouranteParType(String type) {
+        LocalDate today = LocalDate.now();
+        int currentWeek = today.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
+        int currentYear = today.getYear();
 
+        return evenementRepository.countEvenementSemaineParType(currentYear, currentWeek, type);
+    }
+
+    @Override
+    public long getNombreEvenementPourUnJour(LocalDate date, Type_Etablissement type) {
+        return evenementRepository.countByDateAndType(date,type);
+
+    }
+
+    @Override
+    public double getTotalHeuresPlanifieesParType(String type) {
+        LocalDate today = LocalDate.now();
+        int currentWeek = today.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
+        int currentYear = today.getYear();
+
+        return evenementRepository.getTotalHeuresPlanifieesParType(currentYear, currentWeek, type);
+    }
+
+    @Override
+    public long getNombreEvenementParType(Type_Etablissement type) {
+        return evenementRepository.countByType(type);
+    }
 
 
 }

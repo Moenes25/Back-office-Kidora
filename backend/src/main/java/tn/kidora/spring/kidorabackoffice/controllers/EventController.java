@@ -48,4 +48,27 @@ public class EventController {
         Map<Type_Etablissement, Long> result = evenementService.getNombreEvenementParTypeEtablissement();
         return ResponseEntity.ok(result);
     }
+    @GetMapping( "/countToday")
+    public ResponseEntity<Long> getNombreEvenementPourUnJour(LocalDate date,@RequestParam Type_Etablissement type) {
+        LocalDate today = LocalDate.now();
+        long nombre = evenementService.getNombreEvenementPourUnJour(today,type);
+        return ResponseEntity.ok(nombre);
+    }
+    @GetMapping( "/countCurrentWeek")
+    public ResponseEntity<Long> getNombreEvenementSemaineCouranteParType(@RequestParam(required = false) String type) {
+        long count =evenementService.getNombreEvenementSemaineCouranteParType(type);
+
+        return ResponseEntity.ok(count);
+    }
+    @GetMapping("/totalHeuresPlanifiees")
+    public ResponseEntity<Long> getTotalHeuresPlanifieesParType(@RequestParam(required = false) String type) {
+        double totalHeures = evenementService.getTotalHeuresPlanifieesParType(type);
+        long heuresArrondies = Math.round(totalHeures);
+        return ResponseEntity.ok(heuresArrondies);
+    }
+    @GetMapping("/countByType")
+    public ResponseEntity<Long>  getNombreEvenementParType(  @RequestParam(required = false)Type_Etablissement type) {
+        long nombre = evenementService.getNombreEvenementParType(type);
+        return  ResponseEntity.ok(nombre);
+    }
 }
