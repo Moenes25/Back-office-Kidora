@@ -3,8 +3,13 @@ package tn.kidora.spring.kidorabackoffice.services.serviceImpl;
 import lombok.AllArgsConstructor;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -15,6 +20,7 @@ import org.springframework.stereotype.Service;
 import tn.kidora.spring.kidorabackoffice.config.JwtUtils;
 import tn.kidora.spring.kidorabackoffice.dto.RegisterDto;
 import tn.kidora.spring.kidorabackoffice.entities.Role;
+import tn.kidora.spring.kidorabackoffice.entities.Status;
 import tn.kidora.spring.kidorabackoffice.entities.User;
 import tn.kidora.spring.kidorabackoffice.repositories.UserRepository;
 import tn.kidora.spring.kidorabackoffice.services.AuthService;
@@ -64,6 +70,9 @@ public class AuthServiceImpl implements  AuthService{
             throw new RuntimeException("Email ou mot de passe incorrect");
         }
     }
+
+
+
 
 }
 
