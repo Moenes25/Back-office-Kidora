@@ -24,6 +24,7 @@ public class AbonnementServiceImpl implements  AbonnementService{
 Etablissement_Repository etablissementRepository;
 AbonnementRepository abonnementRepository;
 AbonnementMapper abonnementMapper;
+
     @Override
     public ResponseEntity<AbonnementResponseDTO> addAbonnement(AbonnementRequestDTO dto) {
         if (dto.getEtablissementId() == null) {
@@ -136,13 +137,20 @@ return  ResponseEntity.ok(response);
         List<Abonnement> abonnements = abonnementRepository.findByStatut(statutEnum);
         List<AbonnementResponseDTO> response = abonnements.stream()
                 .map(abonnement -> {
-                    AbonnementResponseDTO dto = new AbonnementResponseDTO();
-                    dto.setIdAbonnement(abonnement.getIdAbonnement());
-                    dto.setDateDebutAbonnement(abonnement.getDateDebutAbonnement());
-                    dto.setDateFinAbonnement(abonnement.getDateFinAbonnement());
-                    dto.setMontantPaye(abonnement.getMontantPaye());
-                    dto.setMontantDu(abonnement.getMontantDu());
-                    dto.setStatut(abonnement.getStatut());
+                    AbonnementResponseDTO dto = abonnementMapper.toResponseDTO(abonnement);
+                //     AbonnementResponseDTO dto = new AbonnementResponseDTO();
+                //     dto.setIdAbonnement(abonnement.getIdAbonnement());
+                //     dto.setDateDebutAbonnement(abonnement.getDateDebutAbonnement());
+                //     dto.setDateFinAbonnement(abonnement.getDateFinAbonnement());
+                //     dto.setMontantPaye(abonnement.getMontantPaye());
+                //     dto.setMontantDu(abonnement.getMontantDu());
+                //     dto.setStatut(abonnement.getStatut());
+                //     Etablissement etab = etablissementRepository.findById(abonnement.getEtablissement().getIdEtablissment())
+                //             .orElse(null);
+                //     if (etab != null) {
+                //         dto.setEtablissement(etablissementMapper.EntityToEtab_Dto(etab));
+                //     }
+                //    dto.setEtablissement(null);
                     return dto;
                 })
                 .toList();
