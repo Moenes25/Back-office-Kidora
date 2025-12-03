@@ -36,6 +36,9 @@ public class AuthServiceImpl implements  AuthService{
         if (role == null) {
             throw new RuntimeException("Role must be provided by the super admin");
         }
+        if(role == Role.SUPER_ADMIN){
+            throw new RuntimeException("Cannot create a super admin via this endpoint");
+        }
         User user = new User();
         user.setNom((dto.getNom()));
         user.setEmail(dto.getEmail());
