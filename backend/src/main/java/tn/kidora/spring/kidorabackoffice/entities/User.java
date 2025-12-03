@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -25,5 +27,8 @@ public class User {
     Role role ;
     @Enumerated(EnumType.STRING)
     Status status;
+    // Champs OTP
+    String otp;
+    LocalDateTime otpExpiration;
 
 }

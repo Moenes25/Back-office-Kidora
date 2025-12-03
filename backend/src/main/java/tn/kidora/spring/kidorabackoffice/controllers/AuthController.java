@@ -17,8 +17,10 @@ import tn.kidora.spring.kidorabackoffice.dto.RegisterDto;
 import tn.kidora.spring.kidorabackoffice.entities.Role;
 import tn.kidora.spring.kidorabackoffice.entities.Status;
 import tn.kidora.spring.kidorabackoffice.entities.User;
+import tn.kidora.spring.kidorabackoffice.repositories.UserRepository;
 import tn.kidora.spring.kidorabackoffice.services.AuthService;
 import tn.kidora.spring.kidorabackoffice.services.serviceImpl.AuthServiceImpl;
+import tn.kidora.spring.kidorabackoffice.services.serviceImpl.OptService;
 import tn.kidora.spring.kidorabackoffice.utils.Constants;
 
 @RestController
@@ -26,8 +28,9 @@ import tn.kidora.spring.kidorabackoffice.utils.Constants;
 @AllArgsConstructor
 @Slf4j
 public class AuthController {
-
+    public  final OptService optService;
     AuthService authService;
+    UserRepository userRepository;
     @PostMapping(Constants.REGISTER)
     public ResponseEntity<String> register(@RequestBody RegisterDto dto) {
         try{
@@ -56,6 +59,33 @@ public class AuthController {
 
          }
         }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestParam String email) {
+        try {
+            optService.generateAndSendOtp(email);
+            return ResponseEntity.ok("Code OTP envoyé à votre e-mail");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<String> verifyOtp(@RequestParam String email, @RequestParam String otp) {
+        boolean valid = optService.verifyOtp(email, otp);
+        return valid ? ResponseEntity.ok("OTP vérifié") :
+                ResponseEntity.status(HttpStatus.BAD_REQUEST).body("OTP invalide ou expiré");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestParam String email, @RequestParam String newPassword) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Utilisateur introuvable");
+
+        user.setPassword(new BCryptPasswordEncoder().encode(newPassword));
+        userRepository.save(user);
+
+        return ResponseEntity.ok("Mot de passe réinitialisé avec succès !");
+    }
 
 }
 
