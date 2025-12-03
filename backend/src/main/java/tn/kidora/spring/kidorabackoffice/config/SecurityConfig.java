@@ -1,9 +1,7 @@
 package tn.kidora.spring.kidorabackoffice.config;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,26 +11,31 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import tn.kidora.spring.kidorabackoffice.services.serviceImpl.CustomUserDetailsService;
 import tn.kidora.spring.kidorabackoffice.utils.Constants;
 
-import java.util.List;
-
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import tn.kidora.spring.kidorabackoffice.services.serviceImpl.CustomUserDetailsService;
+import tn.kidora.spring.kidorabackoffice.config.JwtFilter;
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class SecurityConfig {
+    private final CustomUserDetailsService customUserDetailsService;
+    private final JwtUtils jwtUtils;    
+    
 
-  private final CustomUserDetailsService customUserDetailsService;
-  private final JwtUtils jwtUtils;
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
+    @Bean 
+    public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder passwordEncoder) throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder =http.getSharedObject(AuthenticationManagerBuilder.class);
+        authenticationManagerBuilder.userDetailsService(customUserDetailsService).passwordEncoder(passwordEncoder);
+        return authenticationManagerBuilder.build();
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http)  throws Exception {
@@ -58,63 +61,5 @@ public class SecurityConfig {
     }
     }
 
-  @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http
-        .cors(c -> {})   
-        .csrf(AbstractHttpConfigurer::disable)
-        .cors(c -> c.configurationSource(corsConfigurationSource()))
-        .authorizeHttpRequests(auth -> auth
+    
 
-            // --- PUBLIC ------------------------------------------------------
-            .requestMatchers(
-                Constants.APP_ROOT + Constants.AUTH + Constants.LOGIN,
-                Constants.APP_ROOT + Constants.AUTH + Constants.REGISTER
-            ).permitAll()
-
-            // Autoriser les GET publics sur /api/etablissement/**
-            // TEMPORAIRE pour tester (pas pour la prod)
-.requestMatchers(HttpMethod.POST, Constants.APP_ROOT + Constants.ETABLISSEMENT + Constants.SAVE)
-    .permitAll()
-
-
-            // --- PROTÉGÉ -----------------------------------------------------
-            // Ecriture/maj/suppression/toggle => ADMIN_GENERAL
-            .requestMatchers(
-                Constants.APP_ROOT + Constants.ETABLISSEMENT + Constants.SAVE,
-                Constants.APP_ROOT + Constants.ETABLISSEMENT + Constants.UPDATE + "/**",
-                Constants.APP_ROOT + Constants.ETABLISSEMENT + Constants.DELETE + "/**",
-                // NB: le toggle est bien sous /etablissement/toggle_status/**
-                Constants.APP_ROOT + Constants.ETABLISSEMENT + Constants.TOOGLE_STATUS + "/**"
-            ).hasRole("ADMIN_GENERAL")
-
-            // si tu as d'autres routes d’admin :
-            //.requestMatchers(Constants.APP_ROOT + Constants.ADMIN_GENERAL + "/**").hasRole("ADMIN_GENERAL")
-            .requestMatchers(Constants.APP_ROOT + Constants.ETABLISSEMENT + "/**").permitAll()
-
-
-            // tout le reste nécessite d'être authentifié
-            .anyRequest().authenticated()
-        )
-        // insère ton filtre JWT
-        .addFilterBefore(new JwtFilter(customUserDetailsService, jwtUtils),
-            UsernamePasswordAuthenticationFilter.class);
-
-    return http.build();
-  }
-
-  // CORS pour que le front (http://localhost:3000) puisse appeler l’API
-  @Bean
-  public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration cfg = new CorsConfiguration();
-    // En dev : on peut tout autoriser. En prod, restreins à tes domaines.
-    cfg.setAllowedOriginPatterns(List.of("*"));
-    cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
-    cfg.setAllowedHeaders(List.of("*"));
-    cfg.setAllowCredentials(true);
-
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", cfg);
-    return source;
-  }
-}

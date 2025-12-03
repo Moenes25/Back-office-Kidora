@@ -2,14 +2,9 @@ package tn.kidora.spring.kidorabackoffice.services.serviceImpl;
 
 import lombok.AllArgsConstructor;
 
-<<<<<<< HEAD
-import java.util.Collections;
-import java.util.List;
-=======
 import java.time.Month;
 import java.time.format.TextStyle;
 import java.util.*;
->>>>>>> 271e7ff2abf48acd90ea951fd6ee6f27af243e62
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
@@ -17,17 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
-<<<<<<< HEAD
-import tn.kidora.spring.kidorabackoffice.dto.Etab_Dto;
-import tn.kidora.spring.kidorabackoffice.dto.EtablissementRequestDTO;
-import tn.kidora.spring.kidorabackoffice.dto.EtablissementUpdateDTO;
-=======
 import tn.kidora.spring.kidorabackoffice.dto.DonneesCroissanceDTo;
 import tn.kidora.spring.kidorabackoffice.dto.Etab_Dto;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementUpdateDTO;
 import tn.kidora.spring.kidorabackoffice.entities.Abonnement;
->>>>>>> 271e7ff2abf48acd90ea951fd6ee6f27af243e62
 import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.Type_Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.User;
@@ -69,10 +58,7 @@ public class EtabServiceImpl implements EtabService {
         //         .isActive(dto.getIsActive() != null ? dto.getIsActive() : true)
         //         .build();
         Etablissement saved = etablissementRepository.save(etab);
-<<<<<<< HEAD
-=======
         System.out.println("DTO reçu : " + dto);
->>>>>>> 271e7ff2abf48acd90ea951fd6ee6f27af243e62
 
         return ResponseEntity.status(HttpStatus.CREATED).body(etablissementMapper.EntityToEtab_Dto(saved));
     }
@@ -156,8 +142,6 @@ public class EtabServiceImpl implements EtabService {
         Etablissement updated = etablissementRepository.save(etab);
         return ResponseEntity.status(HttpStatus.OK).body(etablissementMapper.EntityToEtab_Dto(updated));
     }
-<<<<<<< HEAD
-=======
 
     @Override
     public ResponseEntity<List<Etab_Dto>> getEtablissementsAbonnesCeMois() {
@@ -203,5 +187,4 @@ public class EtabServiceImpl implements EtabService {
         }
         return resultats;
     }
->>>>>>> 271e7ff2abf48acd90ea951fd6ee6f27af243e62
 }
