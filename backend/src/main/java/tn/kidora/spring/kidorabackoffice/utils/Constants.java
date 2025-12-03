@@ -18,5 +18,21 @@ public class Constants {
     public static final String ID = "/{id}";
     public static final String ACTIVE = "/active";
     public static final String TOOGLE_STATUS = "/toggle_status";
-    
+    public static final String ABONNEMENT = "/abonnement";
+    public static final String BY_ETABLISSEMENT = "/byetablissement";
+    public static final String BY_STATUS= "/bystatus";
+    public static final String CEMOIS = "/cemois";
+    public static final String ECOLE_ACTIVE="/ecoleactive";
+    public static final String CRECHE_ACTIVE="/crecheactive";
+    public static final String GARDERIE_ACTIVE="/garderieactive";
+    public static final String CROISSANCE = "/croissance";
+    public static final String REPARTITION_ANNUELLE = "/repartition-annuelle";
+    public static final String EVENEMENT = "/evenement";
+    public static final String EVENEMENT_BY_DATE = "/evenement/byDate/{date}";
+    public static final String EVENEMENT_UPDATE = "/evenement/update/{id}";
+    public static final String EVENEMENT_DELETE = "/evenement/delete/{id}";
+    public static final String EVENEMENT_COUNT_BY_TYPE = "/evenement/countByType";
+    public static final String EN_ESSAYE = "/en-essaye";
+    public static final String EN_RETARD = "/en-retard";
+
 }

@@ -2,8 +2,14 @@ package tn.kidora.spring.kidorabackoffice.services.serviceImpl;
 
 import lombok.AllArgsConstructor;
 
+<<<<<<< HEAD
 import java.util.Collections;
 import java.util.List;
+=======
+import java.time.Month;
+import java.time.format.TextStyle;
+import java.util.*;
+>>>>>>> 271e7ff2abf48acd90ea951fd6ee6f27af243e62
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
@@ -11,9 +17,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
+<<<<<<< HEAD
 import tn.kidora.spring.kidorabackoffice.dto.Etab_Dto;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementUpdateDTO;
+=======
+import tn.kidora.spring.kidorabackoffice.dto.DonneesCroissanceDTo;
+import tn.kidora.spring.kidorabackoffice.dto.Etab_Dto;
+import tn.kidora.spring.kidorabackoffice.dto.EtablissementRequestDTO;
+import tn.kidora.spring.kidorabackoffice.dto.EtablissementUpdateDTO;
+import tn.kidora.spring.kidorabackoffice.entities.Abonnement;
+>>>>>>> 271e7ff2abf48acd90ea951fd6ee6f27af243e62
 import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.Type_Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.User;
@@ -55,6 +69,10 @@ public class EtabServiceImpl implements EtabService {
         //         .isActive(dto.getIsActive() != null ? dto.getIsActive() : true)
         //         .build();
         Etablissement saved = etablissementRepository.save(etab);
+<<<<<<< HEAD
+=======
+        System.out.println("DTO reçu : " + dto);
+>>>>>>> 271e7ff2abf48acd90ea951fd6ee6f27af243e62
 
         return ResponseEntity.status(HttpStatus.CREATED).body(etablissementMapper.EntityToEtab_Dto(saved));
     }
@@ -138,4 +156,52 @@ public class EtabServiceImpl implements EtabService {
         Etablissement updated = etablissementRepository.save(etab);
         return ResponseEntity.status(HttpStatus.OK).body(etablissementMapper.EntityToEtab_Dto(updated));
     }
+<<<<<<< HEAD
+=======
+
+    @Override
+    public ResponseEntity<List<Etab_Dto>> getEtablissementsAbonnesCeMois() {
+        try{
+            List<Etablissement> etablissements = etablissementRepository.findEtablissementsAbonnesCeMois();
+            if (etablissements.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Collections.emptyList());
+            }
+            List<Etab_Dto>  etablissementsDtos = etablissements.stream()
+                                                           .map(etablissementMapper::EntityToEtab_Dto)
+                                                           .collect(Collectors.toList());
+            return ResponseEntity.status(HttpStatus.OK).body(etablissementsDtos);
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
+        }
+    }
+//l’API pour fournir les données de croissance des inscriptions par catégorie et par mois.
+    @Override
+    public List<DonneesCroissanceDTo> obtenirCroissanceMensuelle() {
+       List<Etablissement> etablissements=etablissementRepository.findAll();
+        Map<Integer,Map<Type_Etablissement,Long>> mapMensuelle= new HashMap<>();
+         for(Etablissement etab:etablissements){
+             for(Abonnement ab:etab.getAbonnements()){
+                 if(ab.getDateDebutAbonnement()!=null){
+                     int mois = ab.getDateDebutAbonnement().getMonthValue();
+                 mapMensuelle.putIfAbsent(mois, new HashMap<>());
+                 Map<Type_Etablissement,Long> mapType = mapMensuelle.get(mois);
+                     mapType.put(etab.getType(), mapType.getOrDefault(etab.getType(), 0L) + 1);
+
+                 }
+             }
+         }
+        List<DonneesCroissanceDTo> resultats = new ArrayList<>();
+        for (int m = 1; m <= 12; m++) {
+            Map<Type_Etablissement, Long> mapType = mapMensuelle.getOrDefault(m, new HashMap<>());
+            String nomMois = Month.of(m).getDisplayName(TextStyle.FULL, Locale.FRANCE);
+            resultats.add(new DonneesCroissanceDTo(
+                    nomMois,
+                    mapType.getOrDefault(Type_Etablissement.GARDERIE, 0L).intValue(),
+                    mapType.getOrDefault(Type_Etablissement.CRECHE, 0L).intValue(),
+                    mapType.getOrDefault(Type_Etablissement.ECOLE, 0L).intValue()
+            ));
+        }
+        return resultats;
+    }
+>>>>>>> 271e7ff2abf48acd90ea951fd6ee6f27af243e62
 }

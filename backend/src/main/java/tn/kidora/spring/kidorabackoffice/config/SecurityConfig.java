@@ -34,13 +34,29 @@ public class SecurityConfig {
     return new BCryptPasswordEncoder();
   }
 
-  @Bean
-  public AuthenticationManager authenticationManager(HttpSecurity http,
-                                                     PasswordEncoder pe) throws Exception {
-    AuthenticationManagerBuilder amb = http.getSharedObject(AuthenticationManagerBuilder.class);
-    amb.userDetailsService(customUserDetailsService).passwordEncoder(pe);
-    return amb.build();
-  }
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http)  throws Exception {
+        return http
+               .csrf(AbstractHttpConfigurer::disable)
+               .authorizeHttpRequests(auth ->
+               auth.requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.LOGIN).permitAll()
+                       .requestMatchers(
+                               Constants.APP_ROOT + Constants.ABONNEMENT +"/**"
+                       ).authenticated()
+                               .requestMatchers(Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.SAVE,
+                                                Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.UPDATE,
+                                                Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.DELETE,
+                                                Constants.APP_ROOT+Constants.TOOGLE_STATUS).hasAnyRole("ADMIN_GENERAL","SUPER_ADMIN")
+  
+                              .requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.REGISTER).hasRole("SUPER_ADMIN")
+                              .anyRequest().authenticated())
+                     
+                     
+             .addFilterBefore(new JwtFilter(customUserDetailsService, jwtUtils), UsernamePasswordAuthenticationFilter.class)
+             .build();
+               
+    }
+    }
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
