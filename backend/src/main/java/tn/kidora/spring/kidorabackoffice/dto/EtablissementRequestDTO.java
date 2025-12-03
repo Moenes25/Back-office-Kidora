@@ -17,6 +17,9 @@ public class EtablissementRequestDTO {
     String email;
     String password ;
     Boolean isActive;
+    Integer nombreEducateurs;
+    Integer nombreParents;
+    Integer nombreEnfants;
 
      Integer userId;
 }

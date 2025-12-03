@@ -25,5 +25,12 @@ public class Constants {
     public static final String ECOLE_ACTIVE="/ecoleactive";
     public static final String CRECHE_ACTIVE="/crecheactive";
     public static final String GARDERIE_ACTIVE="/garderieactive";
+    public static final String CROISSANCE = "/croissance";
+    public static final String REPARTITION_ANNUELLE = "/repartition-annuelle";
+    public static final String EVENEMENT = "/evenement";
+    public static final String EVENEMENT_BY_DATE = "/evenement/byDate/{date}";
+    public static final String EVENEMENT_UPDATE = "/evenement/update/{id}";
+    public static final String EVENEMENT_DELETE = "/evenement/delete/{id}";
+    public static final String EVENEMENT_COUNT_BY_TYPE = "/evenement/countByType";
 
 }

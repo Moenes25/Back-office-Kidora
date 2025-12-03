@@ -13,6 +13,7 @@ import tn.kidora.spring.kidorabackoffice.services.AbonnementService;
 import tn.kidora.spring.kidorabackoffice.utils.Constants;
 
 import java.util.List;
+import java.util.Map;
 
 @AllArgsConstructor
 @RestController
@@ -45,5 +46,9 @@ public class AbonController {
     @GetMapping(Constants.BY_STATUS+ "/{statut}")
     public ResponseEntity<List<AbonnementResponseDTO>> getByStatut(@PathVariable String statut) {
         return abonnementService.getByStatut(statut);
+    }
+    @GetMapping(Constants.REPARTITION_ANNUELLE)
+    public ResponseEntity<List<Map<String, Object>>>  getRepartitionAnnuelle( @RequestParam int annee) {
+        return ResponseEntity.ok(abonnementService.getRepartitionAnnuelle(annee));
     }
 }

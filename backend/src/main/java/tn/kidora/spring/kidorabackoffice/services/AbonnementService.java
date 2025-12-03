@@ -5,6 +5,7 @@ import tn.kidora.spring.kidorabackoffice.dto.AbonnementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.AbonnementResponseDTO;
 
 import java.util.List;
+import java.util.Map;
 
 public interface AbonnementService {
     ResponseEntity<AbonnementResponseDTO> addAbonnement(AbonnementRequestDTO dto);
@@ -13,6 +14,7 @@ public interface AbonnementService {
      ResponseEntity<List<AbonnementResponseDTO>> getAllAbonnements();
     ResponseEntity<List<AbonnementResponseDTO>> getAbonnementsByEtablissement(Integer etablissementId);
     ResponseEntity<List<AbonnementResponseDTO>> getByStatut(String statut);
+    List<Map<String, Object>> getRepartitionAnnuelle(int annee);
     
 
 

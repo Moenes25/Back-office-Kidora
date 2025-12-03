@@ -16,6 +16,7 @@ import tn.kidora.spring.kidorabackoffice.services.AbonnementService;
 import tn.kidora.spring.kidorabackoffice.utils.mapper.AbonnementMapper;
 
 import java.util.List;
+import java.util.Map;
 
 @AllArgsConstructor
 @Service
@@ -147,5 +148,10 @@ return  ResponseEntity.ok(response);
                 .toList();
 
         return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public List<Map<String, Object>> getRepartitionAnnuelle(int annee) {
+        return abonnementRepository.getRepartitionParTypeEtablissement(annee);
     }
 }

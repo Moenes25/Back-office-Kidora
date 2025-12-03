@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tn.kidora.spring.kidorabackoffice.dto.DonneesCroissanceDTo;
 import tn.kidora.spring.kidorabackoffice.dto.Etab_Dto;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementUpdateDTO;
@@ -109,10 +110,13 @@ public class EtabController {
                                                            .collect(Collectors.toList());
         return ResponseEntity.status(HttpStatus.OK).body(etablissementsDtos);
     }
+    @GetMapping(Constants.CROISSANCE)
+    public ResponseEntity<List<DonneesCroissanceDTo>>obtenirCroissanceMensuelle() {
+        List<DonneesCroissanceDTo> donnees = etabService.obtenirCroissanceMensuelle();
+        if (donnees.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Collections.emptyList());
+        }
 
-
-
-
-    
-
+        return ResponseEntity.ok(donnees);
+    }
 }
