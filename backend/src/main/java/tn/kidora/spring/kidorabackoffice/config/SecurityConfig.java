@@ -42,16 +42,16 @@ public class SecurityConfig {
         return http
                .csrf(AbstractHttpConfigurer::disable)
                .authorizeHttpRequests(auth ->
-               auth.requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.LOGIN,Constants.APP_ROOT+Constants.AUTH+Constants.REGISTER).permitAll()
+               auth.requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.LOGIN).permitAll()
                        .requestMatchers(
                                Constants.APP_ROOT + Constants.ABONNEMENT +"/**"
                        ).authenticated()
                                .requestMatchers(Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.SAVE,
                                                 Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.UPDATE,
                                                 Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.DELETE,
-                                                Constants.APP_ROOT+Constants.TOOGLE_STATUS).hasRole("ADMIN_GENERAL")
-                            
-                              .requestMatchers(Constants.APP_ROOT+Constants.ADMIN_GENERAL).hasRole("ADMIN_GENERAL")
+                                                Constants.APP_ROOT+Constants.TOOGLE_STATUS).hasAnyRole("ADMIN_GENERAL","SUPER_ADMIN")
+  
+                              .requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.REGISTER).hasRole("SUPER_ADMIN")
                               .anyRequest().authenticated())
                      
                      
