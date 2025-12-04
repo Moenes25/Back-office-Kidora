@@ -1,6 +1,5 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "views/auth/Login";
-import Register from "views/auth/Register";
 import ForgotPassword from "./ForgotPassword";
 import VerifyCode from "./VerifyCode";
 import ResetPassword from "./ResetPassword";
@@ -11,8 +10,10 @@ export default function AuthLayout() {
       <Route path="auth/verify" element={<VerifyCode />} />
       <Route path="auth/reset-password" element={<ResetPassword />} />
       <Route path="login" element={<Login />} />
-      <Route path="register" element={<Register />} />
+     
       <Route path="forgot-password" element={<ForgotPassword />} />
     </Routes>
   );
 }
+
+

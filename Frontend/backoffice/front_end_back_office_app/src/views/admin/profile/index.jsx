@@ -76,7 +76,7 @@ const ProfilePage = () => {
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -20 }}
         transition={{ duration: 0.4 }}
-        className="mt-6"
+        className=""
       >
         {renderTab()}
       </motion.div>

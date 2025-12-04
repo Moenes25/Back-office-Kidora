@@ -2,13 +2,14 @@ import React, { useState, useEffect } from "react";
 import { IoClose } from "react-icons/io5";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { BiLogOut } from "react-icons/bi";
-import { useAuth } from "context/AuthContext";
+
 import avatar from "assets/img/avatars/avatar4.png";
 import { FaAngleRight } from "react-icons/fa";
 import { AiOutlineTeam } from "react-icons/ai";
 import SwitchField from "components/fields/SwitchField";
 import { RiMoonFill, RiSunFill } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "context/AuthContext";
 
 export default function ProfileSidebar({ isOpen, onClose }) {
   const { logout } = useAuth();
@@ -57,24 +58,24 @@ export default function ProfileSidebar({ isOpen, onClose }) {
       <div className="flex items-center gap-1 p-4">
         <img
           src={avatar}
-          className="h-12 w-12 rounded-full border-2 border-white"
+          className="w-12 h-12 border-2 border-white rounded-full"
           alt="avatar"
         />
         <div className="ml-4">
-          <h3 className="text-md font-semibold dark:text-white">User Name</h3>
+          <h3 className="font-semibold text-md dark:text-white">User Name</h3>
           <p className="text-sm text-gray-200 dark:text-white/70">Admin</p>
         </div>
         <button onClick={onClose}>
-          <IoClose className="absolute right-4 top-8 text-2xl text-gray-600 dark:text-white" />
+          <IoClose className="absolute text-2xl text-gray-600 right-4 top-8 dark:text-white" />
         </button>
       </div>
 
-      <div className="h-px w-full bg-gray-200 dark:bg-white/10" />
+      <div className="w-full h-px bg-gray-200 dark:bg-white/10" />
 
       {/* Menu */}
       <div className="flex flex-col gap-4 p-4 text-gray-700 dark:text-white">
         <button
-          className="hover:bg-violet-500 flex w-full items-center justify-between rounded-xl p-1 "
+          className="flex items-center justify-between w-full p-1 hover:bg-violet-500 rounded-xl "
           onClick={goToProfile}
         >
           <div className="flex items-center gap-2">
@@ -86,7 +87,7 @@ export default function ProfileSidebar({ isOpen, onClose }) {
 
         {/* language */}
         <div
-          className="hover:bg-violet-500 flex w-full items-center justify-between rounded-xl p-1 "
+          className="flex items-center justify-between w-full p-1 hover:bg-violet-500 rounded-xl "
           onClick={goToProfile}
         >
           <div className="flex items-center gap-2">
@@ -97,7 +98,7 @@ export default function ProfileSidebar({ isOpen, onClose }) {
         </div>
 
         <button
-          className="hover:bg-violet-200 flex w-full items-center justify-between rounded-xl p-1 "
+          className="flex items-center justify-between w-full p-1 hover:bg-violet-200 rounded-xl "
           onClick={goToProfile}
         >
           <div className="flex items-center gap-2">
@@ -107,7 +108,7 @@ export default function ProfileSidebar({ isOpen, onClose }) {
           <FaAngleRight />
         </button>
 
-        <button className="hover:bg-violet-200 flex w-full items-center justify-between rounded-xl p-1 ">
+        <button className="flex items-center justify-between w-full p-1 hover:bg-violet-200 rounded-xl ">
           <div className="flex items-center gap-2">
             <AiOutlineTeam size={20} />
             Kidora Teams
@@ -116,7 +117,7 @@ export default function ProfileSidebar({ isOpen, onClose }) {
         </button>
 
         {/* Dark mode row: single switch, correct initial state and toggle */}
-        <div className="hover:bg-violet-200 flex w-full cursor-pointer items-center justify-between rounded-xl p-1">
+        <div className="flex items-center justify-between w-full p-1 cursor-pointer hover:bg-violet-200 rounded-xl">
           <div className="flex items-center gap-2">
             <RiMoonFill size={20} />
             Dark Mode
@@ -132,12 +133,12 @@ export default function ProfileSidebar({ isOpen, onClose }) {
           </div>
         </div>
       </div>
-      <div className="h-px w-full bg-gray-200 dark:bg-white/10" />
+      <div className="w-full h-px bg-gray-200 dark:bg-white/10" />
       {/* Logout */}
       <div className="flex items-center justify-center p-4">
         <button
           onClick={logout}
-          className="flex items-center justify-center gap-1 rounded-xl bg-purple-600 px-4 py-2 text-sm text-white hover:bg-red-500"
+          className="flex items-center justify-center gap-1 px-4 py-2 text-sm text-white bg-purple-600 rounded-xl hover:bg-red-500"
         >
           <BiLogOut />
           Log Out

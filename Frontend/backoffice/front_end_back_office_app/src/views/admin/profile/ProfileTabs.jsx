@@ -30,7 +30,7 @@ const ProfileTabs = ({ activeTab, setActiveTab }) => {
         ref={containerRef}
         role="tablist"
         aria-orientation="horizontal"
-        className="flex gap-6 px-2 py-2 -mx-2 overflow-x-auto whitespace-nowrap scrollbar-none sm:mx-0 sm:px-0"
+        className="flex gap-6 px-2 -mx-2 overflow-x-auto whitespace-nowrap scrollbar-none sm:mx-0 sm:px-0"
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         {tabs.map((tab) => (

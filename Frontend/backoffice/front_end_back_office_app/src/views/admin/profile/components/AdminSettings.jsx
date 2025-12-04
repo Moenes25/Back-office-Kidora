@@ -1,5 +1,5 @@
 import React from "react";
-import AdminList from "./AdminList";
+
 
 const SuperAdminSettings = () => {
   return (
@@ -12,8 +12,7 @@ const SuperAdminSettings = () => {
         <button className="px-4 py-2 text-white bg-blue-600 rounded-lg">
           Ajouter un Admin
         </button>
-
-        <AdminList />
+      
       </div>
 
       {/* AI Settings */}
