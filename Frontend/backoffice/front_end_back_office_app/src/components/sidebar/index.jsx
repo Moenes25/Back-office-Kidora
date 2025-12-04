@@ -27,8 +27,14 @@ const Sidebar = ({ open, collapsed = false, onClose, onToggleCollapsed }) => {
           "hidden xl:flex items-center justify-center",
           // collé à l’extrémité supérieure droite ; léger débord vers l’extérieur
           "absolute top-3 right-[-16px]",
-          "h-7 w-7 rounded-full border border-black/10 bg-white shadow-lg",
-          "hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-400",
+            "h-7 w-7 rounded-full",
+   // clair
+   "bg-white text-slate-700 border border-black/10 shadow-lg hover:shadow-xl",
+   "focus:outline-none focus:ring-2 focus:ring-indigo-400",
+   // sombre
+   "dark:bg-slate-800 dark:text-white dark:border-white/15",
+   "dark:shadow-black/30 dark:hover:shadow-black/40",
+   "dark:focus:ring-indigo-300",
         ].join(" ")}
         aria-label={collapsed ? "Ouvrir le sidebar" : "Réduire le sidebar"}
         aria-pressed={collapsed}
@@ -39,7 +45,7 @@ const Sidebar = ({ open, collapsed = false, onClose, onToggleCollapsed }) => {
 
       {/* bouton close (mobile) */}
       <span
-        className="absolute top-4 right-4 block cursor-pointer xl:hidden"
+       className="absolute top-4 right-4 block cursor-pointer xl:hidden  text-slate-700 dark:text-white"
         onClick={onClose}
         aria-label="Close sidebar"
       >
@@ -48,10 +54,16 @@ const Sidebar = ({ open, collapsed = false, onClose, onToggleCollapsed }) => {
 
       {/* header brand (ne doit pas grandir) */}
       <div className={["shrink-0", collapsed ? "px-4 pt-5" : "px-6 pt-6"].join(" ")}>
-      <div className={["relative rounded-3xl",  collapsed ? "p-3.5" : "p-5","bg-indigo-50/70 ring-1 ring-indigo-200/70 shadow-[0_10px_40px_rgba(99,102,241,.20)]"].join(" ")}>
+      <div className={["relative rounded-3xl", 
+          collapsed ? "p-3.5" : "p-5",
+  // clair
+  "bg-indigo-50/70 ring-1 ring-indigo-200/70 shadow-[0_10px_40px_rgba(99,102,241,.20)]",
+  // sombre
+  "dark:bg-white/5 dark:ring-white/10 dark:shadow-[0_10px_40px_rgba(2,6,23,.35)]"
+].join(" ")}>
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 rounded-3xl bg-white/30 mix-blend-overlay"
+            className="pointer-events-none absolute inset-0 rounded-3xl bg-white/30 dark:bg-white/10 mix-blend-overlay"
           />
           <img
             src="http://31.97.54.88:4200/assets/All_Logo.png"

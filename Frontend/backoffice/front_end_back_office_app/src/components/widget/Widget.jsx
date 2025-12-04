@@ -1,123 +1,123 @@
+/* eslint-disable */
 import React from "react";
-import Card from "components/card";
 
-/* Palette “kids” : grosses couleurs + motifs intégrés */
-const KIDS = {
-  bubblegum: {
-    bg: `
-      linear-gradient(180deg,#ffb3c7 0%,#ffa6b8 100%),
-      radial-gradient(60% 100% at 120% -20%, rgba(255,255,255,.45), transparent 60%),
-      radial-gradient(80% 60% at -10% 110%, rgba(255,255,255,.35), transparent 60%),
-      repeating-radial-gradient( circle at 20% 30%, rgba(255,255,255,.25) 0 6px, transparent 6px 14px )
-    `,
-    title: "text-[#8a1840]",
-    value: "text-[#6b0f2a]",
-    badge: "bg-white/50 text-[#6b0f2a]",
-  },
-  sunny: {
-    bg: `
-      linear-gradient(180deg,#ffd76b 0%,#ffc24b 100%),
-      radial-gradient(70% 120% at 110% -10%, rgba(255,255,255,.4), transparent 60%),
-      radial-gradient(60% 60% at -10% 100%, rgba(255,255,255,.3), transparent 60%),
-      repeating-linear-gradient(45deg, rgba(255,255,255,.25) 0 10px, transparent 10px 20px)
-    `,
-    title: "text-[#7a4a00]",
-    value: "text-[#5b3700]",
-    badge: "bg-white/50 text-[#5b3700]",
-  },
-  sky: {
-    bg: `
-      linear-gradient(180deg,#8ed0ff 0%,#66c0ff 100%),
-      radial-gradient(70% 120% at -10% -10%, rgba(255,255,255,.5), transparent 60%),
-      radial-gradient(60% 60% at 110% 100%, rgba(255,255,255,.35), transparent 60%),
-      repeating-radial-gradient( circle at 70% 30%, rgba(255,255,255,.22) 0 6px, transparent 6px 14px )
-    `,
-    title: "text-[#0b3f6a]",
-    value: "text-[#072a46]",
-    badge: "bg-white/50 text-[#072a46]",
-  },
-  lime: {
-    bg: `
-      linear-gradient(180deg,#b7f46c 0%,#9dea3e 100%),
-      radial-gradient(80% 120% at 120% -30%, rgba(255,255,255,.45), transparent 60%),
-      radial-gradient(80% 60% at -10% 110%, rgba(255,255,255,.35), transparent 60%),
-      repeating-linear-gradient( -45deg, rgba(255,255,255,.25) 0 10px, transparent 10px 20px )
-    `,
-    title: "text-[#235300]",
-    value: "text-[#183a00]",
-    badge: "bg-white/50 text-[#183a00]",
-  },
-  grape: {
-    bg: `
-      linear-gradient(180deg,#c7a6ff 0%,#b388ff 100%),
-      radial-gradient(70% 120% at -10% -10%, rgba(255,255,255,.45), transparent 60%),
-      radial-gradient(60% 60% at 110% 100%, rgba(255,255,255,.35), transparent 60%),
-      repeating-radial-gradient( circle at 25% 60%, rgba(255,255,255,.22) 0 6px, transparent 6px 14px )
-    `,
-    title: "text-[#3b2173]",
-    value: "text-[#2a1653]",
-    badge: "bg-white/50 text-[#2a1653]",
-  },
+/* === mêmes gradients que tes KPI === */
+const GRADIENTS = {
+  blue:   "linear-gradient(135deg,#6366f1,#06b6d4)",
+  green:  "linear-gradient(135deg,#10b981,#22d3ee)",
+  orange: "linear-gradient(135deg,#f59e0b,#ef4444)",
+  red:    "linear-gradient(135deg,#ef4444,#f97316)",
 };
 
+/* === helpers copiés depuis tes KPI (identiques) === */
+function useInView(ref, rootMargin = "0px") {
+  const [inView, setInView] = React.useState(false);
+  React.useEffect(() => {
+    if (!ref.current) return;
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { rootMargin });
+    io.observe(ref.current);
+    return () => io.disconnect();
+  }, [ref, rootMargin]);
+  return inView;
+}
 
+function AnimatedNumber({
+  value,
+  duration = 800,
+  format = (n) => n.toLocaleString(),
+  startOnView = true,
+}) {
+  const spanRef = React.useRef(null);
+  const inView = useInView(spanRef, "0px");
+  const [display, setDisplay] = React.useState(0);
 
-const WidgetKids = ({ icon, title, subtitle, tone = "bubblegum", animated = true, delay = 0, stacked = true }) => {
-  const p = KIDS[tone] ?? KIDS.bubblegum;
-  const kidIcon = React.isValidElement(icon) ? React.cloneElement(icon, { className: "h-8 w-8 drop-shadow-sm" }) : icon;
+  const prefersReduced =
+    typeof window !== "undefined" &&
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  React.useEffect(() => {
+    if (startOnView && !inView) return;
+    if (prefersReduced) { setDisplay(value); return; }
+
+    let raf, start;
+    const from = 0;
+    const to = Number(value) || 0;
+    const ease = (t) => 1 - Math.pow(1 - t, 3); // easeOutCubic
+
+    const step = (ts) => {
+      if (!start) start = ts;
+      const p = Math.min(1, (ts - start) / duration);
+      const curr = Math.round(from + (to - from) * ease(p));
+      setDisplay(curr);
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [value, duration, startOnView, inView, prefersReduced]);
+
+  return <span ref={spanRef}>{format(display)}</span>;
+}
+
+/* === WidgetKids animé === */
+function WidgetKids({
+  tone = "blue",
+  icon,
+  title,
+  value, 
+  iconClass = "text-2xl",             // ← passe un nombre ici pour l’animer
+  subtitle,           // compat : si number on anime, sinon on affiche tel quel
+  duration = 800,
+  format = (n) => n.toLocaleString(),
+  startOnView = true,
+  style,
+  ...props
+}) {
+  const GRADIENTS = {
+    blue:   "linear-gradient(135deg,#6366f1,#06b6d4)",
+    green:  "linear-gradient(135deg,#10b981,#22d3ee)",
+    orange: "linear-gradient(135deg,#f59e0b,#ef4444)",
+    red:    "linear-gradient(135deg,#ef4444,#f97316)",
+  };
+  const gradient = GRADIENTS[tone] || GRADIENTS.blue;
+
+  const numeric = value ?? (typeof subtitle === "number" ? subtitle : null);
 
   return (
-    <Card
-      extra={[
-        "relative isolate rounded-3xl",
-        "transition-transform duration-300 hover:-translate-y-1",
-        "ring-0 shadow-[0_14px_30px_-10px_rgba(0,0,0,.25)]",
-        "overflow-visible",
-        animated ? "animate-kid-pop" : "", 
-      ].join(" ")}
-      style={animated ? { animationDelay: `${delay}ms` } : undefined}
+    <div
+      className="relative overflow-hidden rounded-2xl border border-white/50 bg-white/70 backdrop-blur-md shadow-[0_14px_48px_rgba(2,6,23,.12)] min-h-[110px]"
+      style={style}
     >
- 
+      <div className="absolute inset-0 opacity-25" style={{ background: gradient }} />
+      <div className="pointer-events-none absolute -top-6 -right-6 h-24 w-24 rounded-full bg-white/60 blur-2xl kpi-float" />
+      <div className="pointer-events-none absolute -left-1/3 -top-1/2 h-[220%] w-1/3 rotate-[14deg] bg-white/40 blur-md kpi-shine" />
 
-      <div
-        className={[
-          "relative rounded-3xl p-5 text-left",
-          "border border-black/5",
-          "overflow-hidden",
-        ].join(" ")}
-        style={{ backgroundImage: p.bg }}
-      >
-        <span className="pointer-events-none absolute -left-6 bottom-4 h-20 w-20 rounded-full bg-white/35 blur-2xl" />
-        <span className="pointer-events-none absolute right-6 -top-6 h-16 w-16 rounded-full bg-white/40 blur-xl" />
+      <div className="relative z-10 flex items-center gap-3 p-4">
+       <div style={{ background: gradient }} className="grid h-12 w-12 place-items-center rounded-xl text-white shadow-lg ring-1 ring-white/50">
+    {React.isValidElement(icon)
+      ? React.cloneElement(icon, { className: (icon.props.className || "") + " " + iconClass })
+      : icon}
+  </div>
 
-        <div className={stacked ? "grid place-items-center gap-3 text-center" : "flex items-center gap-4"}>
-          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white/80 shadow-inner animate-kid-bounce">
-            {kidIcon}
+        <div>
+          <div className="text-3xl font-extrabold tracking-tight text-slate-900">
+            {numeric !== null
+              ? <AnimatedNumber value={Number.isFinite(numeric) ? numeric : 0} duration={duration} format={format} startOnView={startOnView} />
+              : subtitle}
           </div>
-
-          <div className={stacked ? "space-y-1" : "space-y-0.5"}>
-            <p className={["text-sm font-black tracking-wide uppercase", p.title].join(" ")}>{title}</p>
-            <h4 className={["text-3xl font-extrabold drop-shadow-[0_1px_0_rgba(255,255,255,.6)]", p.value].join(" ")}>
-              {subtitle}
-            </h4>
-          </div>
+          <div className="mt-0.5 text-xs font-medium text-slate-600">{title}</div>
         </div>
-
-        <span
-          className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 hover:opacity-100"
-          style={{ background: "radial-gradient(300px 180px at 20% 0%, rgba(255,255,255,.45), transparent 60%)" }}
-        />
       </div>
 
       <style>{`
-        @keyframes kid-pop { 0%{opacity:0; transform:translateY(6px) scale(.98)} 100%{opacity:1; transform:translateY(0) scale(1)} }
-        .animate-kid-pop { animation: kid-pop .35s cubic-bezier(.2,0,0,1) both; }
-        @keyframes kid-bounce { 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-3px) } }
-        .animate-kid-bounce { animation: kid-bounce 1.8s ease-in-out infinite; }
+        @keyframes kpiFloat { 0%{transform:translateY(0)} 50%{transform:translateY(6px)} 100%{transform:translateY(0)} }
+        @keyframes kpiShine { 0%{transform:translateX(-40%)} 100%{transform:translateX(180%)} }
+        .kpi-float{ animation: kpiFloat 4s ease-in-out infinite; }
+        .kpi-shine{ animation: kpiShine 2.2s ease-in-out infinite; }
       `}</style>
-    </Card>
+    </div>
   );
-};
-
+}
 
 export default WidgetKids;

@@ -906,30 +906,56 @@ const availability = (() => {
       {/* *********************************************************** */}
 <WidgetFX />
 <div className="mt-3 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-6">
-  <WidgetKids stacked tone="grape"     delay={0}
+  <WidgetKids
+    tone="green"
+    style={{ "--dark": 0.35, "--glow": 0.25, "--border-speed": "12s", "--float-speed": "7s" }}
     icon={pickIcon("Nombre Totale d'etablissements")}
-    title="Nombre Totale d'etablissements" subtitle="155" />
-
-  <WidgetKids stacked tone="sunny"     delay={60}
+    title="Nombre Totale d'etablissements"
+    value={155}               // ← nombre (sans guillemets)
+    duration={900}            // (optionnel) vitesse
+    startOnView={true}        // (optionnel) démarre à l’apparition
+  />
+  <WidgetKids
+    tone="blue"
+    style={{ "--dark": 0.4, "--glow": 0.25, "--border-speed": "12s", "--float-speed": "7s" }}
     icon={pickIcon("Nombre Totale de Parents")}
-    title="Nombre Totale de Parents" subtitle="230" />
-
-  <WidgetKids stacked tone="bubblegum" delay={120}
+    title="Nombre Totale de Parents"
+    value={230}
+  />
+  <WidgetKids
+    tone="orange"
+    style={{ "--dark": 0.4, "--glow": 0.25, "--border-speed": "12s", "--float-speed": "7s" }}
     icon={pickIcon("Nombre Totale des Enfants")}
-    title="Nombre Totale des Enfants" subtitle="405" />
-
-  <WidgetKids stacked tone="sky"       delay={180}
+    title="Nombre Totale des Enfants"
+    value={405}
+  />
+  <WidgetKids
+    tone="red"
+    style={{ "--dark": 0.4, "--glow": 0.25, "--border-speed": "12s", "--float-speed": "7s" }}
     icon={pickIcon("Chiffres d'Affaires Totales")}
-    title="Chiffres d'Affaires Totales" subtitle="2055" />
-
-  <WidgetKids stacked tone="lime"      delay={240}
+    title="Chiffres d'Affaires Totales"
+    value={2055}
+    // exemple format monnaie (TND) :
+    format={(n)=> n.toLocaleString('fr-FR',{ style:'currency', currency:'TND', maximumFractionDigits:0 })}
+  />
+  <WidgetKids
+    tone="blue"
+    style={{ "--dark": 0.4, "--glow": 0.25, "--border-speed": "12s", "--float-speed": "7s" }}
     icon={pickIcon("Nombre d'activité d'etablissement")}
-    title="Nombre d'activité d'etablissement" subtitle="228" />
-
-  <WidgetKids stacked tone="grape"     delay={300}
+    title="Nombre d'activité d'etablissement"
+    value={228}
+  />
+  <WidgetKids
+    tone="green"
+    style={{ "--dark": 0.4, "--glow": 0.25, "--border-speed": "12s", "--float-speed": "7s" }}
     icon={pickIcon("Nombre de raports par jours")}
-    title="Nombre de raports par jours" subtitle="85" />
+    title="Nombre de rapports par jour"
+    value={85}
+  />
 </div>
+
+
+
 
 
 

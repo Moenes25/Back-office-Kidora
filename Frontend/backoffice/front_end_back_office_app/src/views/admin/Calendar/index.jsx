@@ -1,4 +1,4 @@
-// src/views/.../PaiementsPage.jsx
+// src/views/.../CalendarPage.jsx
 import React from "react";
 
 import { FiCalendar, FiClock, FiLayers, FiCheckCircle } from "react-icons/fi";
@@ -73,7 +73,7 @@ const ORGS = {
 const TYPES = ["creches","garderies","ecoles"];
 
 /* ------------------------------- Modale ------------------------------- */
-function Modal({ open, onClose, onSubmit, onDelete, initial, defaultType, defaultDate }) {
+function Modal({ open, onClose, onSubmit, onDelete, initial, defaultType, defaultDate , seed }) {
  const [form, setForm] = React.useState(
   initial ?? {
     title: "",
@@ -87,16 +87,18 @@ function Modal({ open, onClose, onSubmit, onDelete, initial, defaultType, defaul
 
 React.useEffect(() => {
   if (!open) return;
-  setForm(
-    initial ?? {
-      title: "",
-      type:  defaultType ?? "creches",
-      org:   (ORGS[defaultType ?? "creches"]?.[0] ?? ""),
-      date:  defaultDate ?? toISODate(new Date()),
-      start: "", end: "", desc: ""
-    }
-  );
-}, [open, initial, defaultType, defaultDate]);
+   const base = {
+     title: "",
+     type:  defaultType ?? "creches",
+    org:   (ORGS[defaultType ?? "creches"]?.[0] ?? ""),
+     date:  defaultDate ?? toISODate(new Date()),
+     start: "", end: "", desc: ""
+   };
+   // priorité: initial (édition) > base+seed (création guidée) > base
+   setForm(initial ? initial : { ...base, ...(seed || {}) });
+}, [open, initial, defaultType, defaultDate
+  , seed
+]);
 React.useEffect(() => {
   setForm((f) => {
     const list = ORGS[f.type] ?? [];
@@ -115,7 +117,9 @@ React.useEffect(() => {
       <div className="relative w-[560px] max-w-[92vw] rounded-3xl bg-white p-6 shadow-2xl
                       [transform:translateZ(0)] animate-[pop_.28s_cubic-bezier(.2,0,0,1)_both]">
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-xl font-extrabold">Créer / éditer un évènement</h3>
+           <h3 className="text-xl font-extrabold">
+  {initial ? "Éditer un évènement" : "Ajouter un évènement"}
+ </h3>
           <button onClick={onClose} className="rounded-lg px-2 py-1 text-sm text-gray-500 hover:bg-gray-100">✕</button>
         </div>
 
@@ -237,6 +241,61 @@ React.useEffect(() => {
     </div>
   );
 }
+
+function SuggestionPopup({ open, onClose, onPick }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" onClick={onClose} />
+      <div className="relative w-[420px] max-w-[92vw] rounded-2xl bg-white p-5 shadow-2xl animate-[pop_.22s_ease-out_both]">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-lg font-extrabold">Suggestion IA </h3>
+          <button onClick={onClose} className="rounded-lg px-2 py-1 text-sm text-gray-500 hover:bg-gray-100">✕</button>
+        </div>
+
+        <p className="mb-4 text-sm text-slate-600">
+          Choisis un <strong>type d’établissement</strong> pour pré-remplir un évènement :
+        </p>
+
+        <div className="grid grid-cols-1 gap-2">
+          <button
+            onClick={() => onPick("creches")}
+            className="flex items-center justify-between rounded-xl border border-black/10 bg-white px-4 py-3 text-left hover:bg-violet-50"
+          >
+            <span className="font-semibold">Crèche</span>
+            <span className="rounded-full bg-[#a78bfa]/15 px-2.5 py-0.5 text-xs font-bold text-[#6d28d9]">crèches</span>
+          </button>
+
+          <button
+            onClick={() => onPick("garderies")}
+            className="flex items-center justify-between rounded-xl border border-black/10 bg-white px-4 py-3 text-left hover:bg-amber-50"
+          >
+            <span className="font-semibold">Garderie</span>
+            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700">garderies</span>
+          </button>
+
+          <button
+            onClick={() => onPick("ecoles")}
+            className="flex items-center justify-between rounded-xl border border-black/10 bg-white px-4 py-3 text-left hover:bg-emerald-50"
+          >
+            <span className="font-semibold">École</span>
+            <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-700">écoles</span>
+          </button>
+        </div>
+
+        {/* mini note */}
+        <p className="mt-4 text-xs text-slate-500">
+          (Étape suivante : brancher un modèle IA pour générer titre/horaires automatiquement.)
+        </p>
+
+        <style>{`
+          @keyframes pop{0%{opacity:0;transform:translateY(8px) scale(.98)}70%{opacity:1;transform:translateY(-2px) scale(1.01)}100%{opacity:1;transform:translateY(0) scale(1)}}
+        `}</style>
+      </div>
+    </div>
+  );
+}
+
 
 /* ---------------------------- carte d’évènement ---------------------------- */
 /* utils d’affichage */
@@ -463,7 +522,7 @@ function KPIStyles() {
 
 
 /* --------------------------------- page --------------------------------- */
-export default function PaiementsPage() {
+export default function CalendarPage() {
   // vue courante
   const [viewDate, setViewDate] = React.useState(new Date());
 
@@ -480,6 +539,34 @@ const [events, setEvents] = React.useState(() => [
   { id: crypto.randomUUID(), type: "creches",   org: "Crèche Arc-en-ciel",    title: "Atelier extérieur", date: seed(1), start: "10:00", end: "12:00" },
 ]);
 
+ const [suggestOpen, setSuggestOpen] = React.useState(false);
+ 
+
+ // gabarits statiques pour pré-remplir
+ const SUGGEST_TEMPLATES = {
+   creches:   { title: "Atelier découverte",  start: "09:00", end: "11:00", desc: "Motricité fine & éveil sensoriel." },
+   garderies: { title: "Jeux coopératifs",    start: "15:00", end: "16:30", desc: "Parcours & jeux d’équipe." },
+   ecoles:    { title: "Sortie pédagogique",  start: "08:30", end: "12:00", desc: "Visite culturelle & dossier." },
+ };
+
+ // fonction appelée quand l’utilisateur choisit un type dans le popup
+ const handlePickType = (type) => {
+   setFilterType(type);                  // on bascule l’onglet sur le type choisi
+   setDraftDate(todayISO);               // date du jour (ou garde la colonne courante si tu veux)
+   setEditing(null);                     // on est en création
+   setOpen(true);                        // on ouvre la modale
+   setSuggestOpen(false);                // on ferme le popup
+   // le "seed" est passé à Modal (voir en bas dans JSX) pour pré-remplir les champs
+   setSeedForModal({
+     type,
+     org: ORGS[type]?.[0] || "",
+     date: todayISO,
+     ...SUGGEST_TEMPLATES[type],
+   });
+ };
+
+ // petit état local qui transporte le pré-remplissage vers Modal
+ const [seedForModal, setSeedForModal] = React.useState(null);
 
   // modale
   const [open, setOpen] = React.useState(false);
@@ -495,6 +582,7 @@ const [events, setEvents] = React.useState(() => [
 
   const openNew = (dateISO) => {
     setEditing(null);
+    setSeedForModal(null);
     setDraftDate(dateISO);
     setOpen(true);
   };
@@ -619,9 +707,21 @@ const countsThisWeek = React.useMemo(() => {
               );
             })}
           </div>
-
+        {/* Bouton Suggestion IA (statique) */}
+        <button
+          onClick={() => setSuggestOpen(true)}
+          className="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-bold text-indigo-700 shadow-sm hover:bg-indigo-100"
+           title="Proposer un évènement selon le type"
+        >
+           💡 Suggestion IA
+        </button>
           <button
-            onClick={() => { setEditing(null); setDraftDate(toISODate(new Date())); setOpen(true); }}
+              onClick={() => {
+    setEditing(null);
+    setSeedForModal(null);            // <– PURGE LE SEED
+    setDraftDate(toISODate(new Date()));
+    setOpen(true);
+  }}
             className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-600 px-6 py-2 text-sm font-bold text-white shadow-sm hover:shadow-md hover:brightness-110"
           >
             + New event
@@ -679,7 +779,7 @@ const countsThisWeek = React.useMemo(() => {
 
                 <div className="space-y-3">
                   {dayEvents.map((ev) => (
-                    <EventCard key={ev.id} ev={ev} onEdit={(e) => { setEditing(e); setDraftDate(e.date); setOpen(true); }} />
+                    <EventCard key={ev.id} ev={ev} onEdit={(e) => { setSeedForModal(null);   setEditing(e); setDraftDate(e.date); setOpen(true); }} />
                   ))}
                 </div>
 
@@ -700,13 +800,20 @@ const countsThisWeek = React.useMemo(() => {
       {/* Modale */}
       <Modal
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={() => { setOpen(false); setSeedForModal(null); }}
         initial={editing}
         onSubmit={submit}
         onDelete={remove}
         defaultType={filterType}   // ← préremplit le type selon l’onglet courant
         defaultDate={draftDate}    // ← préremplit la date selon la colonne cliquée
+        seed={seedForModal}
       />
+     {/* Popup Suggestion IA */}
+     <SuggestionPopup
+       open={suggestOpen}
+       onClose={() => setSuggestOpen(false)}
+       onPick={handlePickType}
+    />
     </div>
   );
 }

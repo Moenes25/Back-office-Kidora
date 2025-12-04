@@ -589,6 +589,62 @@ function DayModal({ open, onClose, dateISO, items, onEdit, onDelete, onAdd }) {
     </Modal>
   );
 }
+function AISuggestModal({ open, onClose, onPick }) {
+  if (!open) return null;
+  const Item = ({ k, title, desc, color, emoji }) => (
+    <button
+      onClick={() => onPick(k)}
+      className="group flex items-start gap-3 rounded-2xl border border-black/10 bg-white/90 p-4 text-left ring-1 ring-black/5 hover:shadow-md hover:bg-white transition"
+    >
+      <div
+        className="grid h-11 w-11 place-items-center rounded-xl text-xl"
+        style={{ background: `${color}15`, color }}
+      >
+        {emoji}
+      </div>
+      <div className="min-w-0">
+        <div className="font-extrabold">{title}</div>
+        <div className="mt-0.5 text-sm text-gray-600">{desc}</div>
+      </div>
+      <span className="ml-auto mt-1 text-sm font-bold text-gray-500 opacity-0 group-hover:opacity-100 transition">
+        Choisir →
+      </span>
+    </button>
+  );
+
+  return (
+    <Modal open={open} onClose={onClose} title="Suggestion (statique) — Choisis un type">
+      <div className="grid gap-3">
+        <Item
+          k="ecoles"
+          title="École"
+          desc="Démonstration / rendez-vous pédagogique."
+          color="#10b981"
+          emoji="🏫"
+        />
+        <Item
+          k="garderies"
+          title="Garderie"
+          desc="Présentation rapide aux responsables."
+          color="#f59e0b"
+          emoji="🧸"
+        />
+        <Item
+          k="creches"
+          title="Crèche"
+          desc="Prise de contact / découverte."
+          color="#6366f1"
+          emoji="👶"
+        />
+      </div>
+      <div className="mt-4 flex justify-end">
+        <button onClick={onClose} className="rounded-xl border px-4 py-2 text-sm font-semibold hover:bg-gray-50">
+          Fermer
+        </button>
+      </div>
+    </Modal>
+  );
+}
 
 
 /* ---------- Planner principal ---------- */
@@ -701,6 +757,58 @@ cancelButton:  "bg-white text-gray-700 rounded-lg px-4 py-2 border border-gray-2
     setModalOpen(false);
     setEditId(null);
   };
+// --- IA Suggestion (statique) ---
+const [suggestOpen, setSuggestOpen] = useState(false);
+
+// trouve la prochaine date avec des créneaux, sinon null
+const pickNextAvailable = useCallback(() => {
+  const dates = Object.keys(avail || {}).sort(); // ISO triable
+  for (const d of dates) {
+    const slots = avail[d] || [];
+    if (slots.length > 0) return { dateISO: d, time: slots[0] };
+  }
+  return null;
+}, [avail]);
+
+// crée un RDV "auto" pour le type choisi
+const createSuggestedEvent = useCallback(async (typeKey) => {
+  // 1) choisir date + créneau
+  const picked = pickNextAvailable() || {
+    dateISO: new Date().toISOString().slice(0, 10), // aujourd’hui
+    time: "09:00",
+  };
+
+  // 2) choisir un établissement par défaut pour ce type
+  const placeId = DIRECTORY[typeKey]?.[0]?.id || "";
+
+  // 3) sujet par défaut
+  const subject = `Rendez-vous ${TYPE_LABEL[typeKey]}`;
+
+  // 4) créer l'ID + push
+  const id = crypto.randomUUID?.() || Math.random().toString(36).slice(2);
+  setAppts((l) => [
+    ...l,
+    {
+      id,
+      dateISO: picked.dateISO,
+      time: picked.time,
+      type: typeKey,
+      placeId,
+      subject,
+    },
+  ]);
+
+  setSuggestOpen(false);
+
+  // 5) feedback
+  await Swal.fire({
+    icon: "success",
+    title: "Créé ✅",
+    text: `${TYPE_LABEL[typeKey]} — ${new Date(picked.dateISO).toLocaleDateString("fr-FR")} à ${picked.time}`,
+    timer: 1600,
+    showConfirmButton: false,
+  });
+}, [pickNextAvailable, setAppts]);
 
   // tri global (agenda)
   const apptsSorted = useMemo(() => {

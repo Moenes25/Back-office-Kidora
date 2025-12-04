@@ -230,6 +230,7 @@ const pageRows = filtered.slice(start, start + PAGE_SIZE);
   /* ------- Add ticket modal ------- */
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({demandeur:"", sujet:"", priorite:"Moyenne", agent:"Jese Leos", statut:"En attente"});
+  const [showAI, setShowAI] = useState(false);
   const addTicket = (e) => {
     e.preventDefault();
     const next = {
@@ -300,13 +301,21 @@ const pageRows = filtered.slice(start, start + PAGE_SIZE);
             <FiDownload /> Export CSV
           </button>
         </div>
-
+    <button
+         onClick={()=>setShowAI(true)}
+         className="inline-flex items-center gap-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-extrabold text-indigo-700 shadow hover:bg-indigo-100"
+         title="Création / correction assistée"
+       >
+         🤖 Gérer par IA
+       </button>
         <button
           onClick={()=>setShowAdd(true)}
           className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-sky-600 px-4 py-2 text-sm font-extrabold text-white shadow-[0_16px_40px_rgba(37,99,235,.35)] hover:brightness-110"
         >
           <FiPlus /> Créer un ticket
         </button>
+               {/* ---  bouton IA --- */}
+   
       </div>
 
       {/* Afficher: */}
@@ -506,6 +515,28 @@ const pageRows = filtered.slice(start, start + PAGE_SIZE);
           </motion.div>
         )}
       </AnimatePresence>
+{/* -------- Modale IA -------- */}
+<AnimatePresence>
+  {showAI && (
+    <motion.div
+      initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
+      className="fixed inset-0 z-50 grid place-items-center bg-black/35 p-4"
+    >
+      <AIDialog
+        onClose={()=>setShowAI(false)}
+        onCreate={(newTicket)=>{
+          setRows(r=>[newTicket, ...r]);
+          setShowAI(false);
+        }}
+        onPatch={(updated)=>{
+          setRows(r=>r.map(t => t.id===updated.id ? {...t, ...updated} : t));
+          setShowAI(false);
+        }}
+        agents={Object.keys(AGENTS)}
+      />
+    </motion.div>
+  )}
+</AnimatePresence>
 
       {/* style helpers */}
       <StyleOnce />
@@ -611,4 +642,163 @@ tbody tr > * { background: transparent; }
 
     `}</style>
   );
+}
+function AIDialog({ onClose, onCreate, onPatch, agents }) {
+  const [mode, setMode] = useState("create"); // "create" | "fix"
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  const run = async () => {
+    setBusy(true); setError("");
+    try {
+      const out = runLocalAI({ mode, text, agents });
+      if (out.kind === "create") { onCreate(out.ticket); }
+      else if (out.kind === "patch") { onPatch(out.delta); }
+    } catch(e){ setError(e.message || "Impossible d’interpréter la consigne."); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <motion.div
+      initial={{y:16, scale:.98, opacity:0}}
+      animate={{y:0, scale:1, opacity:1}}
+      exit={{y:16, scale:.98, opacity:0}}
+      className="w-full max-w-3xl rounded-2xl border border-white/30 bg-white/95 p-5 shadow-[0_40px_120px_rgba(2,6,23,.35)] backdrop-blur"
+    >
+      <div className="mb-3 flex items-center justify-between">
+        <div className="text-lg font-extrabold text-slate-800">Gérer par IA (démo)</div>
+        <button onClick={onClose} className="rounded-lg px-2 py-1 text-sm text-gray-500 hover:bg-gray-100">✕</button>
+      </div>
+
+      <div className="mb-3 flex gap-3 text-sm">
+        <label className="inline-flex items-center gap-2">
+          <input type="radio" checked={mode==="create"} onChange={()=>setMode("create")} />
+          Créer
+        </label>
+        <label className="inline-flex items-center gap-2">
+          <input type="radio" checked={mode==="fix"} onChange={()=>setMode("fix")} />
+          Corriger / Mettre à jour
+        </label>
+      </div>
+
+      <textarea
+        rows={5}
+        className="w-full resize-y rounded-xl border border-black/10 p-3 text-sm"
+        placeholder={
+          mode==="create"
+            ? `Exemples:\n- Crée un ticket demandeur=User123; sujet=Problème de connexion; priorité=haute; agent=Roberta; statut=en attente\n- Ticket urgent: paiement refusé pour Donnie Gree, assigne à Neil`
+            : `Exemples:\n- Corrige #1846327: statut=Résolu\n- Mets priorité=haute sur #1846326\n- Pour #1846329: sujet=Variants Figma manquants (corrigé)`
+        }
+        value={text}
+        onChange={(e)=>setText(e.target.value)}
+      />
+
+      {error && <div className="mt-2 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div>}
+
+      <div className="mt-4 flex items-center justify-end gap-2">
+        <button onClick={onClose} className="rounded-xl border border-black/10 bg-white px-4 py-2 text-sm font-semibold shadow-sm">Annuler</button>
+        <button
+          onClick={run}
+          disabled={busy || !text.trim()}
+          className="rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 px-4 py-2 text-sm font-bold text-white shadow disabled:opacity-50"
+        >
+          {busy ? "Analyse…" : (mode==="create" ? "Créer" : "Appliquer")}
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+function runLocalAI({ mode, text, agents }) {
+  const t = String(text || "").trim();
+  if (!t) throw new Error("Merci de saisir une consigne.");
+
+  // utilitaires
+  const norm = (s="") => s.normalize("NFD").replace(/\p{Diacritic}/gu,"").toLowerCase();
+  const pickAgent = (hint) => {
+    if (!hint) return agents?.[0] || "Jese Leos";
+    const found = agents.find(a => norm(a).includes(norm(hint)));
+    return found || agents?.[0] || "Jese Leos";
+  };
+  const mapPriorite = (s) => {
+    const n = norm(s);
+    if (/(haut|urgent|eleve|critique|prio\s*1)/.test(n)) return "Haute";
+    if (/(moyen|normal|prio\s*2)/.test(n)) return "Moyenne";
+    if (/(bas|faible|mineur|prio\s*3)/.test(n)) return "Basse";
+    return undefined;
+  };
+  const mapStatut = (s) => {
+    const n = norm(s);
+    if (/(attente|ouvert|open|nouveau)/.test(n)) return "En attente";
+    if (/(resolu|cloture|close|done)/.test(n)) return "Résolu";
+    if (/(archive|archiv)/.test(n)) return "Archivé";
+    return undefined;
+  };
+
+  // parse key=value ; also accept "clé: valeur"
+  const pairs = {};
+  t.split(/[\n;,]+/).forEach(chunk=>{
+    const m = chunk.match(/\s*([\w\-éèàûô]+)\s*[:=]\s*(.+)\s*$/i);
+    if (m) pairs[norm(m[1])] = m[2].trim();
+  });
+
+  // detect ticket id like #1846327
+  const idMatch = t.match(/#\d{6,}/);
+  const id = idMatch?.[0];
+
+  if (mode === "create") {
+    // champs
+    const demandeur = pairs["demandeur"] || pairs["client"] || pairs["user"] || pairs["utilisateur"] || pairs["nom"];
+    let sujet = pairs["sujet"] || pairs["titre"] || pairs["objet"] || "";
+    if (!sujet) {
+      // heuristique: extrait après "sujet" implicite
+      const m = t.match(/sujet\s*(?:=|:)\s*(.+)$/i);
+      if (m) sujet = m[1].trim();
+    }
+    let priorite = mapPriorite(pairs["priorite"]) || mapPriorite(t) || "Moyenne";
+    let agent = pickAgent(pairs["agent"]);
+    let statut = mapStatut(pairs["statut"]) || "En attente";
+
+    // heuristiques rapides
+    if (/urgent|bloquant|erreur|erreur 500|down|impossible/i.test(t)) priorite = "Haute";
+    if (/paiement|facture|billing/i.test(t)) agent = pickAgent("Neil");
+    if (/figma|design|ui/i.test(t)) agent = pickAgent("Roberta");
+
+    if (!demandeur) throw new Error("Indique au moins le demandeur (ex: demandeur=User123).");
+    if (!sujet) throw new Error("Indique un sujet (ex: sujet=Problème de connexion).");
+
+    const newTicket = {
+      id: `#${Math.floor(100000 + Math.random()*900000)}`,
+      date: new Date().toLocaleDateString("fr-FR", { day:"2-digit", month:"long", year:"numeric" }),
+      demandeur, sujet, priorite, agent, statut
+    };
+    return { kind: "create", ticket: newTicket };
+  }
+
+  // mode === "fix"
+  if (!id) throw new Error("Pour corriger, précise l’ID (ex: #1846327).");
+
+  const delta = { id };
+  if (pairs["sujet"]) delta.sujet = pairs["sujet"];
+  if (pairs["demandeur"]) delta.demandeur = pairs["demandeur"];
+  if (pairs["agent"]) delta.agent = pickAgent(pairs["agent"]);
+  if (pairs["priorite"] || /priorite/i.test(t)) {
+    delta.priorite = mapPriorite(pairs["priorite"] || t) || undefined;
+  }
+  if (pairs["statut"] || /statut|resolu|archiv|attente/i.test(t)) {
+    delta.statut = mapStatut(pairs["statut"] || t) || undefined;
+  }
+
+  // si rien de concret => heuristiques
+  if (!delta.sujet && !delta.demandeur && !delta.agent && !delta.priorite && !delta.statut) {
+    // ex: “Corrige #123: urgent” → passe en Haute
+    if (/urgent|bloquant|haut/i.test(t)) delta.priorite = "Haute";
+    if (/resolu|cloture|close|done/i.test(t)) delta.statut = "Résolu";
+    if (/archive/i.test(t)) delta.statut = "Archivé";
+  }
+
+  // pas d’update trouvé
+  if (Object.keys(delta).length === 1) throw new Error("Aucune correction déduite. Donne au moins un champ (ex: statut=Résolu).");
+
+  return { kind: "patch", delta };
 }

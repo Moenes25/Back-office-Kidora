@@ -146,6 +146,8 @@ const CrechesMap = () => {
   const [selectedRegion, setSelectedRegion] = useState("Toutes");
   const [selectedEntity, setSelectedEntity] = useState(null);
   const mapRef = useRef(null);
+// en haut du composant CrechesMap
+const [showLocateAI, setShowLocateAI] = useState(false);
 
   /* --- memo selon type/région --- */
   const currentData = useMemo(() => DATASETS[selectedType] || [], [selectedType]);
@@ -196,7 +198,7 @@ const CrechesMap = () => {
                 {/* terre */}
                 <span className="relative text-3xl animate-earth-wobble">🌍</span>
               </span>
-              Carte des {meta.label}
+              Carte  <br/> des {meta.label}
             </h2>
             <div className="h-0.5 w-24 mt-1 rounded-full bg-gradient-to-r from-indigo-500 via-sky-400 to-emerald-400 animate-gradient-slide" />
             <p className="mt-1 text-gray-500 dark:text-gray-300 text-sm">
@@ -204,29 +206,33 @@ const CrechesMap = () => {
             </p>
           </div>
 
-          {/* Controls */}
-          <div className="flex flex-wrap gap-3 items-center">
-            <TypeSegmented
-              value={selectedType}
-              onChange={(t) => { setSelectedType(t); setSelectedRegion("Toutes"); setSelectedEntity(null); }}
-              counts={counts}
-            />
+{/* Controls */}
+<div className="flex flex-wrap items-center gap-3">
+  <LocateAIButton onClick={() => setShowLocateAI(true)} />
 
-            {/* Region select */}
-            <div className="flex items-center gap-2 bg-white/70 dark:bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-black/10 shadow-sm">
-              <span className="text-sm text-gray-600 dark:text-gray-300">Région :</span>
-              <div className="relative">
-                <select
-                  className="peer appearance-none px-3 py-1.5 rounded-lg border text-sm bg-white dark:bg-navy-700 dark:text-white focus:ring-2 focus:ring-indigo-400 pr-8"
-                  value={selectedRegion}
-                  onChange={(e) => setSelectedRegion(e.target.value)}
-                >
-                  {regionOptions.map((r) => <option key={r}>{r}</option>)}
-                </select>
-                <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 peer-focus:text-indigo-500">▾</span>
-              </div>
-            </div>
-          </div>
+  <TypeSegmented
+    value={selectedType}
+    onChange={(t) => { setSelectedType(t); setSelectedRegion("Toutes"); setSelectedEntity(null); }}
+    counts={counts}
+  />
+
+  {/* Region select */}
+  <div className="flex items-center gap-2 bg-white/70 dark:bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-black/10 shadow-sm">
+    <span className="text-sm text-gray-600 dark:text-gray-300">Région :</span>
+    <div className="relative">
+      <select
+        className="peer appearance-none px-3 py-1.5 rounded-lg border text-sm bg-white dark:bg-navy-700 dark:text-white focus:ring-2 focus:ring-indigo-400 pr-8"
+        value={selectedRegion}
+        onChange={(e) => setSelectedRegion(e.target.value)}
+      >
+        {regionOptions.map((r) => <option key={r}>{r}</option>)}
+      </select>
+      <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 peer-focus:text-indigo-500">▾</span>
+    </div>
+  </div>
+</div>
+
+
         </div>
       </div>
 
@@ -336,6 +342,18 @@ const CrechesMap = () => {
         <span className="w-3 h-3 bg-orange-500 rounded-full" /> En alerte
         <span className="w-3 h-3 bg-red-500 rounded-full" /> Expirée
       </div>
+      {showLocateAI && (
+  <div className="fixed inset-0 z-[999] grid place-items-center bg-black/35 p-4">
+    <div className="w-full max-w-xl rounded-2xl border border-white/30 bg-white p-5 shadow-2xl">
+      <div className="mb-3 flex items-center justify-between">
+        <div className="text-lg font-extrabold">Localiser par IA </div>
+        <button onClick={()=>setShowLocateAI(false)} className="rounded-lg px-2 py-1 text-sm text-gray-600 hover:bg-gray-100">✕</button>
+      </div>
+      <p className="text-sm text-slate-600">Ici tu brancheras ton prompt ou ton workflow.</p>
+    </div>
+  </div>
+)}
+
     </Card>
   );
 };
@@ -371,4 +389,26 @@ if (typeof document !== "undefined" && !document.getElementById("map-anim-kf")) 
     .animate-earth-wobble { animation: earth-wobble 2.8s ease-in-out infinite }
   `;
   document.head.appendChild(style);
+}
+function LocateAIButton({ onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={[
+        // dimensions/rythme proches du segmented
+        "inline-flex h-10 items-center gap-2 rounded-xl",
+        "px-4 text-sm font-bold",
+        // look “pill” doux
+        "border border-indigo-200 bg-indigo-50 text-indigo-700",
+        "shadow-sm hover:bg-indigo-100",
+        // meilleure lisibilité quand wrap
+        "whitespace-nowrap"
+      ].join(" ")}
+      title="Trouver et centrer automatiquement"
+      aria-label="Localiser par IA"
+    >
+      <span className="text-base">🤖</span>
+      <span>Localiser par IA</span>
+    </button>
+  );
 }

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { HiOutlineX, HiOutlineMinus, HiOutlinePaperAirplane } from "react-icons/hi";
 
 /* ---------- RobotHead (identique à ton style) ---------- */
-function RobotHead({ pulsing = false }) {
+function RobotHead({ pulsing = false, mood = "smile", speaking = false }) {
   return (
     <motion.div
       className="relative h-14 w-14 rounded-full shadow-xl ring-1 ring-white/30"
@@ -15,11 +15,14 @@ function RobotHead({ pulsing = false }) {
       animate={pulsing ? { scale: [1, 1.06, 1] } : {}}
       transition={{ duration: 2.4, repeat: Infinity }}
     >
+      {/* antenne + côtés */}
       <div className="absolute -top-2 left-1/2 -translate-x-1/2 h-3 w-1 rounded bg-indigo-400" />
       <div className="absolute -top-3 left-1/2 -translate-x-1/2 h-3 w-3 rounded-full bg-indigo-400 shadow" />
       <div className="absolute left-[-6px] top-1/2 -translate-y-1/2 h-5 w-1.5 rounded bg-indigo-300" />
       <div className="absolute right-[-6px] top-1/2 -translate-y-1/2 h-5 w-1.5 rounded bg-indigo-300" />
       <div className="absolute inset-1 rounded-full bg-white/70 backdrop-blur-sm ring-1 ring-black/5" />
+
+      {/* yeux */}
       <motion.div
         className="absolute left-[10px] top-[15px] h-3 w-3 rounded-full bg-indigo-600 shadow-inner"
         animate={{ scaleY: [1, 0.15, 1] }}
@@ -30,10 +33,34 @@ function RobotHead({ pulsing = false }) {
         animate={{ scaleY: [1, 0.15, 1] }}
         transition={{ duration: 3.2, repeat: Infinity, delay: 0.6 }}
       />
-      <div className="absolute left-1/2 top-[28px] h-1.5 w-6 -translate-x-1/2 rounded-full bg-indigo-300" />
+
+      {/* bouche */}
+      {mood === "smile" ? (
+        <svg
+          className="absolute left-1/2 top-[26px] -translate-x-1/2"
+          width="30"
+          height="16"
+          viewBox="0 0 30 16"
+          fill="none"
+        >
+          <motion.path
+            d="M3 3 C 10 14, 20 14, 27 3"
+            stroke="#6366f1"
+            strokeWidth="3"
+            strokeLinecap="round"
+            initial={false}
+            animate={speaking ? { y: [0, -0.8, 0] } : { y: 0 }}
+            transition={{ duration: 0.9, repeat: speaking ? Infinity : 0 }}
+          />
+        </svg>
+      ) : (
+        // visage neutre (poker face)
+        <div className="absolute left-1/2 top-[28px] h-1.5 w-6 -translate-x-1/2 rounded-full bg-indigo-300" />
+      )}
     </motion.div>
   );
 }
+
 
 /* ---------- Bubble (identique) ---------- */
 function Bubble({ role, children }) {
@@ -159,7 +186,7 @@ export default function RobotAssistant({
         whileHover={{ y: -2, scale: 1.04 }}
         whileTap={{ scale: 0.98 }}
       >
-        <RobotHead pulsing />
+        <RobotHead pulsing mood="smile" />
       </motion.button>
 
       {/* PANEL */}
@@ -190,7 +217,7 @@ export default function RobotAssistant({
 >
           {/* HEADER */}
           <div className="flex items-center gap-3 px-3 py-2 shrink-0">
-            <RobotHead />
+            <RobotHead pulsing={false} mood="smile" speaking={busy} />
             <div className="min-w-0">
               <div className="text-sm font-bold text-white leading-tight">KidoBot</div>
               <div className="text-[11px] text-cyan-200/80">Assistant IA • en ligne</div>

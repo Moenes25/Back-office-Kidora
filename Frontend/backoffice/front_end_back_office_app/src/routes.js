@@ -4,9 +4,10 @@ import React from "react";
 import MainDashboard from "views/admin/default";
 import Profile from "views/admin/profile";
 import IAPage from "views/admin/ia";
-import PaiementsPage from "views/admin/paiements";
+import CalendarPage from "views/admin/Calendar";
 import SupportPage from "views/admin/support";
 import SettingsPage from "views/admin/settings";
+import PaymentsPage from "views/admin/payments";
 
 /* === Nouvelles pages selon cahier === */
 import ClientsPage from "views/admin/clients";   // liste + filtres (types, statut, commercial)
@@ -59,13 +60,13 @@ const routes = [
   // (optionnel, caché du menu) détail client :
   // { name: "Client Details", layout: "/admin", path: "clients/:id", component: <ClientDetails />, secondary: true },
 
-  /* 2.3 Paiements & Abonnements */
+  /* 2.3 Calendar */
   {
     name: "Calendrier",
     layout: "/admin",
     path: "calendrier",
     icon: <MdCalendarToday className="h-6 w-6" />,
-    component: <PaiementsPage />,
+    component: <CalendarPage />,
   },
 
 
@@ -97,6 +98,15 @@ const routes = [
     path: "ia",
     icon: <MdPsychology className="h-6 w-6" />,
     component: <IAPage />,
+  },
+
+    /* 2.x Paiements & Facturation */
+  {
+    name: "Paiements",
+    layout: "/admin",
+    path: "paiements",                 // URL => /admin/paiements
+    icon: <MdPayments className="h-6 w-6" />, // 👈 icône de paiement
+    component: <PaymentsPage />,       // 👈 composant
   },
 
 

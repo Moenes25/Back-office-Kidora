@@ -31,6 +31,9 @@ const MOCK = [
     subscriptionDate: "2024-01-10",
     plan: "Standard / Mensuel",
     status: "Actif",
+    educateurs: 12, 
+   parents: 230,     
+    enfants: 405,     
     history: [
       { at: "2025-02-11 10:21", text: "Facture payée (#F-2190) — 380 DT" },
       { at: "2025-02-08 15:04", text: "Ticket #T-9102 (facturation) résolu" },
@@ -50,6 +53,9 @@ const MOCK = [
     subscriptionDate: "2023-10-05",
     plan: "Premium / Annuel",
     status: "En retard de paiement",
+       educateurs: 10, 
+   parents: 180,     
+    enfants: 305, 
     history: [
       { at: "2025-02-05 11:12", text: "Relance paiement J+10" },
       { at: "2025-01-05 08:30", text: "Facture émise (#F-2134) — 1 200 DT" },
@@ -68,6 +74,9 @@ const MOCK = [
     subscriptionDate: "2024-09-01",
     plan: "Établissement / Annuel",
     status: "Actif",
+       educateurs: 14, 
+   parents: 260,     
+    enfants: 485, 
     history: [
       { at: "2025-02-02 09:40", text: "Nouvel utilisateur créé (Directrice)" },
       { at: "2024-09-01 10:00", text: "Onboarding & formation" },
@@ -86,6 +95,9 @@ const MOCK = [
     subscriptionDate: "2025-02-01",
     plan: "Essai 14 jours",
     status: "En période d’essai",
+       educateurs: 23, 
+   parents: 130,     
+    enfants: 305, 
     history: [
       { at: "2025-02-12 14:31", text: "Appel de découverte" },
       { at: "2025-02-01 08:12", text: "Compte créé (essai)" },
@@ -104,6 +116,9 @@ const MOCK = [
     subscriptionDate: "2024-05-20",
     plan: "Standard / Mensuel",
     status: "Suspendu",
+       educateurs: 15, 
+   parents: 225,     
+    enfants: 444, 
     history: [
       { at: "2025-01-30 18:00", text: "Compte suspendu (impayé > J+30)" },
       { at: "2024-05-20 11:40", text: "Onboarding" },
@@ -513,6 +528,9 @@ const ClientsPage = () => {
     subscriptionDate: new Date().toISOString().slice(0, 10),
     plan: "Standard / Mensuel",
     status: "Actif",
+    educateurs: 0,   
+   parents: 0,     
+   enfants: 0,     
     history: [],
   };
   const [newClient, setNewClient] = useState(emptyClient);
@@ -950,6 +968,7 @@ const visibleCount = filtered.length;
                     <div className="text-xs text-gray-500">Formule</div>
                     <div className="font-semibold">{selected.plan}</div>
                   </div>
+                  
 
                   {selected.phone && (
                     <div className="rounded-xl bg-gray-50 px-3 py-2 text-sm font-medium flex items-center gap-2">
@@ -962,6 +981,22 @@ const visibleCount = filtered.length;
                       <FiMail /> <a className="hover:underline" href={`mailto:${selected.email}`}>{selected.email}</a>
                     </div>
                   )}
+
+                   {/* Bloc effectifs */}
+    <div className="md:col-span-2 mt-2">
+      <div className="text-xs text-gray-500 mb-3">Effectifs</div>
+      <div className="flex flex-wrap gap-8 text-xs">
+        <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-3 py-3 font-semibold text-indigo-700">
+          🧑‍🏫 {selected.educateurs ?? 0} éducateurs
+        </span>
+        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-3 font-semibold text-emerald-700">
+          👨‍👩‍👧 {selected.parents ?? 0} parents
+        </span>
+        <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-3 py-3 font-semibold text-sky-700">
+          🧒 {selected.enfants ?? 0} enfants
+        </span>
+      </div>
+    </div>
 
                   <div className="md:col-span-2 flex items-center gap-3">
                     <StatusBadge status={selected.status} />
@@ -1072,9 +1107,23 @@ const visibleCount = filtered.length;
 
       {/* MODALE Ajouter/Éditer */}
       {showAdd && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => { setShowAdd(false); setEditId(null); resetNew(); }} />
-          <form onSubmit={saveClient} className="relative z-10 w-[95%] max-w-xl rounded-2xl bg-white p-5 shadow-2xl dark:bg-navy-800 animate-[fadeIn_.25s_ease-out_both]">
+  <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+    {/* Backdrop */}
+    <div
+      className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+      onClick={() => { setShowAdd(false); setEditId(null); resetNew(); }}
+    />
+
+    {/* Panel */}
+    <form
+      onSubmit={saveClient}
+      className="
+        relative z-10 w-full max-w-xl
+        max-h-[90vh] overflow-y-auto   /* 👈 important */
+        rounded-2xl bg-white p-5 shadow-2xl dark:bg-navy-800
+        animate-[fadeIn_.25s_ease-out_both]
+      "
+    >
             <div className="mb-4 flex items-start justify-between">
               <h3 className="text-lg font-extrabold text-navy-700 dark:text-white">
                 {editId ? "Modifier le client" : "Ajouter un client"}
@@ -1112,7 +1161,6 @@ const visibleCount = filtered.length;
                   <option value="ecoles">École</option>
                 </select>
               </label>
-
               <label className="text-sm md:col-span-2">
                 <span className="mb-1 block text-xs text-gray-500">Localisation (gouvernorat)</span>
                 <select
