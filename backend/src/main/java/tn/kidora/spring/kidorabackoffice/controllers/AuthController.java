@@ -59,6 +59,7 @@ public class AuthController {
 
          }
         }
+    // === OTP forgot/reset ===
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestParam String email) {
         try {
@@ -80,7 +81,7 @@ public class AuthController {
     public ResponseEntity<String> resetPassword(@RequestParam String email, @RequestParam String newPassword) {
         User user = userRepository.findByEmail(email);
         if (user == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Utilisateur introuvable");
-
+        System.out.println("Mot de passe avant encodage : " + newPassword);
         user.setPassword(new BCryptPasswordEncoder().encode(newPassword));
         userRepository.save(user);
 
