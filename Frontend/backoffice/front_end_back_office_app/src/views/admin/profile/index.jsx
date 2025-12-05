@@ -1,42 +1,105 @@
-import Banner from "./components/Banner";
-import General from "./components/General";
-import Notification from "./components/Notification";
-import Project from "./components/Project";
-import Storage from "./components/Storage";
-import Upload from "./components/Upload";
+import { useState, useEffect, Activity } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import ProfileInfo from "./components/ProfilInfo";
+import Settings from "./components/Settings";
+import Security from "./components/Security";
+import SuperAdminSettings from "./components/AdminSetting";
+import NotificationSettings from "./components/NotifSection";
+import ProfileHeader from "./ProfilHeader";
+import ProfileTabs from "./ProfilTabs";
+import AdminCarousel from "./components/AdminCarousel";
 
-const ProfileOverview = () => {
+
+
+const VALID_TABS = ["profil", "settings", "security", "activity", "Admin", "Notification"];
+
+const ProfilePage = () => {
+  const [activeTab, setActiveTab] = useState("profile");
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Sync activeTab from URL hash on mount & when hash changes
+  useEffect(() => {
+    const hash = (location.hash || "").replace("#", "");
+    if (hash && VALID_TABS.includes(hash) && hash !== activeTab) {
+      setActiveTab(hash);
+    }
+  }, [location.hash]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep URL hash in sync when activeTab changes
+  useEffect(() => {
+    if (location.hash.replace("#", "") !== activeTab) {
+      navigate(`${location.pathname}#${activeTab}`, { replace: true });
+    }
+  }, [activeTab, location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const renderTab = () => {
+    switch (activeTab) {
+      case "profile":
+        return <ProfileInfo />;
+      case "settings":
+        return <Settings />;
+      case "security":
+        return <Security />;
+      case "activity":
+        return <Activity />;
+      case "Admin":
+        return <SuperAdminSettings />;
+      case "Notification":
+        return <NotificationSettings />;
+      default:
+        return <ProfileInfo />;
+    }
+  };
+
+ 
+
   return (
-    <div className="flex w-full flex-col gap-5">
-      <div className="w-ful mt-3 flex h-fit flex-col gap-5 lg:grid lg:grid-cols-12">
-        <div className="col-span-4 lg:!mb-0">
-          <Banner />
-        </div>
+    <div class="grid grid-cols-3 gap-4">
+      <section className="col-span-2">
+        {/* Animate the header with fade + slide */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <ProfileHeader />
+      </motion.div>
 
-        <div className="col-span-3 lg:!mb-0">
-          <Storage />
-        </div>
+      {/* Animate the tabs */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+      >
+        <ProfileTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+      </motion.div>
 
-        <div className="z-0 col-span-5 lg:!mb-0">
-          <Upload />
-        </div>
-      </div>
-      {/* all project & ... */}
-
-      <div className="grid h-full grid-cols-1 gap-5 lg:!grid-cols-12">
-        <div className="col-span-5 lg:col-span-6 lg:mb-0 3xl:col-span-4">
-          <Project />
-        </div>
-        <div className="col-span-5 lg:col-span-6 lg:mb-0 3xl:col-span-5">
-          <General />
-        </div>
-
-        <div className="col-span-5 lg:col-span-12 lg:mb-0 3xl:!col-span-3">
-          <Notification />
-        </div>
-      </div>
+      {/* Animate the active tab content with smooth fade */}
+      <motion.div
+        key={activeTab}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        transition={{ duration: 0.4 }}
+        className=""
+      >
+        {renderTab()}
+      </motion.div>
+      </section>
+      <section className="flex flex-col gap-4">
+        <AdminCarousel />
+        
+        <NotificationSettings />
+      </section>
     </div>
   );
 };
 
-export default ProfileOverview;
+export default ProfilePage;
+
+
+
+
+
