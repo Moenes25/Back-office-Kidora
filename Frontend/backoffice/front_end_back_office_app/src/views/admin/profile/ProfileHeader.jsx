@@ -1,20 +1,99 @@
-import React from "react";
-import { FaUserCircle } from "react-icons/fa";
+"use client";
+import React, { useState } from "react";
+import avatar11Img from "../../../assets/img/avatars/avatar11.png";
+import { motion } from "framer-motion";
+import AgendaModal from "./components/AgendaModal";
 
 const ProfileHeader = () => {
+  const [headerNotes, setHeaderNotes] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+
   return (
-    <div className="flex items-center gap-4 p-6 bg-white border shadow-sm rounded-xl">
-      {/* Avatar */}
-      <div className="text-6xl text-gray-400">
-        <FaUserCircle />
+    <div className="flex flex-col justify-between overflow-hidden shadow-xl rounded-2xl">
+      {/* Top Gradient Section */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="relative h-32 bg-gradient-to-r from-purple-400 via-blue-400 to-blue-200"
+      >
+        <div className="absolute top-4 right-4">
+          {/* Notes List */}
+          <div className="relative flex flex-col flex-1 w-40 h-24 gap-4 p-4 pl-4 overflow-y-auto bg-white border-2 border-gray-200 rounded-lg shadow-md scrollbar-none">
+            <div className="absolute w-1 rounded-full bottom-2 left-2 top-2 bg-gradient-to-b from-purple-400 to-blue-400"></div>
+            {headerNotes.map((note) => (
+              <div key={note.id} className="relative flex items-start gap-3">
+                <div className="w-3 h-3 mt-1 rounded-full bg-gradient-to-br from-purple-400 to-blue-400"></div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">
+                    {note.title}
+                  </p>
+                  <p className="text-xs text-gray-400">{note.date}</p>
+                </div>
+              </div>
+            ))}
+
+            {/* Button to open modal */}
+            <button
+              onClick={() => setModalOpen(true)}
+              className="absolute px-3 py-1 font-bold text-white bg-purple-400 rounded-full shadow-md bottom-1 right-1 w-fit hover:bg-purple-500"
+            >
+              +
+            </button>
+          </div>
+        </div>
+        <span className="absolute w-24 h-24 rounded-full animate-pulse-slow -left-6 -top-6 bg-white/10"></span>
+        <span className="absolute w-16 h-16 rounded-full animate-pulse-slow bottom-4 right-8 bg-white/20"></span>
+
+        {/* Avatar */}
+        <motion.div
+          className="absolute text-white transform -translate-x-1/2 bg-red-600 border-4 border-white rounded-full -bottom-12 left-4 text-7xl"
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <img src={avatar11Img} alt="User" className="rounded-full w-28 h-28 " />
+        </motion.div>
+      </motion.div>
+
+      {/* Bottom White Section */}
+      <div className="flex items-start gap-6 p-6 pt-16 bg-white">
+        {/* User Info */}
+        <div className="flex flex-col flex-1 gap-1">
+          <motion.h2
+            className="text-2xl font-bold text-gray-800"
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            Nesrine Nasri
+          </motion.h2>
+          <motion.p
+            className="text-sm font-medium text-gray-500"
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            Super Admin
+          </motion.p>
+          <motion.p
+            className="text-sm text-gray-400"
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            nesrine@example.com
+          </motion.p>
+        </div>
       </div>
 
-      {/* Info */}
-      <div>
-        <h2 className="text-xl font-semibold">Nesrine Nasri</h2>
-        <p className="text-sm text-gray-600">Super Admin</p>
-        <p className="text-sm text-gray-500">nesrine@example.com</p>
-      </div>
+      {/* Modal */}
+      {modalOpen && (
+        <AgendaModal
+          onClose={() => setModalOpen(false)}
+          onSave={(note) => setHeaderNotes((prev) => [...prev, note])}
+        />
+      )}
     </div>
   );
 };

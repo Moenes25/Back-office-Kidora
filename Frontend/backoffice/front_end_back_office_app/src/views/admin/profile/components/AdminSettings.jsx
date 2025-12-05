@@ -1,18 +1,29 @@
-import React from "react";
-
+import React, { useState } from "react";
+import AdminList from "./AdminList";
+import { FaPlus } from "react-icons/fa6";
+import AddAdminModal from "./AddAdminModal";
 
 const SuperAdminSettings = () => {
+  const [openAddModal, setOpenAddModal] = useState(false);
+  const [newAdmin, setNewAdmin] = useState(null);
+
   return (
     <div className="p-6 border shadow-sm rounded-xl">
-
       {/* Roles & Permissions */}
       <div className="mb-8">
         {/* <h4 className="mb-3 font-semibold">Gestion des rôles & permissions</h4> */}
 
-        <button className="px-4 py-2 text-white bg-blue-600 rounded-lg">
-          Ajouter un Admin
+        <button
+          className="flex items-center justify-center gap-2 px-4 py-2 font-medium text-black translate-x-3 bg-white shadow-lg hover: rounded-2xl"
+          onClick={() => setOpenAddModal(true)}
+        >
+          <div className="flex items-center justify-center w-6 h-6 rounded-full shadow-lg bg-gradient-to-br from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600">
+            <FaPlus color="white" />
+          </div>
+          Add Admin
         </button>
-      
+
+        <AdminList newAdmin={newAdmin} />
       </div>
 
       {/* AI Settings */}
@@ -29,31 +40,14 @@ const SuperAdminSettings = () => {
           Analyse automatique des activités
         </label>
       </div>
-
-      {/* Billing */}
-      <div className="mb-8">
-        <h4 className="mb-3 font-semibold">Paiements & facturation</h4>
-        <button className="px-4 py-2 text-white bg-purple-600 rounded-lg">
-          Configurer Stripe
-        </button>
-      </div>
-
-      {/* Backups */}
-      <div className="mb-8">
-        <h4 className="mb-3 font-semibold">Backups</h4>
-        <button className="px-4 py-2 text-white bg-gray-700 rounded-lg">
-          Télécharger une sauvegarde
-        </button>
-      </div>
-
-      {/* Branding */}
-      <div>
-        <h4 className="mb-3 font-semibold">Branding de la plateforme</h4>
-        <input type="file" className="p-2 border rounded-lg" />
-        <p className="mt-1 text-xs text-gray-500">
-          Téléchargez le logo de la plateforme
-        </p>
-      </div>
+      <AddAdminModal
+        open={openAddModal}
+        onClose={() => setOpenAddModal(false)}
+        onSuccess={(admin) => {
+          setNewAdmin(admin);
+          setOpenAddModal(false);
+        }}
+      />
     </div>
   );
 };

@@ -52,9 +52,7 @@ export default function Login() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-8">
-            <h2 className="mb-2 text-2xl font-bold text-transparent bg-gradient-to-r from-indigo-500 to-sky-400 bg-clip-text">
-              Login
-            </h2>
+           
             <FloatingInput
               id="login-email"
               label="Email"
@@ -90,12 +88,7 @@ export default function Login() {
               >
                 Forgot Password?
               </Link>
-              <Link
-                to="/auth/register"
-                className="font-semibold text-gray-700 cursor-pointer underline-none hover:text-red-700 hover:underline"
-              >
-                Don't have an account?
-              </Link>
+              
             </div>
           </form>
         </div>

@@ -1,76 +1,3 @@
-// import React, { useEffect, useState } from "react";
-// import axiosInstance from "api/axios";
-
-// const AdminList = ({ token }) => {
-//   const [admins, setAdmins] = useState([]);
-//   const [selectedAdmin, setSelectedAdmin] = useState(null);
-
-//   const fetchUsers = async () => {
-//   if (!token) return;
-//   try {
-//     const res = await axiosInstance.get("/user", {
-//       headers: { Authorization: `Bearer ${token}` },
-//     });
-//     const onlyAdmins = res.data.filter(user => user.role === "ADMIN");
-//     setAdmins(onlyAdmins);
-//   } catch (error) {
-//     if (error.response?.status === 403) {
-//       console.error("Forbidden: You need SUPER_ADMIN privileges");
-//     } else {
-//       console.error("Error fetching users:", error);
-//     }
-//   }
-// };
-
-//   useEffect(() => {
-//     fetchUsers();
-//   }, []);
-
-//   return (
-//     <div className="mt-6">
-//       <h3 className="mb-4 text-lg font-semibold">Liste des Admins</h3>
-
-//       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-//         {admins.map((admin) => (
-//           <div
-//             key={admin.id}
-//             onClick={() => setSelectedAdmin(admin)}
-//             className="p-4 bg-white border rounded-lg shadow cursor-pointer hover:shadow-md"
-//           >
-//             <h4 className="font-bold">{admin.nom}</h4>
-//             <p className="text-gray-600">{admin.email}</p>
-//           </div>
-//         ))}
-//       </div>
-
-//       {/* Modal Details */}
-//       {selectedAdmin && (
-//         <div className="fixed inset-0 flex items-center justify-center bg-black/50">
-//           <div className="relative p-6 bg-white rounded-lg w-80">
-//             <button
-//               onClick={() => setSelectedAdmin(null)}
-//               className="absolute text-xl top-2 right-3"
-//             >
-//               ×
-//             </button>
-
-//             <h3 className="mb-3 text-lg font-bold">Admin Details</h3>
-//             <p><strong>Name:</strong> {selectedAdmin.nom}</p>
-//             <p><strong>Email:</strong> {selectedAdmin.email}</p>
-//             <p><strong>Tel:</strong> {selectedAdmin.tel}</p>
-
-//             <p className="mt-4 text-xs text-red-600">
-//               ⚠️ Cannot display password for security reasons.
-//             </p>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default AdminList;
-
 import React, { useEffect, useState } from "react";
 import {
   FiEdit,
@@ -79,6 +6,7 @@ import {
   FiMoreVertical,
 } from "react-icons/fi";
 import avatar from "assets/img/avatars/avatar4.png";
+
 
 const AdminList = () => {
   const [admins, setAdmins] = useState([]);
@@ -122,12 +50,13 @@ const AdminList = () => {
         <h3 className="text-xl font-semibold">Liste des Admins</h3>
         <p className="text-sm text-gray-500">Total: {admins.length}</p>
       </div>
+      
 
-      <div className="space-y-4">
+      <div className="space-y-1 ">
         {admins.map((admin) => (
           <div
             key={admin.id}
-            className="flex items-center justify-between p-4 transition bg-white border shadow-sm rounded-xl hover:shadow-md"
+            className="flex items-center justify-between p-2 transition bg-white border shadow-sm rounded-xl hover:shadow-md"
           >
             {/* LEFT SIDE */}
             <div
@@ -163,7 +92,7 @@ const AdminList = () => {
                 <button className="p-2 rounded-lg hover:bg-gray-100">
                   <FiMessageCircle size={18} className="text-blue-500" />
                 </button>
-                <span className="absolute px-2 py-1 mb-2 text-xs text-white transition-opacity -translate-x-1/2 rounded-md opacity-0 left-1/2 bottom-full bg-black/80 group-hover:opacity-100">
+                <span className="absolute px-2 py-1 mb-2 text-xs text-white transition-opacity -translate-x-1/2 rounded-md opacity-0 bg-black/80 bottom-full left-1/2 group-hover:opacity-100">
                   Message
                 </span>
               </div>
@@ -173,7 +102,7 @@ const AdminList = () => {
                 <button className="p-2 rounded-lg hover:bg-gray-100">
                   <FiEdit size={18} className="text-yellow-500" />
                 </button>
-                <span className="absolute px-2 py-1 mb-2 text-xs text-white transition-opacity -translate-x-1/2 rounded-md opacity-0 left-1/2 bottom-full bg-black/80 group-hover:opacity-100">
+                <span className="absolute px-2 py-1 mb-2 text-xs text-white transition-opacity -translate-x-1/2 rounded-md opacity-0 bg-black/80 bottom-full left-1/2 group-hover:opacity-100">
                   Edit
                 </span>
               </div>
@@ -183,7 +112,7 @@ const AdminList = () => {
                 <button className="p-2 rounded-lg hover:bg-gray-100">
                   <FiTrash2 size={18} className="text-red-500" />
                 </button>
-                <span className="absolute px-2 py-1 mb-2 text-xs text-white transition-opacity -translate-x-1/2 rounded-md opacity-0 left-1/2 bottom-full bg-black/80 group-hover:opacity-100">
+                <span className="absolute px-2 py-1 mb-2 text-xs text-white transition-opacity -translate-x-1/2 rounded-md opacity-0 bg-black/80 bottom-full left-1/2 group-hover:opacity-100">
                   Delete
                 </span>
               </div>
@@ -221,7 +150,7 @@ const AdminList = () => {
       {/* MODAL DETAILS */}
       {selectedAdmin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="relative p-6 bg-white shadow-lg rounded-xl w-80">
+          <div className="relative p-6 bg-white shadow-lg w-80 rounded-xl">
             <button
               onClick={() => setSelectedAdmin(null)}
               className="absolute text-xl right-3 top-2"
@@ -237,9 +166,15 @@ const AdminList = () => {
               className="w-20 h-20 mx-auto mb-3 rounded-full"
             />
 
-            <p><strong>Name:</strong> {selectedAdmin.nom}</p>
-            <p><strong>Email:</strong> {selectedAdmin.email}</p>
-            <p><strong>Tel:</strong> {selectedAdmin.tel}</p>
+            <p>
+              <strong>Name:</strong> {selectedAdmin.nom}
+            </p>
+            <p>
+              <strong>Email:</strong> {selectedAdmin.email}
+            </p>
+            <p>
+              <strong>Tel:</strong> {selectedAdmin.tel}
+            </p>
 
             <p className="mt-3 text-xs text-red-500">
               ⚠️ Cannot display password for security reasons.
@@ -247,6 +182,8 @@ const AdminList = () => {
           </div>
         </div>
       )}
+
+    
     </div>
   );
 };

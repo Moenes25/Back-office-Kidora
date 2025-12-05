@@ -9,6 +9,7 @@ const ProfileTabs = ({ activeTab, setActiveTab }) => {
     { id: "activity", label: "Activities" },
     { id: "Admin", label: "Admin" },
     { id: "teams", label: "Kidora Teams" },
+    { id: "Notification", label: "Notifications" },
   ];
 
   const containerRef = useRef(null);

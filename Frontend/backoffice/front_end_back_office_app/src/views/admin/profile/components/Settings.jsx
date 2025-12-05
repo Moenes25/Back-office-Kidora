@@ -1,9 +1,12 @@
 import React from "react";
+import RolePermissionPage from "./Permission";
 
 const Settings = () => {
   return (
-    <div className="p-6 bg-white border shadow-sm rounded-xl">
-      <h3 className="mb-6 text-lg font-semibold">Paramètres du compte</h3>
+    <div className="p-4 bg-white shadow-lg rounded-2xl">
+      {/* Roles & Permissions */}
+      <h4 className="text-xl font-semibold">Role and Permissions</h4>
+        <RolePermissionPage />
 
       {/* General Preferences */}
       <div className="mb-8">
