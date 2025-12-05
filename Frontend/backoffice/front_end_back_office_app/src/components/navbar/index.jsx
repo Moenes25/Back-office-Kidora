@@ -15,6 +15,206 @@ import {
 } from "react-icons/io";
 import avatar from "assets/img/avatars/avatar4.png";
 
+import { motion } from "framer-motion";
+
+
+
+
+const sampleNotifs = [
+  {
+    id: "n1",
+    title: "Nouvelle facture payée",
+    text: "Crèche Arc-en-ciel vient de régler #F202405.",
+    time: "il y a 2 min",
+    unread: true,
+    colorFrom: "#a78bfa",
+    colorTo: "#22d3ee",
+    emoji: "💳",
+  },
+  {
+    id: "n2",
+    title: "Ticket résolu",
+    text: "Serveur – Maintenance clôturé par Y. Ben Ali.",
+    time: "il y a 1 h",
+    unread: false,
+    colorFrom: "#34d399",
+    colorTo: "#10b981",
+    emoji: "🛠️",
+  },
+  {
+    id: "n3",
+    title: "Abonnement à renouveler",
+    text: "Happy Kids • Standard annuel expire dans 7 jours.",
+    time: "hier",
+    unread: true,
+    colorFrom: "#f59e0b",
+    colorTo: "#ef4444",
+    emoji: "⏳",
+  },
+];
+
+const unreadCount = sampleNotifs.filter(n => n.unread).length; // adapte si tu as un state
+const badgeText   = unreadCount > 99 ? "99+" : String(unreadCount);
+function NotificationsPanel({
+  items = sampleNotifs,
+  onMarkAll = () => {},
+  onOpenAll = () => {},
+}) {
+  // animations d'ensemble
+  const container = {
+    hidden: { opacity: 0, y: 6, scale: 0.98 },
+    show: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: { type: "spring", stiffness: 220, damping: 20, staggerChildren: 0.06 }
+    }
+  };
+  const itemVar = {
+    hidden: { opacity: 0, y: 10 },
+    show:   { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 18 } }
+  };
+
+  // effet tilt 3D au survol
+  const handleMouse = (e, set) => {
+    const b = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - b.left;        // 0 → width
+    const y = e.clientY - b.top;         // 0 → height
+    const rx = ((y / b.height) - 0.5) * -8; // rotationX
+    const ry = ((x / b.width)  - 0.5) *  10; // rotationY
+    set({ rotateX: rx, rotateY: ry });
+  };
+
+  return (
+    <motion.div
+  variants={container}
+  initial="hidden"
+  animate="show"
+ className="relative w-[360px] sm:w-[420px] max-w-[90vw]
+             rounded-2xl p-3 sm:p-4
+             bg-white/90 backdrop-blur-xl border border-black/10
+             dark:bg-slate-900/90 dark:border-white/10"
+  style={{
+    perspective: 900,
+    boxShadow:
+      "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset",
+  }}
+>
+      {/* halo décoratif */}
+      <div className="pointer-events-none absolute -top-20 -right-16 h-40 w-40 rounded-full bg-indigo-500/15 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -left-20 h-44 w-44 rounded-full bg-cyan-400/15 blur-3xl" />
+
+      {/* header */}
+      <div className="mb-2 flex items-center justify-between">
+        <div>
+          <div className="text-sm font-extrabold text-slate-900 dark:text-white">Notifications</div>
+          <div className="text-[11px] text-slate-500 dark:text-slate-400">Mises à jour récentes</div>
+        </div>
+        <button
+          onClick={onMarkAll}
+          className="rounded-full px-3 py-1 text-[11px] font-semibold
+                     bg-slate-100 text-slate-700 hover:bg-slate-200
+                     dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+        >
+          Tout marquer lu
+        </button>
+      </div>
+
+      {/* liste */}
+      <motion.ul className="space-y-3">
+        {items.map((n) => (
+          <TiltCard key={n.id} variants={itemVar}>
+            <NotifItem {...n} />
+          </TiltCard>
+        ))}
+      </motion.ul>
+
+      {/* footer */}
+      <div className="mt-3 sm:mt-4 flex items-center justify-between">
+        <div className="text-[11px] text-slate-400 dark:text-slate-500">
+          {items.filter(i => i.unread).length} non lus
+        </div>
+        <button
+          onClick={onOpenAll}
+          className="rounded-xl px-3 py-1.5 text-xs font-bold
+                     bg-gradient-to-r from-indigo-600 to-sky-600 text-white
+                     shadow-[0_12px_32px_rgba(37,99,235,.35)] hover:brightness-110 active:brightness-95"
+        >
+          Voir tout
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+// Carte avec tilt 3D
+function TiltCard({ children, variants }) {
+  const [t, setT] = React.useState({ rotateX: 0, rotateY: 0 });
+  return (
+    <motion.li
+      variants={variants}
+      onMouseMove={(e) => {
+        const b = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - b.left;
+        const y = e.clientY - b.top;
+        const rx = ((y / b.height) - 0.5) * -8;
+        const ry = ((x / b.width)  - 0.5) *  10;
+        setT({ rotateX: rx, rotateY: ry });
+      }}
+      onMouseLeave={() => setT({ rotateX: 0, rotateY: 0 })}
+      style={{ transformStyle: "preserve-3d" }}
+      className="group relative rounded-2xl"
+    >
+    <motion.div
+  style={{
+    transformStyle: "preserve-3d",
+    boxShadow:
+      "rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px",
+  }}
+  animate={t}
+  transition={{ type: "spring", stiffness: 250, damping: 18 }}
+  className="relative rounded-2xl bg-white/90 border border-black/10
+             px-3 py-3 sm:px-4 sm:py-3.5
+             dark:bg-slate-900/80 dark:border-white/10"
+>
+        {/* lueur 3D */}
+        <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition
+                        bg-[radial-gradient(120%_120%_at_10%_0%,rgba(99,102,241,.15),transparent_60%)]" />
+        {/* contenu */}
+        <div style={{ transform: "translateZ(22px)" }}>
+          {children}
+        </div>
+      </motion.div>
+    </motion.li>
+  );
+}
+
+// Ligne de notification
+function NotifItem({ title, text, time, unread, colorFrom, colorTo, emoji }) {
+  return (
+    <div className="flex items-start gap-3">
+      <div
+        className="relative grid h-10 w-10 place-items-center rounded-xl text-white shadow-lg ring-1 ring-white/40"
+        style={{ background: `linear-gradient(135deg, ${colorFrom}, ${colorTo})` }}
+      >
+        <span className="text-lg">{emoji}</span>
+        {unread && (
+          <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900" />
+        )}
+      </div>
+
+      <div className="min-w-0">
+        <div className="flex items-center gap-2">
+          <p className="truncate text-sm font-bold text-slate-900 dark:text-white">{title}</p>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500">{time}</span>
+        </div>
+        <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">{text}</p>
+      </div>
+    </div>
+  );
+}
+
+
 const Navbar = (props) => {
   const { onOpenSidenav, brandText } = props;
   const [darkmode, setDarkmode] = React.useState(false);
@@ -103,54 +303,59 @@ const Navbar = (props) => {
 <div className="ml-auto flex items-center gap-3">
         {/* start Notification */}
         <Dropdown
-          button={
-            <p className="cursor-pointer">
-              <IoMdNotificationsOutline className="h-5 w-5 text-gray-600 dark:text-white" />
-            </p>
-          }
-          animation="origin-[65%_0%] md:origin-top-right transition-all duration-300 ease-in-out"
-          children={
-            <div className="flex w-[360px] flex-col gap-3 rounded-[20px] bg-white p-4 shadow-xl shadow-shadow-500 dark:!bg-navy-700 dark:text-white dark:shadow-none sm:w-[460px]">
-              <div className="flex items-center justify-between">
-                <p className="text-base font-bold text-navy-700 dark:text-white">
-                  Notification
-                </p>
-                <p className="text-sm font-bold text-navy-700 dark:text-white">
-                  Mark all read
-                </p>
-              </div>
+  button={
+<button
+  type="button"
+  aria-label={`Notifications (${unreadCount} non lus)`}
+  title="Notifications"
+  className="relative grid h-8 w-8 place-items-center rounded-full
+             bg-white ring-1 ring-black/5 shadow text-slate-700 hover:bg-white/90
+             dark:bg-slate-800 dark:text-slate-100 dark:ring-white/10
+             overflow-visible"
+>
+  {/* Icône au-dessus du halo */}
+  <IoMdNotificationsOutline className="relative z-10 h-5 w-5" />
 
-              <button className="flex w-full items-center">
-                <div className="flex h-full w-[85px] items-center justify-center rounded-xl bg-gradient-to-b from-brandLinear to-brand-500 py-4 text-2xl text-white">
-                  <BsArrowBarUp />
-                </div>
-                <div className="ml-2 flex h-full w-full flex-col justify-center rounded-lg px-1 text-sm">
-                  <p className="mb-1 text-left text-base font-bold text-gray-900 dark:text-white">
-                    New Update: Horizon UI Dashboard PRO
-                  </p>
-                  <p className="font-base text-left text-xs text-gray-900 dark:text-white">
-                    A new update for your downloaded item is available!
-                  </p>
-                </div>
-              </button>
+  {/* Halo pulse derrière l’icône */}
+  {unreadCount > 0 && (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute -top-2 -right-2 h-3 w-3
+                 rounded-full bg-red-500/70 animate-ping z-0"
+    />
+  )}
 
-              <button className="flex w-full items-center">
-                <div className="flex h-full w-[85px] items-center justify-center rounded-xl bg-gradient-to-b from-brandLinear to-brand-500 py-4 text-2xl text-white">
-                  <BsArrowBarUp />
-                </div>
-                <div className="ml-2 flex h-full w-full flex-col justify-center rounded-lg px-1 text-sm">
-                  <p className="mb-1 text-left text-base font-bold text-gray-900 dark:text-white">
-                    New Update: Horizon UI Dashboard PRO
-                  </p>
-                  <p className="font-base text-left text-xs text-gray-900 dark:text-white">
-                    A new update for your downloaded item is available!
-                  </p>
-                </div>
-              </button>
-            </div>
-          }
-          classNames={"py-2 top-4 -left-[230px] md:-left-[440px] w-max"}
-        />
+  {/* Badge rouge au-dessus de tout */}
+  {unreadCount > 0 && (
+   <span className="absolute -top-2 -right-2 grid place-items-center
+                 min-w-[20px] h-[20px] rounded-full bg-red-600
+                 text-white text-[11px] font-bold z-20 shadow-2xl
+                 animate-[badgepop_.25s_ease-out]">
+  {badgeText}
+</span>
+
+  )}
+</button>
+
+
+
+
+  }
+  animation="origin-[65%_0%] md:origin-top-right transition-all duration-300 ease-in-out"
+  classNames="py-2 top-4 -left-[230px] md:-left-[420px] w-max"
+>
+  <NotificationsPanel
+    onMarkAll={() => {
+      // ici: API “mark all read” si besoin
+      console.log("Tout marqué comme lu");
+    }}
+    onOpenAll={() => {
+      // ici: navigation vers /notifications
+      console.log("Voir toutes les notifications");
+    }}
+  />
+</Dropdown>
+
     
         <div
           className="cursor-pointer text-gray-600"
@@ -217,3 +422,13 @@ const Navbar = (props) => {
 };
 
 export default Navbar;
+<style>{`
+  .notif-scroll::-webkit-scrollbar { height: 8px; width: 8px }
+  .notif-scroll::-webkit-scrollbar-thumb { background: rgba(148,163,184,.35); border-radius: 9999px }
+  .notif-scroll::-webkit-scrollbar-track { background: transparent }
+  @keyframes badgepop {
+  0% { transform: scale(.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+`}</style>
