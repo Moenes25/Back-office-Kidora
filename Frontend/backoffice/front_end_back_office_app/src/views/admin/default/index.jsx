@@ -516,7 +516,7 @@ function FilterFX() {
 
 function EntityFilter({ value, onChange, counts = { creches:0, garderies:0, ecoles:0 } }) {
   const [open, setOpen] = React.useState(false);
-  const [hover, setHover] = React.useState(-1);   // focus clavier/hover
+  const [hover, setHover] = React.useState(-1);
   const ref = React.useRef(null);
   const btnRef = React.useRef(null);
 
@@ -534,24 +534,11 @@ function EntityFilter({ value, onChange, counts = { creches:0, garderies:0, ecol
   const current = options.find(o => o.v === value) ?? options[0];
   const currentIndex = options.findIndex(o => o.v === value);
 
-  const toggle = () => {
-    setOpen(s => !s);
-    setHover(currentIndex);
-  };
-
-  const select = (v) => {
-    onChange?.(v);
-    setOpen(false);
-    btnRef.current?.focus();
-  };
-
-  // Navigation clavier sur le bouton
+  const toggle  = () => { setOpen(s => !s); setHover(currentIndex); };
+  const select  = (v) => { onChange?.(v); setOpen(false); btnRef.current?.focus(); };
   const onKeyDown = (e) => {
     if (!open && (e.key === "Enter" || e.key === " " || e.key === "ArrowDown")) {
-      e.preventDefault();
-      setOpen(true);
-      setHover(currentIndex);
-      return;
+      e.preventDefault(); setOpen(true); setHover(currentIndex); return;
     }
     if (!open) return;
     if (e.key === "Escape") { setOpen(false); btnRef.current?.focus(); }
@@ -577,25 +564,27 @@ function EntityFilter({ value, onChange, counts = { creches:0, garderies:0, ecol
           bg-white/80 px-3 py-1.5 text-sm font-semibold shadow-sm
           hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300
           transition
+
+          dark:bg-slate-800/80 dark:text-slate-200 dark:border-white/10
+          dark:hover:bg-slate-800 dark:focus-visible:ring-sky-800
         "
         style={{
-          // petit relief 3D et halo discret
           boxShadow: "inset 0 -1px 0 rgba(2,6,23,.06), 0 6px 18px -10px rgba(2,6,23,.18)",
         }}
       >
-        {/* pastille colorée selon la sélection */}
+        {/* pastille colorée */}
         <span className={`h-2 w-2 rounded-full ${current.color}`} aria-hidden />
         <span className="truncate">{current.label}</span>
 
         {/* compteur */}
-        <span className="ml-1 rounded-full bg-black/5 px-2 text-[11px] font-bold">
+        <span className="ml-1 rounded-full bg-black/5 px-2 text-[11px] font-bold dark:bg-white/10">
           {current.count}
         </span>
 
-        {/* chevron animé */}
+        {/* chevron */}
         <svg
           width="16" height="16" viewBox="0 0 20 20"
-          className={`opacity-60 transition-transform ${open ? "rotate-180" : ""}`}
+          className={`opacity-70 transition-transform ${open ? "rotate-180" : ""} text-slate-600 dark:text-slate-300`}
           aria-hidden
         >
           <path fill="currentColor" d="M5.23 7.21a.75.75 0 011.06.02L10 11.1l3.71-3.87a.75.75 0 111.08 1.04l-4.24 4.41a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"/>
@@ -609,12 +598,14 @@ function EntityFilter({ value, onChange, counts = { creches:0, garderies:0, ecol
           aria-activedescendant={hover >= 0 ? `opt-${options[hover].v}` : undefined}
           className="
             absolute right-0 z-20 mt-2 w-56 rounded-2xl border border-black/10 bg-white/95
-            backdrop-blur shadow-[0_18px_45px_-22px_rgba(2,6,23,.35)]
-            anim-pop
+            backdrop-blur shadow-[0_18px_45px_-22px_rgba(2,6,23,.35)] anim-pop
+
+            dark:bg-slate-900/90 dark:text-slate-200 dark:border-white/10
           "
         >
-          {/* petite pointe */}
-          <span className="absolute -top-2 right-6 h-3 w-3 rotate-45 bg-white border-l border-t border-black/10" />
+          {/* pointe */}
+          <span className="absolute -top-2 right-6 h-3 w-3 rotate-45 bg-white border-l border-t border-black/10
+                           dark:bg-slate-900 dark:border-white/10" />
 
           <ul className="p-1">
             {options.map((o, i) => {
@@ -630,20 +621,22 @@ function EntityFilter({ value, onChange, counts = { creches:0, garderies:0, ecol
                     onClick={() => select(o.v)}
                     className={[
                       "w-full rounded-xl px-3 py-2 text-left text-sm transition flex items-center justify-between",
-                      hovered ? "bg-sky-50" : "hover:bg-gray-50",
-                      active ? "ring-1 ring-sky-200 bg-sky-50/70" : "",
+                      hovered ? "bg-sky-50 dark:bg-slate-800" : "hover:bg-gray-50 dark:hover:bg-slate-800/80",
+                      active
+                        ? "ring-1 ring-sky-200 bg-sky-50/70 dark:ring-sky-800 dark:bg-sky-900/30"
+                        : "",
                     ].join(" ")}
                   >
                     <span className="flex items-center gap-2 min-w-0">
                       <span className={`h-2 w-2 rounded-full ${o.color}`} />
                       <span className="truncate">{o.label}</span>
                       {active && (
-                        <svg width="14" height="14" viewBox="0 0 20 20" className="text-sky-600">
+                        <svg width="14" height="14" viewBox="0 0 20 20" className="text-sky-600 dark:text-sky-400">
                           <path fill="currentColor" d="M7.5 13.3l-3-3 1.1-1.1 1.9 1.9 5.4-5.4 1.1 1.1z"/>
                         </svg>
                       )}
                     </span>
-                    <span className="rounded-full bg-black/5 px-2 text-[11px] font-bold">
+                    <span className="rounded-full bg-black/5 px-2 text-[11px] font-bold dark:bg-white/10">
                       {o.count}
                     </span>
                   </button>
@@ -970,7 +963,7 @@ const availability = (() => {
 
 </div>
 
-<AIIndicatorsPanel
+ {/* *****<AIIndicatorsPanel
   stats={{
     creches: { count: 128, info: "actives" },
     garderies: { count: 140, info: "actives" },
@@ -982,7 +975,7 @@ const availability = (() => {
     console.log("Nuage cliqué:", type);
   }}
   links={{ chatbot: "/assistant" }}
-/>
+/>*** */}
 
 
     
@@ -1195,7 +1188,7 @@ const availability = (() => {
           Aucune donnée pour les {typeLabel[tableFilter]} pour le moment.
         </div>
       ) : (
-        <table className="w-full text-left border-collapse">
+        <table className="w-full text-left border-collapse   text-slate-800 dark:text-black">
           <thead>
             <tr className="text-xs font-semibold uppercase tracking-wide text-gray-500 bg-gradient-to-r from-gray-50 to-gray-100 ">
               <th className="py-3 px-3">Nom</th>
