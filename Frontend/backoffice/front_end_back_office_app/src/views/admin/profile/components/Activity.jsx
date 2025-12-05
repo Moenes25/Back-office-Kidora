@@ -1,11 +1,13 @@
-// ActivityFeedSection.jsx
+
 import React, { useState } from 'react';
 
 const ActivityFeedSection = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  
 
-  // Fake activity data for admin dashboard
+
+
   const activities = [
     {
       id: 1,
@@ -197,6 +199,7 @@ const ActivityFeedSection = () => {
 
   // Get current filter label
   const currentFilter = filters.find(f => f.id === activeFilter) || filters[0];
+
 
   // Filter activities based on active filter
   const filteredActivities = activeFilter === 'all' 
@@ -412,7 +415,7 @@ const ActivityFeedSection = () => {
       {filteredActivities.length > 0 && (
         <div className="pt-4 mt-6 border-t border-gray-100">
           <a 
-            href="#" 
+            href="/" 
             className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800"
           >
             View all activity

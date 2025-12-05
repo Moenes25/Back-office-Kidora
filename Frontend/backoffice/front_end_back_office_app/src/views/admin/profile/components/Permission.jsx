@@ -1,9 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-
-// react-icons
 import { FiEye, FiEdit, FiRefreshCcw, FiTrash } from "react-icons/fi";
+import { IconContext } from "react-icons";
 
 const admins = [
   { id: 1, name: "Nesrin", role: "Super Admin" },
@@ -12,10 +11,10 @@ const admins = [
 ];
 
 const modules = [
-  { name: "Institutions", icon: "🏛️" },
-  { name: "Admins", icon: "👥" },
-  { name: "Billing", icon: "💳" },
-  { name: "Settings", icon: "⚙️" },
+  { name: "Institutions", icon: <FiEye /> },
+  { name: "Admins", icon: <FiEdit /> },
+  { name: "Billing", icon: <FiRefreshCcw /> },
+  { name: "Settings", icon: <FiTrash /> },
 ];
 
 const initialPermissions = {
@@ -39,7 +38,7 @@ const initialPermissions = {
   },
 };
 
-// ICONS MAP
+// ICONS MAP with gradient & soft animation
 const permissionIcons = {
   read: <FiEye className="text-lg" />,
   write: <FiEdit className="text-lg" />,
@@ -51,23 +50,23 @@ export default function PermissionViewPage() {
   const [selectedAdmin, setSelectedAdmin] = useState(admins[0]);
 
   return (
-    <div className="py-4">
+    <div className="px-4 py-6">
       {/* ADMINS LIST TOP */}
-      <div className="flex gap-6 pb-3 mb-10 overflow-x-auto border-b border-gray-300 scrollbar-none">
+      <div className="flex gap-6 pb-3 mb-8 overflow-x-auto border-b border-gray-200 scrollbar-none">
         {admins.map((admin) => (
           <motion.div
             key={admin.id}
             onClick={() => setSelectedAdmin(admin)}
-            whileHover={{ scale: 1.05 }}
-            className={`cursor-pointer px-4 py-2 rounded-md whitespace-nowrap transition-all
+            whileHover={{ scale: 1.08 }}
+            className={`cursor-pointer px-5 py-3 rounded-2xl whitespace-nowrap transition-all 
               ${
                 selectedAdmin.id === admin.id
-                  ? "text-purple-700 border-b-2 border-purple-700"
-                  : "text-gray-700"
+                  ? "bg-gradient-to-r from-purple-400 to-blue-400 text-white shadow-lg"
+                  : "text-gray-700 hover:bg-gray-100"
               }`}
           >
             <p className="font-semibold">{admin.name}</p>
-            <p className="text-sm opacity-75">{admin.role}</p>
+            <p className="text-sm opacity-70">{admin.role}</p>
           </motion.div>
         ))}
       </div>
@@ -82,39 +81,50 @@ export default function PermissionViewPage() {
               key={m.name}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: i * 0.1 }}
-              className="p-6 bg-white border border-gray-200 shadow-sm rounded-2xl"
+              transition={{ duration: 0.4, delay: i * 0.1 }}
+              className="p-6 bg-white border border-gray-100 shadow-lg rounded-3xl"
             >
               {/* module header */}
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-3xl">{m.icon}</span>
-                <h2 className="text-xl font-semibold text-gray-700">
-                  {m.name}
-                </h2>
+              <div className="flex items-center gap-3 mb-5">
+                <IconContext.Provider
+                  value={{
+                    className:
+                      "text-3xl bg-gradient-to-br from-purple-500 to-blue-400 text-transparent bg-clip-text",
+                  }}
+                >
+                  {m.icon}
+                </IconContext.Provider>
+                <h2 className="text-xl font-semibold text-gray-800">{m.name}</h2>
               </div>
 
               {/* Permission items */}
               <div className="flex flex-col gap-3">
                 {Object.entries(perm).map(([key, value]) => (
-                  <div
+                  <motion.div
                     key={key}
-                    className="flex items-center justify-between p-3 border border-gray-200 rounded-xl bg-gray-50"
+                    whileHover={{ scale: 1.03 }}
+                    className="flex items-center justify-between p-3 transition-all border border-gray-200 rounded-xl bg-gray-50"
                   >
-                    <div className="flex items-center gap-2">
-                      {permissionIcons[key]}
-                      <span className="font-medium text-gray-700 capitalize">
-                        {key}
-                      </span>
+                    <div className="flex items-center gap-3">
+                      <IconContext.Provider
+                        value={{
+                          className:
+                            "text-lg bg-gradient-to-r from-purple-400 to-blue-400 text-transparent bg-clip-text",
+                        }}
+                      >
+                        {permissionIcons[key]}
+                      </IconContext.Provider>
+                      <span className="font-medium text-gray-700 capitalize">{key}</span>
                     </div>
 
                     <span
                       className={`text-sm font-semibold ${
-                        value ? "text-green-600" : "text-red-500"
+                        value ? "text-green-500" : "text-red-400"
                       }`}
                     >
                       {value ? "Allowed" : "Not allowed"}
                     </span>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </motion.div>

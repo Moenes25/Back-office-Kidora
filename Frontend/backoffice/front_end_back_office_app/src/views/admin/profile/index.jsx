@@ -1,23 +1,29 @@
-import { useState, useEffect, Activity } from "react";
+import { useState, useEffect} from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import ProfileInfo from "./components/ProfilInfo";
 import Settings from "./components/Settings";
 import Security from "./components/Security";
-import SuperAdminSettings from "./components/AdminSetting";
 import NotificationSettings from "./components/NotifSection";
 import ProfileHeader from "./ProfilHeader";
 import ProfileTabs from "./ProfilTabs";
 import AdminCarousel from "./components/AdminCarousel";
+import Notifications from "./components/Notification";
+import AgendaModal from "./components/AgendaModal";
+import ActivityFeedSection from "./components/Activity";
+import SuperAdminSettings from "./components/AdminSetting";
 
 
 
-const VALID_TABS = ["profil", "settings", "security", "activity", "Admin", "Notification"];
+
+const VALID_TABS = ["profile", "settings", "security", "activity", "admin", "notification"];
 
 const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const location = useLocation();
   const navigate = useNavigate();
+  const [headerNotes, setHeaderNotes] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
 
   // Sync activeTab from URL hash on mount & when hash changes
   useEffect(() => {
@@ -43,10 +49,10 @@ const ProfilePage = () => {
       case "security":
         return <Security />;
       case "activity":
-        return <Activity />;
-      case "Admin":
+        return <ActivityFeedSection />;
+      case "admin":
         return <SuperAdminSettings />;
-      case "Notification":
+      case "notification":
         return <NotificationSettings />;
       default:
         return <ProfileInfo />;
@@ -90,8 +96,42 @@ const ProfilePage = () => {
       </section>
       <section className="flex flex-col gap-4">
         <AdminCarousel />
+
+      
+          {/* Notes List */}
+          <div className="relative flex flex-col w-full h-10 gap-4 p-4 pl-4 overflow-y-auto bg-white border-2 border-gray-200 rounded-lg shadow-md scrollbar-none">
+            <div className="absolute w-1 rounded-full bottom-2 left-2 top-2 bg-gradient-to-b from-purple-400 to-blue-400"></div>
+            {headerNotes.map((note) => (
+              <div key={note.id} className="relative flex items-start gap-3">
+                <div className="w-3 h-3 mt-1 rounded-full bg-gradient-to-br from-purple-400 to-blue-400"></div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">
+                    {note.title}
+                  </p>
+                  <p className="text-xs text-gray-400">{note.date}</p>
+                </div>
+              </div>
+            ))}
+
+            {/* Button to open modal */}
+            <button
+              onClick={() => setModalOpen(true)}
+              className="absolute px-3 py-1 font-bold text-white bg-purple-400 rounded-full shadow-md bottom-1 right-1 w-fit hover:bg-purple-500"
+            >
+              +
+            </button>
+          </div>
+       
+
+        {/* Modal */}
+      {modalOpen && (
+        <AgendaModal
+          onClose={() => setModalOpen(false)}
+          onSave={(note) => setHeaderNotes((prev) => [...prev, note])}
+        />
+      )}
         
-        <NotificationSettings />
+        <Notifications />
       </section>
     </div>
   );

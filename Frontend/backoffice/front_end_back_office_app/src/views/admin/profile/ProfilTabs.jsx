@@ -1,15 +1,15 @@
 import React, { useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 const ProfileTabs = ({ activeTab, setActiveTab }) => {
   const tabs = [
     { id: "profile", label: "Profil" },
     { id: "settings", label: "Settings" },
     { id: "security", label: "Security" },
-    { id: "activity", label: "Activities" },
-    { id: "Admin", label: "Admin" },
-    { id: "teams", label: "Kidora Teams" },
-    { id: "Notification", label: "Notifications" },
+    { id: "activity", label: "Activity" },
+    { id: "admin", label: "Admin" },
+    { id: "teams", label: "Teams" },
+    { id: "notification", label: "Notifications" },
   ];
 
   const containerRef = useRef(null);

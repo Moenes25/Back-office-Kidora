@@ -1,12 +1,12 @@
 "use client";
-import React, { useState } from "react";
+import React, { } from "react";
 import avatar11Img from "../../../assets/img/avatars/avatar11.png";
 import { motion } from "framer-motion";
-import AgendaModal from "./components/AgendaModal";
+
 
 const ProfileHeader = () => {
-  const [headerNotes, setHeaderNotes] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
+  
+  
 
   return (
     <div className="flex flex-col justify-between overflow-hidden shadow-xl rounded-2xl">
@@ -17,31 +17,7 @@ const ProfileHeader = () => {
         transition={{ duration: 0.6 }}
         className="relative h-32 bg-gradient-to-r from-purple-400 via-blue-400 to-blue-200"
       >
-        <div className="absolute top-4 right-4">
-          {/* Notes List */}
-          <div className="relative flex flex-col flex-1 w-40 h-24 gap-4 p-4 pl-4 overflow-y-auto bg-white border-2 border-gray-200 rounded-lg shadow-md scrollbar-none">
-            <div className="absolute w-1 rounded-full bottom-2 left-2 top-2 bg-gradient-to-b from-purple-400 to-blue-400"></div>
-            {headerNotes.map((note) => (
-              <div key={note.id} className="relative flex items-start gap-3">
-                <div className="w-3 h-3 mt-1 rounded-full bg-gradient-to-br from-purple-400 to-blue-400"></div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-800">
-                    {note.title}
-                  </p>
-                  <p className="text-xs text-gray-400">{note.date}</p>
-                </div>
-              </div>
-            ))}
-
-            {/* Button to open modal */}
-            <button
-              onClick={() => setModalOpen(true)}
-              className="absolute px-3 py-1 font-bold text-white bg-purple-400 rounded-full shadow-md bottom-1 right-1 w-fit hover:bg-purple-500"
-            >
-              +
-            </button>
-          </div>
-        </div>
+        
         <span className="absolute w-24 h-24 rounded-full animate-pulse-slow -left-6 -top-6 bg-white/10"></span>
         <span className="absolute w-16 h-16 rounded-full animate-pulse-slow bottom-4 right-8 bg-white/20"></span>
 
@@ -87,13 +63,7 @@ const ProfileHeader = () => {
         </div>
       </div>
 
-      {/* Modal */}
-      {modalOpen && (
-        <AgendaModal
-          onClose={() => setModalOpen(false)}
-          onSave={(note) => setHeaderNotes((prev) => [...prev, note])}
-        />
-      )}
+      
     </div>
   );
 };
