@@ -5,43 +5,135 @@ import Swal from "sweetalert2";
 
 
 /* ---------- Modal générique ---------- */
-function Modal({ open, onClose, children, title }) {
+
+
+function Modal({ open, onClose, children, title, size = "xl" }) {
   if (!open) return null;
 
+  const sizes = {
+    sm: "max-w-md",   // ~28rem
+    md: "max-w-lg",   // ~32rem
+    lg: "max-w-2xl",  // ~42rem
+    xl: "max-w-3xl",  // ~48rem
+    full: "w-[min(90vw,1000px)]", // fluide jusqu'à 1000px
+  };
+
   return (
-    <div className="absolute inset-0 z-50 grid place-items-center p-4">
-      {/* Backdrop */}
-      <div
+    <div
+      className="absolute inset-0 z-50 grid place-items-center p-4"
+      style={{ perspective: "1200px" }} // profondeur 3D
+    >
+      {/* Backdrop avec vignette douce */}
+      <button
         onClick={onClose}
-        className="absolute inset-0 bg-black/30 backdrop-blur-sm animate-fade-in"
+        aria-label="Fermer le modal"
+        className="absolute inset-0 animate-fade-in"
+        style={{
+          backdropFilter: "blur(6px)",
+          WebkitBackdropFilter: "blur(6px)",
+          background:
+            "radial-gradient(80% 120% at 50% 20%, rgba(0,0,0,.38), rgba(0,0,0,.42))",
+        }}
       />
 
       {/* Panel */}
-      <div className="relative w-full max-w-md rounded-2xl border border-black/10 bg-white shadow-xl ring-1 ring-black/5 animate-pop-in">
-        <div className="flex items-center justify-between px-5 py-4 border-b">
-          <h3 className="text-base font-bold">{title}</h3>
+      <div
+        className={`
+          relative w-full ${sizes[size]}
+          rounded-3xl border border-black/10 bg-white/95
+          ring-1 ring-black/5 overflow-hidden flex flex-col
+          animate-pop-in will-change-transform
+        `}
+        // Ombres 3D + léger tilt d'entrée
+        style={{
+          transformStyle: "preserve-3d",
+          boxShadow:
+            "0 28px 70px -24px rgba(2,6,23,.35), 0 16px 30px -20px rgba(2,6,23,.28), inset 0 -1px 0 rgba(2,6,23,.04)",
+        }}
+        onMouseMove={(e) => {
+          // micro-parallaxe (safe, désactivée si prefers-reduced-motion)
+          const el = e.currentTarget;
+          if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+          const rect = el.getBoundingClientRect();
+          const x = (e.clientX - rect.left) / rect.width - 0.5;
+          const y = (e.clientY - rect.top) / rect.height - 0.5;
+          el.style.transform = `rotateX(${(-y * 2).toFixed(2)}deg) rotateY(${(x * 2).toFixed(2)}deg) translateZ(0)`;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "translateZ(0)";
+        }}
+      >
+        {/* highlight supérieur */}
+        <span className="pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-white to-transparent opacity-80" />
+        {/* arête basse 3D */}
+        <span
+          className="pointer-events-none absolute inset-x-4 bottom-0 h-3 rounded-b-3xl"
+          style={{
+            background: "linear-gradient(to bottom, rgba(0,0,0,.05), rgba(0,0,0,.12))",
+            filter: "blur(8px)",
+            opacity: 0.6,
+          }}
+        />
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b bg-white/70 backdrop-blur-sm">
+          <h3 className="text-base font-extrabold tracking-tight">{title}</h3>
           <button
             onClick={onClose}
-            className="grid h-8 w-8 place-items-center rounded-lg hover:bg-gray-100 active:scale-95 transition"
+            className="grid h-9 w-9 place-items-center rounded-lg text-gray-600 hover:bg-gray-100 active:scale-95 transition"
           >
             <FiX />
           </button>
         </div>
-        <div className="p-5">{children}</div>
+
+        {/* Body (scrollable) */}
+        <div className="p-5 overflow-y-auto max-h-[72vh]">
+          {children}
+        </div>
       </div>
 
-      {/* animations */}
+      {/* Animations / safety motion */}
       <style>{`
         @keyframes pop-in {
-          0%   { opacity: 0; transform: translateY(12px) scale(.96) }
-          60%  { opacity: 1; transform: translateY(-2px) scale(1.01) }
-          100% { opacity: 1; transform: translateY(0) scale(1) }
+          0%   { opacity: 0; transform: translateY(14px) scale(.965) rotateX(2deg); }
+          60%  { opacity: 1; transform: translateY(-2px) scale(1.005) rotateX(0); }
+          100% { opacity: 1; transform: translateY(0) scale(1) rotateX(0); }
         }
         @keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }
-        .animate-pop-in { animation: pop-in .22s cubic-bezier(.2,0,0,1) both }
-        .animate-fade-in { animation: fade-in .18s linear both }
+        .animate-pop-in { animation: pop-in .28s cubic-bezier(.2,0,0,1) both }
+        .animate-fade-in { animation: fade-in .22s linear both }
+        @media (prefers-reduced-motion: reduce) {
+          .animate-pop-in { animation: none !important }
+          .animate-fade-in { animation: none !important }
+        }
       `}</style>
     </div>
+  );
+}
+
+
+
+
+function ApptUIFX() {
+  return (
+    <style>{`
+      @keyframes card-enter {
+        0% { opacity: 0; transform: translateY(6px) scale(.98) }
+        70%{ opacity: 1; transform: translateY(-2px) scale(1.01) }
+        100%{ opacity: 1; transform: translateY(0) scale(1) }
+      }
+      @keyframes pulse-soft {
+        0%,100% { transform: scale(1) }
+        50%     { transform: scale(1.02) }
+      }
+      .animate-card-enter { animation: card-enter .24s cubic-bezier(.2,0,0,1) both }
+      .pressable { transition: transform .18s ease, box-shadow .24s ease, background .24s ease }
+      .pressable:active { transform: translateY(1px) scale(.998) }
+      @media (prefers-reduced-motion: reduce) {
+        .animate-card-enter { animation: none !important }
+        .pressable { transition: none !important }
+      }
+    `}</style>
   );
 }
 
@@ -65,6 +157,64 @@ const DIRECTORY = {
   ],
 };
 const TYPE_LABEL = { garderies: "Garderie", creches: "Crèche", ecoles: "École" };
+
+
+
+// Thème par type pour DayModal (couleurs + ombres 3D)
+const DAY_THEME = {
+  ecoles: {
+    accent: "#10b981",
+    gradFrom: "from-emerald-50",
+    text: "text-emerald-700",
+    ring: "ring-emerald-300",
+    chip: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+    shadow: "0 8px 18px -10px rgba(16,185,129,.35), 0 18px 42px -18px rgba(16,185,129,.25)",
+    halo: "#10b98122",
+  },
+  creches: {
+    accent: "#6366f1",
+    gradFrom: "from-indigo-50",
+    text: "text-indigo-700",
+    ring: "ring-indigo-300",
+    chip: "bg-indigo-50 text-indigo-700 ring-indigo-200",
+    shadow: "0 8px 18px -10px rgba(99,102,241,.35), 0 18px 42px -18px rgba(99,102,241,.25)",
+    halo: "#6366f122",
+  },
+  garderies: {
+    accent: "#f59e0b",
+    gradFrom: "from-amber-50",
+    text: "text-amber-700",
+    ring: "ring-amber-300",
+    chip: "bg-amber-50 text-amber-700 ring-amber-200",
+    shadow: "0 8px 18px -10px rgba(245,158,11,.35), 0 18px 42px -18px rgba(245,158,11,.25)",
+    halo: "#f59e0b22",
+  },
+};
+
+
+// Palette/thème par type (utilisé dans AppointmentCard)
+const TYPE_THEME = {
+  ecoles: {
+    accent: "#10b981",
+    chipBg: "bg-emerald-50",
+    chipText: "text-emerald-700",
+    chipRing: "ring-emerald-200",
+  },
+  creches: {
+    accent: "#6366f1",
+    chipBg: "bg-indigo-50",
+    chipText: "text-indigo-700",
+    chipRing: "ring-indigo-200",
+  },
+  garderies: {
+    accent: "#f59e0b",
+    chipBg: "bg-amber-50",
+    chipText: "text-amber-700",
+    chipRing: "ring-amber-200",
+  },
+};
+
+
 
 /* ---------- Formulaire RDV ---------- */
 function AppointmentForm({ dateISO, slots, initial = null, onSubmit, onCancel }) {
@@ -173,83 +323,329 @@ function AppointmentForm({ dateISO, slots, initial = null, onSubmit, onCancel })
 }
 
 /* ---------- Petite carte RDV ---------- */
+function AvatarFromName({ name }) {
+  const initials = name
+    .split(" ")
+    .map((w) => w[0]?.toUpperCase())
+    .slice(0, 2)
+    .join("");
+  return (
+    <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-gray-50 to-white text-[11px] font-extrabold text-gray-700 ring-1 ring-black/5 shadow-sm">
+      {initials || "?"}
+    </div>
+  );
+}
+
 function AppointmentCard({ appt, onEdit, onDelete }) {
   const { id, dateISO, time, type, placeId, subject } = appt;
   const place = DIRECTORY[type].find((p) => p.id === placeId)?.name || "Établissement";
+  const theme = TYPE_THEME[type] ?? TYPE_THEME.ecoles;
+
   return (
-     <div
+    <div
       className="
-        group relative rounded-2xl border border-black/10 bg-white p-4 transition-all
-        hover:-translate-y-0.5
-        shadow-[0_2px_4px_rgba(0,0,0,0.4),0_7px_13px_-3px_rgba(0,0,0,0.3),inset_0_-3px_0_rgba(0,0,0,0.2)]
-        hover:shadow-[0_4px_8px_rgba(0,0,0,0.45),0_12px_20px_-5px_rgba(0,0,0,0.35),inset_0_-3px_0_rgba(0,0,0,0.25)]
+        group relative overflow-hidden rounded-2xl border border-black/10 bg-white/90
+        p-4 pressable animate-card-enter
+        shadow-[0_4px_10px_rgba(0,0,0,0.06),0_20px_35px_-20px_rgba(0,0,0,0.2)]
+        hover:shadow-[0_10px_20px_rgba(0,0,0,0.07),0_30px_55px_-25px_rgba(0,0,0,0.28)]
+        ring-1 ring-black/5 backdrop-blur
       "
+      style={{
+        // petite lueur directionnelle sur hover, teinte selon le type
+        boxShadow:
+          "0 4px 10px rgba(0,0,0,.06), 0 20px 35px -20px rgba(0,0,0,.2)",
+      }}
     >
-      <div className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">{TYPE_LABEL[type]}</div>
-      <div className="mt-1 text-base font-bold text-gray-900">{place}</div>
-      <div className="mt-2 flex flex-wrap items-center gap-3 text-sm">
-        <span className="inline-flex items-center gap-2 rounded-full bg-sky-50 px-2.5 py-1 font-semibold text-sky-700 ring-1 ring-sky-200">
-          {new Date(dateISO).toLocaleDateString("fr-FR")}
-        </span>
-        <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-2.5 py-1 font-semibold text-emerald-700 ring-1 ring-emerald-200">
-          {time}
-        </span>
-      </div>
-      <div className="mt-2 text-sm text-gray-600">{subject}</div>
-      <div className="absolute right-3 top-3 flex items-center gap-1">
-        <button onClick={() => onEdit(id)} className="grid h-8 w-8 place-items-center rounded-lg text-gray-600 hover:bg-gray-100" aria-label="Modifier">
-          <FiEdit2 />
-        </button>
-        <button onClick={() => onDelete(id)} className="grid h-8 w-8 place-items-center rounded-lg text-rose-600 hover:bg-rose-50" aria-label="Supprimer">
-          <FiTrash2 />
-        </button>
+      {/* barre d'accent à gauche */}
+      <span
+        className="absolute inset-y-0 left-0 w-1.5"
+        style={{ background: theme.accent }}
+      />
+
+      {/* halo doux au survol */}
+      <span
+        className="pointer-events-none absolute -inset-8 -z-10 opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-40"
+        style={{ background: `${theme.accent}22` }}
+      />
+
+      <div className="flex items-start gap-3">
+        <AvatarFromName name={place} />
+        <div className="min-w-0 flex-1">
+          <div className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
+            {TYPE_LABEL[type]}
+          </div>
+          <div className="mt-0.5 truncate text-base font-bold text-gray-900">
+            {place}
+          </div>
+
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+            <span className={`inline-flex items-center rounded-full px-2.5 py-1 font-semibold ring-1 ${theme.chipBg} ${theme.chipText} ${theme.chipRing}`}>
+              {new Date(dateISO).toLocaleDateString("fr-FR")}
+            </span>
+            <span className={`inline-flex items-center rounded-full px-2.5 py-1 font-semibold ring-1 ${theme.chipBg} ${theme.chipText} ${theme.chipRing}`}>
+              {time}
+            </span>
+          </div>
+
+          {subject && (
+            <div className="mt-2 line-clamp-2 text-sm text-gray-600">{subject}</div>
+          )}
+        </div>
+
+        {/* actions */}
+        <div className="flex items-center gap-1 self-start">
+          <button
+            onClick={() => onEdit(id)}
+            className="grid h-8 w-8 place-items-center rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            aria-label="Modifier"
+            title="Modifier"
+          >
+            <FiEdit2 />
+          </button>
+          <button
+            onClick={() => onDelete(id)}
+            className="grid h-8 w-8 place-items-center rounded-lg text-rose-600 hover:bg-rose-50"
+            aria-label="Supprimer"
+            title="Supprimer"
+          >
+            <FiTrash2 />
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
+
 /* ---------- Modal “Détail du jour” (clic sur case déjà occupée) ---------- */
+
 function DayModal({ open, onClose, dateISO, items, onEdit, onDelete, onAdd }) {
   if (!open) return null;
-  const label = new Date(dateISO).toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "2-digit" });
+
+  const dateObj = dateISO ? new Date(dateISO) : null;
+  const labelLong = dateObj
+    ? dateObj.toLocaleDateString("fr-FR", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "2-digit",
+      })
+    : "";
+
   return (
-    <Modal open={open} onClose={onClose} title={`Rendez-vous du ${label}`}>
-      {items.length === 0 ? (
-        <div className="text-sm text-gray-500">Aucun rendez-vous ce jour.</div>
+    <Modal open={open} onClose={onClose} title={`Rendez–vous du ${labelLong}`}>
+      {/* header décoratif fin */}
+      <div className="mb-4">
+        <div className="h-1 w-full rounded-full bg-gradient-to-r from-sky-300 via-indigo-300 to-emerald-300 opacity-70" />
+      </div>
+
+      {/* liste des RDV ou empty-state */}
+      {(!items || items.length === 0) ? (
+        <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gray-300 bg-gray-50/60 p-8 text-center">
+          <div className="grid h-12 w-12 place-items-center rounded-full bg-white shadow">
+            <span className="text-lg">📅</span>
+          </div>
+          <div className="text-sm text-gray-600">
+            Aucun rendez-vous pour cette date.
+          </div>
+          <button
+            onClick={onAdd}
+            className="mt-1 rounded-xl bg-sky-600 px-4 py-2 text-sm font-bold text-white shadow hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-sky-300"
+          >
+            Ajouter un RDV
+          </button>
+        </div>
       ) : (
-        <div className="grid gap-2">
+        <div className="grid gap-3">
           {items.map((a) => {
-            const place = DIRECTORY[a.type].find((p) => p.id === a.placeId)?.name || "Établissement";
-            return (
-              <div key={a.id} className="flex items-start justify-between rounded-xl border border-gray-200 p-3">
-                <div>
-                  <div className="text-sm font-semibold">{a.subject}</div>
-                  <div className="text-xs text-gray-500 mt-0.5">
-                    {TYPE_LABEL[a.type]} · {place} · <span className="font-semibold">{a.time}</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1">
-                  <button onClick={() => onEdit(a.id)} className="grid h-8 w-8 place-items-center rounded-lg text-gray-700 hover:bg-gray-100">
-                    <FiEdit2 />
-                  </button>
-                  <button onClick={() => onDelete(a.id)} className="grid h-8 w-8 place-items-center rounded-lg text-rose-600 hover:bg-rose-50">
-                    <FiTrash2 />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+  const place =
+    DIRECTORY[a.type].find((p) => p.id === a.placeId)?.name || "Établissement";
+  const typeText = TYPE_LABEL[a.type];
+  const t = DAY_THEME[a.type] || DAY_THEME.ecoles;
+
+  return (
+    <div
+      key={a.id}
+      className={`
+        group relative overflow-hidden rounded-2xl border border-black/10 bg-white
+        p-4 ring-1 ${t.ring}
+      `}
+      style={{
+        // Ombres 3D colorées
+        boxShadow: t.shadow,
+      }}
+    >
+      {/* bande d’accent + halo subtil */}
+      <span className="absolute inset-y-0 left-0 w-1.5" style={{ background: t.accent }} />
+      <span
+        className="pointer-events-none absolute -inset-10 -z-10 opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-40"
+        style={{ background: t.halo }}
+      />
+
+      {/* arête 3D (bas) */}
+      <span
+        className="pointer-events-none absolute inset-x-2 bottom-0 h-[10px] rounded-b-2xl"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(0,0,0,0.05), rgba(0,0,0,0.12))",
+          filter: "blur(6px)",
+          opacity: 0.6,
+        }}
+      />
+
+      {/* highlight supérieur très léger */}
+      <span
+        className={`pointer-events-none absolute inset-x-0 top-0 h-5 bg-gradient-to-b ${t.gradFrom} to-transparent opacity-80`}
+      />
+
+      <div className="flex items-start gap-3">
+        {/* avatar initiales avec bord dégradé selon le type */}
+        <div
+          className={`
+            grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br ${t.gradFrom} to-white
+            text-xs font-extrabold ${t.text} ring-1 ring-black/5
+          `}
+        >
+          {place
+            .split(" ")
+            .map((w) => w[0]?.toUpperCase())
+            .slice(0, 2)
+            .join("") || "?"}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-semibold text-gray-900">
+            {a.subject || "Sans titre"}
+          </div>
+
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+            <span className="text-gray-500">{typeText} · {place}</span>
+            <span className={`rounded-full px-2 py-0.5 font-semibold ring-1 ${t.chip}`}>
+              {a.time}
+            </span>
+          </div>
+        </div>
+
+        {/* actions */}
+        <div className="flex items-center gap-1 self-start">
+          <button
+            onClick={() => onEdit(a.id)}
+            className="grid h-8 w-8 place-items-center rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 active:scale-[.98]"
+            aria-label="Modifier"
+            title="Modifier"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M4 21h4l11-11a2.828 2.828 0 10-4-4L4 17v4z" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+          </button>
+          <button
+            onClick={() => onDelete(a.id)}
+            className="grid h-8 w-8 place-items-center rounded-lg text-rose-600 hover:bg-rose-50 active:scale-[.98]"
+            aria-label="Supprimer"
+            title="Supprimer"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M3 6h18M8 6v14a2 2 0 002 2h4a2 2 0 002-2V6M9 6V4a2 2 0 012-2h2a2 2 0 012 2v2" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+})}
+
         </div>
       )}
 
-      <div className="mt-4 flex justify-end">
-        <button onClick={onAdd} className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-bold text-white hover:brightness-110">
+      {/* footer sticky */}
+      <div className="sticky -mb-5 -mx-5 mt-5 flex items-center justify-end gap-2 rounded-b-2xl border-t border-black/10 bg-white/80 px-5 py-3 backdrop-blur-sm">
+        <button
+          onClick={onAdd}
+          className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-bold text-white shadow hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-sky-300"
+        >
           Ajouter un RDV
+        </button>
+        <button
+          onClick={onClose}
+          className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+        >
+          Fermer
+        </button>
+      </div>
+
+      {/* micro-animations */}
+      <style>{`
+        @media (prefers-reduced-motion:no-preference){
+          .modal-card-enter{animation:modal-card .22s cubic-bezier(.2,0,0,1) both}
+          @keyframes modal-card{0%{opacity:0;transform:translateY(6px) scale(.98)}70%{opacity:1;transform:translateY(-2px) scale(1.01)}100%{opacity:1;transform:translateY(0) scale(1)}}
+        }
+            @keyframes popCard{0%{opacity:0;transform:translateY(6px) scale(.98)}70%{opacity:1;transform:translateY(-2px) scale(1.01)}100%{opacity:1;transform:translateY(0) scale(1)}}
+  .group{ animation: popCard .22s cubic-bezier(.2,0,0,1) both }
+  .group:hover{ transform: translateY(-1px) }
+  @media (prefers-reduced-motion: reduce){
+    .group{ animation:none !important; transform:none !important }
+  }
+      `}</style>
+    </Modal>
+  );
+}
+function AISuggestModal({ open, onClose, onPick }) {
+  if (!open) return null;
+  const Item = ({ k, title, desc, color, emoji }) => (
+    <button
+      onClick={() => onPick(k)}
+      className="group flex items-start gap-3 rounded-2xl border border-black/10 bg-white/90 p-4 text-left ring-1 ring-black/5 hover:shadow-md hover:bg-white transition"
+    >
+      <div
+        className="grid h-11 w-11 place-items-center rounded-xl text-xl"
+        style={{ background: `${color}15`, color }}
+      >
+        {emoji}
+      </div>
+      <div className="min-w-0">
+        <div className="font-extrabold">{title}</div>
+        <div className="mt-0.5 text-sm text-gray-600">{desc}</div>
+      </div>
+      <span className="ml-auto mt-1 text-sm font-bold text-gray-500 opacity-0 group-hover:opacity-100 transition">
+        Choisir →
+      </span>
+    </button>
+  );
+
+  return (
+    <Modal open={open} onClose={onClose} title="Suggestion (statique) — Choisis un type">
+      <div className="grid gap-3">
+        <Item
+          k="ecoles"
+          title="École"
+          desc="Démonstration / rendez-vous pédagogique."
+          color="#10b981"
+          emoji="🏫"
+        />
+        <Item
+          k="garderies"
+          title="Garderie"
+          desc="Présentation rapide aux responsables."
+          color="#f59e0b"
+          emoji="🧸"
+        />
+        <Item
+          k="creches"
+          title="Crèche"
+          desc="Prise de contact / découverte."
+          color="#6366f1"
+          emoji="👶"
+        />
+      </div>
+      <div className="mt-4 flex justify-end">
+        <button onClick={onClose} className="rounded-xl border px-4 py-2 text-sm font-semibold hover:bg-gray-50">
+          Fermer
         </button>
       </div>
     </Modal>
   );
 }
+
 
 /* ---------- Planner principal ---------- */
 export default function AppointmentPlanner({ availability, minDate = new Date(), maxMonths = 6 }) {
@@ -361,6 +757,58 @@ cancelButton:  "bg-white text-gray-700 rounded-lg px-4 py-2 border border-gray-2
     setModalOpen(false);
     setEditId(null);
   };
+// --- IA Suggestion (statique) ---
+const [suggestOpen, setSuggestOpen] = useState(false);
+
+// trouve la prochaine date avec des créneaux, sinon null
+const pickNextAvailable = useCallback(() => {
+  const dates = Object.keys(avail || {}).sort(); // ISO triable
+  for (const d of dates) {
+    const slots = avail[d] || [];
+    if (slots.length > 0) return { dateISO: d, time: slots[0] };
+  }
+  return null;
+}, [avail]);
+
+// crée un RDV "auto" pour le type choisi
+const createSuggestedEvent = useCallback(async (typeKey) => {
+  // 1) choisir date + créneau
+  const picked = pickNextAvailable() || {
+    dateISO: new Date().toISOString().slice(0, 10), // aujourd’hui
+    time: "09:00",
+  };
+
+  // 2) choisir un établissement par défaut pour ce type
+  const placeId = DIRECTORY[typeKey]?.[0]?.id || "";
+
+  // 3) sujet par défaut
+  const subject = `Rendez-vous ${TYPE_LABEL[typeKey]}`;
+
+  // 4) créer l'ID + push
+  const id = crypto.randomUUID?.() || Math.random().toString(36).slice(2);
+  setAppts((l) => [
+    ...l,
+    {
+      id,
+      dateISO: picked.dateISO,
+      time: picked.time,
+      type: typeKey,
+      placeId,
+      subject,
+    },
+  ]);
+
+  setSuggestOpen(false);
+
+  // 5) feedback
+  await Swal.fire({
+    icon: "success",
+    title: "Créé ✅",
+    text: `${TYPE_LABEL[typeKey]} — ${new Date(picked.dateISO).toLocaleDateString("fr-FR")} à ${picked.time}`,
+    timer: 1600,
+    showConfirmButton: false,
+  });
+}, [pickNextAvailable, setAppts]);
 
   // tri global (agenda)
   const apptsSorted = useMemo(() => {
@@ -405,6 +853,7 @@ useEffect(() => {
  return (
   // 2 colonnes : [calendrier | rendez-vous planifiés]
  <div className="grid gap-6 md:grid-cols-[1fr,380px] relative">
+    <ApptUIFX />
 
     {/* --- Colonne gauche : calendrier --- */}
     <div>
@@ -421,14 +870,20 @@ useEffect(() => {
     </div>
 
     {/* --- Colonne droite : exactement le même bloc "Rendez-vous planifiés" --- */}
-    <aside className="rounded-2xl border border-black/10 bg-white p-5  max-h-[580px] overflow-auto   shadow-[0_30px_90px_rgba(0,0,0,0.4)]
-  hover:shadow-[0_36px_110px_rgba(0,0,0,0.45)] transition-shadow">
-      <div className="mb-3 flex items-center justify-between">
-        <h4 className="text-lg font-extrabold">📌 Rendez-vous planifiés</h4>
-        <span className="text-xs rounded-full bg-black/5 px-2 py-1">
-          {apptsSorted.length} au total
-        </span>
-      </div>
+    <aside
+  className="
+    relative rounded-2xl border border-black/10 bg-white/90 p-2 
+    max-h-[580px] overflow-auto backdrop-blur
+    shadow-[0_10px_25px_-10px_rgba(0,0,0,0.25)]
+    hover:shadow-[0_16px_40px_-12px_rgba(0,0,0,0.3)]
+    transition-shadow
+  "
+>
+  {/* header sticky */}
+  <div className="sticky top-0 z-10 flex items-center justify-between rounded-t-2xl border-b border-black/10 bg-white/80 px-5 py-4 backdrop-blur-sm mb-2">
+    <h4 className="text-base font-extrabold">📌 Rendez-vous planifiés</h4>
+    <span className="text-xs rounded-full bg-black/5 px-2 py-1">{apptsSorted.length} au total</span>
+  </div>
 
       {/* garde EXACTEMENT le même rendu de cartes */}
       <div className="grid grid-cols-1 md:grid-cols-1 gap-3">
@@ -498,12 +953,45 @@ useEffect(() => {
     </aside>
 
     {/* ---- Modal créer / éditer ---- */}
-    <Modal
-      open={modalOpen}
-      onClose={() => { setModalOpen(false); setEditId(null); }}
-      title={editId ? "Modifier le rendez-vous" : "Planifier un rendez-vous"}
-    >
-      {modalDate && (
+   {/* ---- Modal créer / éditer (style amélioré, logique inchangée) ---- */}
+<Modal
+  open={modalOpen}
+  onClose={() => { setModalOpen(false); setEditId(null); }}
+  title={editId ? "Modifier le rendez-vous" : "Planifier un rendez-vous"}
+>
+  {modalDate && (
+    <div className="relative space-y-4">
+      {/* Bandeau fin + résumé */}
+      <div className="rounded-2xl border border-black/10 bg-white/90 p-4 ring-1 ring-black/5">
+        <div className="mb-3 h-1 w-full rounded-full bg-gradient-to-r from-sky-400 via-indigo-400 to-emerald-400 opacity-70" />
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="rounded-full bg-gray-50 px-3 py-1 font-semibold text-gray-700 ring-1 ring-gray-200">
+            {new Date(modalDate).toLocaleDateString("fr-FR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}
+          </span>
+          <span className="rounded-full bg-sky-50 px-3 py-1 font-semibold text-sky-700 ring-1 ring-sky-200">
+            {modalSlots.length} créneau(x) dispo
+          </span>
+          {editId && (
+            <span className="rounded-full bg-amber-50 px-3 py-1 font-semibold text-amber-700 ring-1 ring-amber-200">
+              Édition
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Carte formulaire avec effet 3D doux */}
+      <div
+        className="relative rounded-2xl border border-black/10 bg-white p-5 ring-1 ring-black/5"
+        style={{ boxShadow: "0 10px 24px -12px rgba(2,6,23,.25), 0 34px 66px -24px rgba(2,6,23,.25)" }}
+      >
+        {/* highlight top */}
+        <span className="pointer-events-none absolute inset-x-0 top-0 h-6 rounded-t-2xl bg-gradient-to-b from-gray-50 to-transparent" />
+        {/* arête basse 3D */}
+        <span
+          className="pointer-events-none absolute inset-x-3 bottom-0 h-2 rounded-b-2xl"
+          style={{ background: "linear-gradient(to bottom, rgba(0,0,0,.06), rgba(0,0,0,.12))", filter: "blur(6px)", opacity: .55 }}
+        />
+        {/* Formulaire (inchangé) */}
         <AppointmentForm
           dateISO={modalDate}
           slots={modalSlots}
@@ -511,19 +999,31 @@ useEffect(() => {
           onSubmit={handleSave}
           onCancel={() => { setModalOpen(false); setEditId(null); }}
         />
-      )}
-    </Modal>
+      </div>
+
+      {/* Micro-animations (optionnel) */}
+      <style>{`
+        @keyframes popCard{0%{opacity:0;transform:translateY(6px) scale(.98)}70%{opacity:1;transform:translateY(-2px) scale(1.01)}100%{opacity:1;transform:translateY(0) scale(1)}}
+        @media (prefers-reduced-motion:no-preference){
+          .rounded-2xl{animation:popCard .22s cubic-bezier(.2,0,0,1)}
+        }
+      `}</style>
+    </div>
+  )}
+</Modal>
+
 
     {/* ---- Modal “détails du jour” ---- */}
-    <DayModal
-      open={dayOpen}
-      onClose={() => setDayOpen(false)}
-      dateISO={dayISO}
-      items={dayISO ? (byDate[dayISO] || []) : []}
-      onEdit={(id) => { setDayOpen(false); handleEdit(id); }}
-      onDelete={handleDelete}
-      onAdd={() => { setDayOpen(false); openForDate({ dateISO: dayISO }); }}
-    />
+ <DayModal
+  open={dayOpen}
+  onClose={() => setDayOpen(false)}
+  dateISO={dayISO}
+  items={dayISO ? (byDate[dayISO] || []) : []}
+  onEdit={(id) => { setDayOpen(false); handleEdit(id); }}
+  onDelete={handleDelete}
+  onAdd={() => { setDayOpen(false); openForDate({ dateISO: dayISO }); }}
+/>
+
 
     {/* ---- Modal "Ajouter / éditer des horaires" ---- */}
 <Modal

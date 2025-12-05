@@ -1,8 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
+@import 'leaflet/dist/leaflet.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
 
 @layer base {
 	html {
@@ -83,4 +86,332 @@ input:checked.defaultCheckbox::before {
   .animate-fadeIn {
     animation: fadeIn 0.5s ease forwards;
   }
+}
+/* ===== Scrollbar élégante (toutes plateformes) ===== */
+
+/* Firefox */
+.nice-scroll{
+  scrollbar-width: thin;                  /* fine */
+  scrollbar-color: rgba(99,102,241,.45) transparent; /* thumb/track */
+}
+
+/* WebKit (Chrome, Edge, Safari) */
+.nice-scroll::-webkit-scrollbar{
+  width: 8px;
+}
+.nice-scroll::-webkit-scrollbar-track{
+  background: transparent;
+}
+.nice-scroll::-webkit-scrollbar-thumb{
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(99,102,241,.35), rgba(99,102,241,.55));
+  border: 2px solid transparent;          /* creuse l'intérieur => plus fin visuellement */
+  background-clip: padding-box;
+}
+.nice-scroll:hover::-webkit-scrollbar-thumb{
+  background: linear-gradient(180deg, rgba(99,102,241,.55), rgba(99,102,241,.75));
+}
+:root.dark .nice-scroll{
+  scrollbar-color: rgba(129,140,248,.55) transparent;
+}
+:root.dark .nice-scroll::-webkit-scrollbar-thumb{
+  background: linear-gradient(180deg, rgba(129,140,248,.5), rgba(99,102,241,.7));
+}
+/* Scrollbar “ghost” qui s’affiche surtout au survol */
+.ghost-scroll{ scrollbar-width: thin; scrollbar-color: transparent transparent; }
+.ghost-scroll::-webkit-scrollbar{ width: 8px; }
+.ghost-scroll::-webkit-scrollbar-track{ background: transparent; }
+.ghost-scroll::-webkit-scrollbar-thumb{
+  background: transparent;
+  border-radius: 999px;
+}
+.ghost-scroll:hover{ scrollbar-color: rgba(99,102,241,.45) transparent; }
+.ghost-scroll:hover::-webkit-scrollbar-thumb{
+  background: rgba(99,102,241,.45);
+}
+@keyframes gradientShift {
+  0%   { background-position: 0% 50% }
+  50%  { background-position: 100% 50% }
+  100% { background-position: 0% 50% }
+}
+.nav-animated {
+  background-size: 200% 200%;
+  animation: gradientShift 10s ease infinite;
+}
+:root{
+        --ease-pop: cubic-bezier(.2,.8,.2,1);
+        --shadow-1: 0 1px 2px rgba(2,6,23,.06);
+        --shadow-2: 0 8px 24px rgba(2,6,23,.12);
+        --shadow-3: 0 20px 60px rgba(2,6,23,.18);
+        --ring-edu: 0 0 0 4px rgba(99,102,241,.18);
+      }
+
+      /* ===== KEYFRAMES ===== */
+      @keyframes fadeIn { from{opacity:0; transform: translateY(6px)} to{opacity:1; transform: translateY(0)} }
+      @keyframes eduRow {
+        0% { opacity: 0; transform: translateY(8px) rotateX(2deg) scale(.985); }
+        60% { opacity: 1; transform: translateY(0) rotateX(0) scale(1.006); }
+        100% { opacity: 1; transform: translateY(0) rotateX(0) scale(1); }
+      }
+      @keyframes shake { 0%,100% { transform: translateX(0) } 25% { transform: translateX(-2px) } 50% { transform: translateX(2px) } 75% { transform: translateX(-1px) } }
+      @keyframes softTilt {
+        0% { transform: perspective(1200px) rotateX(0) }
+        100%{ transform: perspective(1200px) rotateX(2deg) }
+      }
+      @keyframes ripple {
+        from { transform: scale(0); opacity:.35; }
+        to   { transform: scale(2.6); opacity:0; }
+      }
+
+      /* ===== WRAPPER : feuille 3D + motif cahier + halo ===== */
+
+
+      /* ===== TABLE ===== */
+    
+
+
+      /* ===== ZEBRA + LIFT ===== */
+   
+   
+      tbody tr:hover::before{ opacity:.9; }
+
+    
+  
+
+      /* ===== COULEUR PAR TYPE via :has() (si supporté) ===== */
+      /* Crèche */
+      tbody tr:has(td:nth-child(3) .bg-purple-100){
+        border-left: 4px solid rgba(168,85,247,.35);
+      }
+      tbody tr:has(td:nth-child(3) .bg-purple-100):hover{
+        box-shadow: var(--shadow-2), 0 0 0 3px rgba(168,85,247,.15) inset;
+      }
+      /* Garderie */
+      tbody tr:has(td:nth-child(3) .bg-amber-100){
+        border-left: 4px solid rgba(245,158,11,.35);
+      }
+      tbody tr:has(td:nth-child(3) .bg-amber-100):hover{
+        box-shadow: var(--shadow-2), 0 0 0 3px rgba(245,158,11,.15) inset;
+      }
+      /* École */
+      tbody tr:has(td:nth-child(3) .bg-emerald-100){
+        border-left: 4px solid rgba(16,185,129,.35);
+        
+      }
+      tbody tr:has(td:nth-child(3) .bg-emerald-100):hover{
+        box-shadow: var(--shadow-2), 0 0 0 3px rgba(16,185,129,.15) inset;
+      }
+
+      /* ===== BADGES ===== */
+      td .rounded-full.border.shadow-sm{
+        transition: transform .16s var(--ease-pop), box-shadow .2s var(--ease-pop), background .2s;
+      }
+      td .rounded-full.border.shadow-sm:hover{
+        transform: translateZ(2px) scale(1.04);
+        box-shadow: 0 6px 18px rgba(2,6,23,.12);
+    
+      }
+
+      /* ===== BOUTONS (icônes) : relief + ripple ===== */
+      .inline-flex.h-8.w-8.items-center.justify-center.rounded-lg{
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(180deg, #fff, #f6f7fb);
+        box-shadow: 0 1px 0 rgba(0,0,0,.05), 0 6px 16px rgba(2,6,23,.10);
+        transition: transform .15s var(--ease-pop), box-shadow .2s var(--ease-pop), background .2s;
+        will-change: transform;
+      }
+      .inline-flex.h-8.w-8.items-center.justify-center.rounded-lg:hover{
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-2);
+        background: linear-gradient(180deg, #fff, #eef0ff);
+      }
+      .inline-flex.h-8.w-8.items-center.justify-center.rounded-lg:active{
+        transform: translateY(0);
+        box-shadow: var(--shadow-1);
+      }
+      .inline-flex.h-8.w-8.items-center.justify-center.rounded-lg::after{
+        content:""; position:absolute; inset:auto; left:50%; top:50%;
+        width:120%; aspect-ratio:1; border-radius:9999px;
+        background: radial-gradient(circle, rgba(99,102,241,.22), transparent 60%);
+        transform: translate(-50%,-50%) scale(0);
+      }
+      .inline-flex.h-8.w-8.items-center.justify-center.rounded-lg:active::after{
+        animation: ripple .4s ease-out;
+      }
+
+      /* Supprimer : glow de sécurité */
+      button[title="Supprimer"]{ box-shadow: 0 2px 12px rgba(244,63,94,.35); }
+      button[title="Supprimer"]:hover{ box-shadow: 0 10px 28px rgba(244,63,94,.45); }
+
+      /* ===== CHIPS ACTIONS ===== */
+      .hidden.sm\\:inline-flex.items-center.gap-1.rounded-full{
+        box-shadow: 0 2px 10px rgba(2,6,23,.08);
+        transition: transform .15s var(--ease-pop), box-shadow .2s var(--ease-pop);
+      }
+      .hidden.sm\\:inline-flex.items-center.gap-1.rounded-full:hover{
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-2);
+      }
+
+      /* ===== PAGINATION ===== */
+      button[aria-label="Précédent"], button[aria-label="Suivant"]{
+        background: linear-gradient(180deg, #fff, #f6f7fb);
+        box-shadow: 0 1px 0 rgba(0,0,0,.05), 0 6px 16px rgba(2,6,23,.10);
+        transition: transform .15s var(--ease-pop), box-shadow .2s var(--ease-pop);
+      }
+      button[aria-label="Précédent"]:hover, button[aria-label="Suivant"]:hover{
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-2);
+      }
+
+      /* ===== BARRE DE RECHERCHE : halo focus ===== */
+      .flex.items-center.gap-2.rounded-xl.border.bg-white.px-3.py-2.shadow-sm:has(input:focus){
+        box-shadow: var(--shadow-2), var(--ring-edu);
+        animation: softTilt .25s ease both;
+      }
+
+      /* Cadre spécial pour les lignes de type Garderie */
+tbody tr:has(td:nth-child(3) .bg-amber-100){
+  --accent: rgba(245,158,11,.55);
+  --accent-soft: rgba(245,158,11,.12);
+  isolation: isolate;               /* pour que ::after reste au-dessus du fond */
+}
+tbody tr:has(td:nth-child(3) .bg-amber-100)::after{
+  content:"";
+  position:absolute;
+  inset: 4px 6px;                   /* marge intérieure du cadre */
+  border-radius: 14px;
+  pointer-events: none;
+  box-shadow:
+    0 0 0 2px var(--accent) inset,  /* bord coloré */
+    0 12px 26px var(--accent-soft); /* glow */
+}
+
+/* (Option) fais pareil pour Crèche / École si tu veux une cohérence visuelle : */
+tbody tr:has(td:nth-child(3) .bg-purple-100)::after{
+  content:""; position:absolute; inset:4px 6px; border-radius:14px; pointer-events:none;
+  box-shadow: 0 0 0 2px rgba(168,85,247,.50) inset, 0 12px 26px rgba(168,85,247,.12);
+}
+tbody tr:has(td:nth-child(3) .bg-emerald-100)::after{
+  content:""; position:absolute; inset:4px 6px; border-radius:14px; pointer-events:none;
+  box-shadow: 0 0 0 2px rgba(16,185,129,.50) inset, 0 12px 26px rgba(16,185,129,.12);
+}
+  /* === Taille des lignes (padding vertical) === */
+
+/* === Effet "carte 3D" pour chaque ligne === */
+tbody tr{
+  position: relative;              /* nécessaire pour ::after */
+  transition: transform .22s var(--ease-pop), box-shadow .22s var(--ease-pop);
+}
+tbody tr > *{ 
+  position: relative; z-index: 1;  /* le contenu reste au-dessus du décor */
+}
+
+/* Ombre + léger fond arrondi à l’intérieur de la ligne */
+tbody tr::after{
+  content:"";
+  position: absolute;
+  inset: 2px 8px;                  /* marges internes pour le cadre/ombre */
+  border-radius: 14px;
+  pointer-events: none;
+  background: rgba(255,255,255,.55);
+  box-shadow: 0 6px 18px rgba(2,6,23,.10);   /* ombre de base */
+  z-index: 0;
+  transition: transform .22s var(--ease-pop), box-shadow .22s var(--ease-pop);
+}
+
+/* Survol : lève la ligne et accentue l’ombre */
+tbody tr:hover{
+  transform: translateY(-2px);
+}
+tbody tr:hover::after{
+  box-shadow: 0 14px 36px rgba(2,6,23,.18), inset 0 0 0 1px rgba(2,6,23,.06);
+}
+
+/* (Option) Appuie visuel quand on clique */
+tbody tr:active{ transform: translateY(0); }
+tbody tr:active::after{ box-shadow: 0 6px 18px rgba(2,6,23,.12); }
+
+/* Ombre permanente pour CHAQUE LIGNE */
+tbody tr{
+  position: relative;
+}
+
+tbody tr::before{
+  content: "";
+  position: absolute;
+  /* un peu de marge horizontale pour que l'ombre respire */
+  left: 2px; right: 2px; top: 0; bottom: 0;
+  border-radius: 14px;
+  background: #fff;                 /* fond de la “carte” */
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
+              rgba(0, 0, 0, 0.3)    0px 30px 60px -30px,
+              rgba(10, 37, 64, .35) 0px -2px 6px 0px inset;
+  z-index: 0;                       /* derrière le contenu */
+}
+
+/* le contenu reste au-dessus de la carte */
+tbody tr > *{
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  border: 0;                        /* évite un contour parasite */
+}
+
+/* (option) même style pour l'en-tête */
+thead tr{
+  position: relative;
+}
+thead tr::before{
+  content: "";
+  position: absolute;
+  left: 0px; right: 0px; top: 0; bottom: 0;
+  border-radius: 12px;
+  background: rgba(248,249,251,.9);
+  box-shadow: rgba(50, 50, 93, 0.18) 0px 30px 60px -20px,
+              rgba(0, 0, 0, 0.25)   0px 18px 36px -22px,
+              rgba(10, 37, 64, .25) 0px -1px 4px 0px inset;
+  z-index: 0;
+}
+thead th{ position: relative; z-index: 1; }
+/* ===== Support-like Pagination ===== */
+.ukp-wrap{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; padding:12px 16px; margin-top:4px;
+}
+.ukp-info{ font:700 12px/1.2 ui-sans-serif; color:#64748b; }
+
+.ukp-actions{ display:flex; align-items:center; gap:6px; }
+
+/* bouton générique */
+.pg-btn{
+  min-width:36px; height:36px; padding:0 10px;
+  display:inline-flex; align-items:center; justify-content:center;
+  border-radius:12px; border:1px solid rgba(2,6,23,.10);
+  background:linear-gradient(180deg,#fff,#f6f7fb);
+  font:800 13px ui-sans-serif;
+  box-shadow:0 1px 0 rgba(0,0,0,.05), 0 10px 18px rgba(2,6,23,.10);
+  transition:transform .15s var(--ease-pop), box-shadow .2s var(--ease-pop), background .2s;
+}
+.pg-btn:hover{ transform:translateY(-1px); box-shadow:var(--shadow-2); }
+.pg-btn:disabled{ opacity:.45; transform:none; box-shadow:none; cursor:not-allowed; }
+
+/* numéro actif = gradient support */
+.pg-btn.num.active{
+  color:#fff; border-color:transparent;
+  background:linear-gradient(135deg,#4f46e5,#06b6d4);
+  box-shadow:0 10px 24px rgba(79,70,229,.35);
+}
+
+/* ellipses (… ) */
+.pg-ellipsis{
+  min-width:36px; height:36px; display:inline-grid; place-items:center;
+  font:800 13px ui-sans-serif; color:#94a3b8;
+}
+
+/* accessibilité focus */
+.pg-btn:focus-visible{
+  outline:none;
+  box-shadow:var(--shadow-2), 0 0 0 4px rgba(99,102,241,.18);
 }

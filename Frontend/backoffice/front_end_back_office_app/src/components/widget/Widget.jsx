@@ -1,148 +1,123 @@
+/* eslint-disable */
 import React from "react";
-import Card from "components/card";
 
-/* 
-  Tonalités avec backgrounds pro :
-  - bg = couche “papier coloré” + dégradés radiaux/coniques subtils (glow)
-  - ring/border = finesse + consistance
-  - shadow = profondeur soft
-*/
-const TONES = {
-  emerald: {
-    card: [
-      "!ring-1 !border",
-      "ring-emerald-300/60 border-emerald-200/60",
-      // couche papier + glow radiaux + lueur en coin
-      "bg-[radial-gradient(1200px_120px_at_50%_-30%,rgba(16,185,129,0.10),transparent),radial-gradient(200px_180px_at_100%_0,rgba(16,185,129,.15),transparent),linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.86))]",
-    ].join(" "),
-    title: "text-emerald-700",
-    value: "text-emerald-800",
-    icon:  "text-emerald-700",
-    chip:  "bg-emerald-600/18",
-    shadow:"shadow-[0_10px_30px_rgba(16,185,129,.18)]",
-  },
-  indigo: {
-    card: [
-      "!ring-1 !border",
-      "ring-indigo-300/60 border-indigo-200/60",
-      "bg-[radial-gradient(1200px_120px_at_50%_-30%,rgba(79,70,229,0.10),transparent),radial-gradient(220px_200px_at_0%_0,rgba(99,102,241,.18),transparent),linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.86))]",
-    ].join(" "),
-    title: "text-indigo-700",
-    value: "text-indigo-800",
-    icon:  "text-indigo-700",
-    chip:  "bg-indigo-600/18",
-    shadow:"shadow-[0_10px_30px_rgba(99,102,241,.18)]",
-  },
-  sky: {
-    card: [
-      "!ring-1 !border",
-      "ring-sky-300/60 border-sky-200/60",
-      "bg-[radial-gradient(1200px_120px_at_50%_-30%,rgba(2,132,199,0.10),transparent),radial-gradient(240px_220px_at_100%_0,rgba(14,165,233,.22),transparent),linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.86))]",
-    ].join(" "),
-    title: "text-sky-700",
-    value: "text-sky-900",
-    icon:  "text-sky-700",
-    chip:  "bg-sky-600/20",
-    shadow:"shadow-[0_12px_36px_rgba(14,165,233,.22)]",
-  },
-  amber: {
-    card: [
-      "!ring-1 !border",
-      "ring-amber-300/60 border-amber-200/60",
-      "bg-[radial-gradient(1200px_120px_at_50%_-30%,rgba(245,158,11,0.10),transparent),radial-gradient(220px_200px_at_100%_0,rgba(251,191,36,.18),transparent),linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.86))]",
-    ].join(" "),
-    title: "text-amber-700",
-    value: "text-amber-800",
-    icon:  "text-amber-700",
-    chip:  "bg-amber-600/18",
-    shadow:"shadow-[0_10px_30px_rgba(245,158,11,.18)]",
-  },
-  slate: {
-    card: [
-      "!ring-1 !border",
-      "ring-slate-300/60 border-slate-200/60",
-      "bg-[radial-gradient(1200px_120px_at_50%_-30%,rgba(100,116,139,0.10),transparent),radial-gradient(220px_200px_at_0%_0,rgba(148,163,184,.20),transparent),linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.86))]",
-    ].join(" "),
-    title: "text-slate-700",
-    value: "text-slate-800",
-    icon:  "text-slate-700",
-    chip:  "bg-slate-500/18",
-    shadow:"shadow-[0_10px_30px_rgba(100,116,139,.16)]",
-  },
+/* === mêmes gradients que tes KPI === */
+const GRADIENTS = {
+  blue:   "linear-gradient(135deg,#6366f1,#06b6d4)",
+  green:  "linear-gradient(135deg,#10b981,#22d3ee)",
+  orange: "linear-gradient(135deg,#f59e0b,#ef4444)",
+  red:    "linear-gradient(135deg,#ef4444,#f97316)",
 };
 
-const Widget = ({
-  icon, title, subtitle,
-  tone = "indigo",
-  valueColored = true,
-  animated = true,
-  delay = 0,
-  stacked = false,
-}) => {
-  const p = TONES[tone] ?? TONES.indigo;
+/* === helpers copiés depuis tes KPI (identiques) === */
+function useInView(ref, rootMargin = "0px") {
+  const [inView, setInView] = React.useState(false);
+  React.useEffect(() => {
+    if (!ref.current) return;
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { rootMargin });
+    io.observe(ref.current);
+    return () => io.disconnect();
+  }, [ref, rootMargin]);
+  return inView;
+}
 
-  // Harmonise l’icône (taille + couleur)
-  const forcedIcon = React.isValidElement(icon)
-    ? React.cloneElement(icon, { className: ["h-7 w-7", p.icon].join(" ") })
-    : icon;
+function AnimatedNumber({
+  value,
+  duration = 800,
+  format = (n) => n.toLocaleString(),
+  startOnView = true,
+}) {
+  const spanRef = React.useRef(null);
+  const inView = useInView(spanRef, "0px");
+  const [display, setDisplay] = React.useState(0);
+
+  const prefersReduced =
+    typeof window !== "undefined" &&
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  React.useEffect(() => {
+    if (startOnView && !inView) return;
+    if (prefersReduced) { setDisplay(value); return; }
+
+    let raf, start;
+    const from = 0;
+    const to = Number(value) || 0;
+    const ease = (t) => 1 - Math.pow(1 - t, 3); // easeOutCubic
+
+    const step = (ts) => {
+      if (!start) start = ts;
+      const p = Math.min(1, (ts - start) / duration);
+      const curr = Math.round(from + (to - from) * ease(p));
+      setDisplay(curr);
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [value, duration, startOnView, inView, prefersReduced]);
+
+  return <span ref={spanRef}>{format(display)}</span>;
+}
+
+/* === WidgetKids animé === */
+function WidgetKids({
+  tone = "blue",
+  icon,
+  title,
+  value, 
+  iconClass = "text-2xl",             // ← passe un nombre ici pour l’animer
+  subtitle,           // compat : si number on anime, sinon on affiche tel quel
+  duration = 800,
+  format = (n) => n.toLocaleString(),
+  startOnView = true,
+  style,
+  ...props
+}) {
+  const GRADIENTS = {
+    blue:   "linear-gradient(135deg,#6366f1,#06b6d4)",
+    green:  "linear-gradient(135deg,#10b981,#22d3ee)",
+    orange: "linear-gradient(135deg,#f59e0b,#ef4444)",
+    red:    "linear-gradient(135deg,#ef4444,#f97316)",
+  };
+  const gradient = GRADIENTS[tone] || GRADIENTS.blue;
+
+  const numeric = value ?? (typeof subtitle === "number" ? subtitle : null);
 
   return (
-    <Card
-      extra={[
-        "group relative overflow-hidden rounded-[20px] px-4 py-5",
-        stacked ? "flex flex-col items-center justify-center text-center gap-3" : "!flex-row items-center",
-        "transition-all duration-400 motion-ok",
-        // 3D subtil au hover
-        "hover:-translate-y-1 hover:rotate-[0.15deg]",
-        // profondeur
-        p.card, p.shadow,
-        animated ? "animate-enter" : "",
-        "grain", // texture fine
-      ].join(" ")}
-      style={animated ? { animationDelay: `${delay}ms` } : undefined}
+    <div
+      className="relative overflow-hidden rounded-2xl border border-white/50 bg-white/70 backdrop-blur-md shadow-[0_14px_48px_rgba(2,6,23,.12)] min-h-[110px]"
+      style={style}
     >
-      {/* Shine diagonal au hover */}
-      <div
-        className={[
-          "pointer-events-none absolute -inset-1 opacity-0",
-          "group-hover:opacity-100 motion-ok",
-          "bg-[linear-gradient(110deg,transparent,rgba(255,255,255,.5),transparent)]",
-          "bg-[length:200%_100%] animate-shine"
-        ].join(" ")}
-      />
+      <div className="absolute inset-0 opacity-25" style={{ background: gradient }} />
+      <div className="pointer-events-none absolute -top-6 -right-6 h-24 w-24 rounded-full bg-white/60 blur-2xl kpi-float" />
+      <div className="pointer-events-none absolute -left-1/3 -top-1/2 h-[220%] w-1/3 rotate-[14deg] bg-white/40 blur-md kpi-shine" />
 
-      {/* “Projecteur” doux dans l’angle bas-droit */}
-      <div className="pointer-events-none absolute -right-8 -bottom-8 h-40 w-40 rounded-full bg-white/15 blur-2xl" />
+      <div className="relative z-10 flex items-center gap-3 p-4">
+       <div style={{ background: gradient }} className="grid h-12 w-12 place-items-center rounded-xl text-white shadow-lg ring-1 ring-white/50">
+    {React.isValidElement(icon)
+      ? React.cloneElement(icon, { className: (icon.props.className || "") + " " + iconClass })
+      : icon}
+  </div>
 
-      {/* Icône dans une pastille “verre” */}
-      <div className={stacked ? "flex items-center justify-center" : "ml-4 flex h-[90px] w-auto items-center"}>
-        <div
-          className={[
-            "relative grid h-12 w-12 place-items-center rounded-2xl shadow-inner",
-            "transition-transform duration-500 motion-ok",
-            "group-hover:scale-110 group-hover:rotate-1",
-            "backdrop-blur-[2px] bg-white/30 ring-1 ring-white/40",
-          ].join(" ")}
-          style={{ boxShadow: "inset 0 0 28px rgba(255,255,255,.65)" }}
-        >
-          <div className={["absolute inset-0 rounded-2xl", p.chip].join(" ")} />
-          <span className="relative animate-icon-float group-hover:animate-icon-pop motion-ok">
-            {forcedIcon}
-          </span>
+        <div>
+          <div className="text-3xl font-extrabold tracking-tight text-slate-900">
+            {numeric !== null
+              ? <AnimatedNumber value={Number.isFinite(numeric) ? numeric : 0} duration={duration} format={format} startOnView={startOnView} />
+              : subtitle}
+          </div>
+          <div className="mt-0.5 text-xs font-medium text-slate-600">{title}</div>
         </div>
       </div>
 
-      {/* Textes */}
-      <div className={["min-w-0 flex flex-col justify-center", stacked ? "items-center text-center" : "ml-4"].join(" ")}>
-        <p className={["text-sm font-semibold tracking-wide transition-transform duration-300 motion-ok group-hover:-translate-y-0.5", p.title].join(" ")}>
-          {title}
-        </p>
-        <h4 className={["text-3xl font-extrabold leading-tight transition-transform duration-300 motion-ok group-hover:translate-y-0.5", valueColored ? p.value : "text-gray-900"].join(" ")}>
-          {subtitle}
-        </h4>
-      </div>
-    </Card>
+      <style>{`
+        @keyframes kpiFloat { 0%{transform:translateY(0)} 50%{transform:translateY(6px)} 100%{transform:translateY(0)} }
+        @keyframes kpiShine { 0%{transform:translateX(-40%)} 100%{transform:translateX(180%)} }
+        .kpi-float{ animation: kpiFloat 4s ease-in-out infinite; }
+        .kpi-shine{ animation: kpiShine 2.2s ease-in-out infinite; }
+      `}</style>
+    </div>
   );
-};
+}
 
-export default Widget;
+export default WidgetKids;
