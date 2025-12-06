@@ -94,7 +94,7 @@ export default function ProfileInfo() {
           <div className="relative">
             <img
               src={previewImage ? previewImage : profileImage} alt="profil"
-              className="w-28 h-28 rounded-full object-cover shadow-lg border-4 border-purple-200"
+              className="w-16 h-16 rounded-full object-cover shadow-lg border-4 border-purple-200"
             />
 
             {isEditing && (
@@ -105,10 +105,7 @@ export default function ProfileInfo() {
             )}
           </div>
 
-          <div>
-            <h2 className="text-2xl font-bold text-purple-700">{form.fullName}</h2>
-            <p className="text-gray-600">{form.email}</p>
-          </div>
+          
         </div>
 
         {/* EDIT BUTTON */}

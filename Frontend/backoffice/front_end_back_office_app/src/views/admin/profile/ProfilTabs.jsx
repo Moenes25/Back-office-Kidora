@@ -8,7 +8,7 @@ const ProfileTabs = ({ activeTab, setActiveTab }) => {
     { id: "security", label: "Security" },
     { id: "activity", label: "Activity" },
     { id: "admin", label: "Admin" },
-    { id: "teams", label: "Teams" },
+   
     { id: "notification", label: "Notifications" },
   ];
 

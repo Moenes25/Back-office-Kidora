@@ -52,28 +52,28 @@ export default function RolesPermissions() {
   return (
     <div className="w-full p-4 sm:p-6 bg-white shadow-md rounded-xl">
       {/* PAGE TITLE */}
-      <div className="flex items-center gap-2 mb-6">
+      <div className="flex items-center  mb-6">
         <FaUserShield size={20} className="text-purple-600" />
         <h1 className="text-lg sm:text-xl font-semibold text-gray-700">
           Roles & Permissions
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 ">
         {/* LEFT: ROLES LIST */}
-        <div className="col-span-1 space-y-4 overflow-x-auto lg:overflow-visible flex lg:block gap-4 lg:gap-0">
+        <div className="col-span-1 space-y-4 overflow-x-auto lg:overflow-visible flex lg:block gap-4 lg:gap-0 scrollbar-none">
           {roles.map((role) => (
             <div
               key={role.name}
               onClick={() => setActiveRole(role.name)}
-              className={`cursor-pointer flex items-center gap-3 px-4 py-3 rounded-lg border min-w-[180px]
+              className={`cursor-pointer flex items-center gap-3   border-b-2 min-w-[130px]
                 transition ${
                   activeRole === role.name
-                    ? "bg-purple-50 border-purple-300 shadow-md"
-                    : "border-gray-200 hover:bg-gray-50"
+                    ? " border-purple-700 shadow-md"
+                    : "border-gray-200 "
                 }`}
             >
-              <div className="text-xl">{role.icon}</div>
+              <div className="text-lg">{role.icon}</div>
               <p className="font-semibold text-gray-700 text-sm sm:text-base">
                 {role.name}
               </p>
@@ -82,7 +82,7 @@ export default function RolesPermissions() {
         </div>
 
         {/* RIGHT: PERMISSIONS */}
-        <div className="col-span-1 lg:col-span-3 space-y-10">
+        <div className="col-span-1 lg:col-span-3 space-y-10 lg:border-l-2 border-t-2 py-6 px-4">
           {modules.map((module) => (
             <div key={module.name}>
               <h2 className="mb-3 text-sm font-semibold text-gray-500 flex items-center gap-2">
