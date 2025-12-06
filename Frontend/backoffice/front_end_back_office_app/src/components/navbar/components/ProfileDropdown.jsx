@@ -5,7 +5,7 @@ import avatar from "assets/img/avatars/avatar4.png";
 const ProfileDropdown = () => {
   return (
     <Dropdown
-      button={<img src={avatar} className="rounded-full w-11 h-11 z-100" alt="avatar" />}
+      button={<img src={avatar} className="rounded-full w-11 h-11 z-100 cursor-pointer" alt="avatar" />}
       classNames="py-2 top-8 -left-[180px] w-max text-gray-900 "
       children={
         <div className="flex flex-col w-56 bg-white shadow-xl rounded-2xl dark:bg-navy-700 dark:text-white">

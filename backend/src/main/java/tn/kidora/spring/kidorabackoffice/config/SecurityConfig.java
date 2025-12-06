@@ -13,6 +13,19 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import tn.kidora.spring.kidorabackoffice.utils.Constants;
 
+// a simple up date from nesrine to cors security Cors
+
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
+
+
+// a simple up date from nesrine to cors security Cors
+
+
+
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import tn.kidora.spring.kidorabackoffice.services.serviceImpl.CustomUserDetailsService;
@@ -59,6 +72,23 @@ public class SecurityConfig {
              .build();
                
     }
+
+
+    // Simple CORS configuration allowing only React dev server
+    @Bean
+public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.setAllowedOrigins(List.of("http://localhost:3000")); 
+    configuration.setAllowedMethods(List.of("*"));
+    configuration.setAllowedHeaders(List.of("*"));
+    configuration.setAllowCredentials(true);
+
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
+}
+
+
     }
 
     

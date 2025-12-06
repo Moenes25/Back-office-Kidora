@@ -17,7 +17,7 @@ import ReportsPage from "views/admin/reports";   // rapports & exports
 import { MdCalendarToday } from "react-icons/md"; 
 
 /* === Auth === */
-import SignIn from "views/auth/SignIn";
+import Login from "views/auth/Login";
 
 /* === Icons === */
 import {

@@ -16,7 +16,7 @@ const SuperAdminSettings = () => {
       <AdminList  />
 
       {/* AI Settings */}
-      <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
+      <div className="p-4  border border-gray-200 rounded-xl">
         <h4 className="mb-3 text-lg font-semibold text-gray-700">AI Settings</h4>
 
         <label className="flex items-center gap-3 mb-2 cursor-pointer">

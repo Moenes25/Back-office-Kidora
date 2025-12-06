@@ -80,7 +80,7 @@ const AdminList = () => {
   const closeModal = () => setActionModal({ type: null, admin: null });
 
   return (
-    <div className="mt-6">
+    <div className="">
       {/* Header */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
         <h3 className="text-xl font-semibold text-gray-700">Admins List</h3>
