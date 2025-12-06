@@ -74,6 +74,30 @@ input:checked.defaultCheckbox::before {
     100% { background-position: 0% 50%; }
   }
 
+  .gradient-text-animation {
+  background-size: 200% 200%;
+  animation: gradient-slide 3s ease infinite;
+}
+
+@keyframes gradient-slide {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+
+.animate-gradient-x {
+  background-size: 200% auto;
+  animation: gradient-x 3s linear infinite;
+}
+
+
   .animate-bounce-slow {
     animation: bounce 2.4s infinite;
   }

@@ -47,8 +47,8 @@ const Navbar = ({ onOpenSidenav, brandText }) => {
 
       {/* SEARCH + ACTIONS */}
       <div
-        className="ring-black/5 relative flex justify-between max-w-[330px] items-center
-        rounded-full px-2 shadow-xl 
+        className=" relative flex justify-between max-w-[330px] items-center
+        rounded-full px-2 
         dark:bg-navy-800/70 dark:ring-white/10 md:w-[340px]"
       >
 

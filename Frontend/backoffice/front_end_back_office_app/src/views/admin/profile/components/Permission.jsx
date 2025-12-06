@@ -1,136 +1,153 @@
 "use client";
-import React, { useState } from "react";
+
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { FiEye, FiEdit, FiRefreshCcw, FiTrash } from "react-icons/fi";
-import { IconContext } from "react-icons";
+import {
+  FaUserShield,
+  FaUserCog,
+  FaLock,
+  FaBuilding,
+  FaFileAlt,
+} from "react-icons/fa";
 
-const admins = [
-  { id: 1, name: "Nesrin", role: "Super Admin" },
-  { id: 2, name: "Sara", role: "Admin" },
-  { id: 3, name: "Ali", role: "Moderator" },
+/* ROLES LIST */
+const roles = [
+  {
+    name: "Super Admin",
+    icon: <FaUserShield className="text-purple-500" />,
+  },
+  {
+    name: "Admin",
+    icon: <FaUserCog className="text-blue-500" />,
+  },
+  {
+    name: "Moderator",
+    icon: <FaLock className="text-green-500" />,
+  },
 ];
 
+/* MODULES */
 const modules = [
-  { name: "Institutions", icon: <FiEye /> },
-  { name: "Admins", icon: <FiEdit /> },
-  { name: "Billing", icon: <FiRefreshCcw /> },
-  { name: "Settings", icon: <FiTrash /> },
+  { name: "Dashboard", icon: <FaFileAlt className="text-purple-500" /> },
+  { name: "Users", icon: <FaUserShield className="text-blue-500" /> },
+  { name: "Companies", icon: <FaBuilding className="text-green-500" /> },
+  { name: "Settings", icon: <FaUserCog className="text-orange-500" /> },
 ];
 
-const initialPermissions = {
-  1: {
-    Institutions: { read: true, write: true, update: true, delete: true },
-    Admins: { read: true, write: true, update: false, delete: false },
-    Billing: { read: true, write: false, update: false, delete: false },
-    Settings: { read: true, write: true, update: true, delete: false },
-  },
-  2: {
-    Institutions: { read: true, write: false, update: false, delete: false },
-    Admins: { read: true, write: false, update: false, delete: false },
-    Billing: { read: true, write: false, update: false, delete: false },
-    Settings: { read: true, write: false, update: false, delete: false },
-  },
-  3: {
-    Institutions: { read: true, write: false, update: false, delete: false },
-    Admins: { read: false, write: false, update: false, delete: false },
-    Billing: { read: false, write: false, update: false, delete: false },
-    Settings: { read: true, write: false, update: false, delete: false },
-  },
-};
+export default function RolesPermissions() {
+  const [activeRole, setActiveRole] = useState("Super Admin");
 
-// ICONS MAP with gradient & soft animation
-const permissionIcons = {
-  read: <FiEye className="text-lg" />,
-  write: <FiEdit className="text-lg" />,
-  update: <FiRefreshCcw className="text-lg" />,
-  delete: <FiTrash className="text-lg" />,
-};
+  const [permissions, setPermissions] = useState({});
 
-export default function PermissionViewPage() {
-  const [selectedAdmin, setSelectedAdmin] = useState(admins[0]);
+  const togglePerm = (role, module, perm) => {
+    const id = `${role}-${module}-${perm}`;
+    setPermissions((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const rowVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 },
+  };
 
   return (
-    <div className="px-4 py-6">
-      {/* ADMINS LIST TOP */}
-      <div className="flex gap-6 pb-3 mb-8 overflow-x-auto border-b border-gray-200 scrollbar-none">
-        {admins.map((admin) => (
-          <motion.div
-            key={admin.id}
-            onClick={() => setSelectedAdmin(admin)}
-            whileHover={{ scale: 1.08 }}
-            className={`cursor-pointer px-5 py-3 rounded-2xl whitespace-nowrap transition-all 
-              ${
-                selectedAdmin.id === admin.id
-                  ? "bg-gradient-to-r from-purple-400 to-blue-400 text-white shadow-lg"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-          >
-            <p className="font-semibold">{admin.name}</p>
-            <p className="text-sm opacity-70">{admin.role}</p>
-          </motion.div>
-        ))}
+    <div className="w-full p-4 sm:p-6 bg-white shadow-md rounded-xl">
+      {/* PAGE TITLE */}
+      <div className="flex items-center gap-2 mb-6">
+        <FaUserShield size={20} className="text-purple-600" />
+        <h1 className="text-lg sm:text-xl font-semibold text-gray-700">
+          Roles & Permissions
+        </h1>
       </div>
 
-      {/* MODULES + PERMISSIONS */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        {modules.map((m, i) => {
-          const perm = initialPermissions[selectedAdmin.id][m.name];
-
-          return (
-            <motion.div
-              key={m.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: i * 0.1 }}
-              className="p-6 bg-white border border-gray-100 shadow-lg rounded-3xl"
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* LEFT: ROLES LIST */}
+        <div className="col-span-1 space-y-4 overflow-x-auto lg:overflow-visible flex lg:block gap-4 lg:gap-0">
+          {roles.map((role) => (
+            <div
+              key={role.name}
+              onClick={() => setActiveRole(role.name)}
+              className={`cursor-pointer flex items-center gap-3 px-4 py-3 rounded-lg border min-w-[180px]
+                transition ${
+                  activeRole === role.name
+                    ? "bg-purple-50 border-purple-300 shadow-md"
+                    : "border-gray-200 hover:bg-gray-50"
+                }`}
             >
-              {/* module header */}
-              <div className="flex items-center gap-3 mb-5">
-                <IconContext.Provider
-                  value={{
-                    className:
-                      "text-3xl bg-gradient-to-br from-purple-500 to-blue-400 text-transparent bg-clip-text",
-                  }}
-                >
-                  {m.icon}
-                </IconContext.Provider>
-                <h2 className="text-xl font-semibold text-gray-800">{m.name}</h2>
-              </div>
+              <div className="text-xl">{role.icon}</div>
+              <p className="font-semibold text-gray-700 text-sm sm:text-base">
+                {role.name}
+              </p>
+            </div>
+          ))}
+        </div>
 
-              {/* Permission items */}
-              <div className="flex flex-col gap-3">
-                {Object.entries(perm).map(([key, value]) => (
-                  <motion.div
-                    key={key}
-                    whileHover={{ scale: 1.03 }}
-                    className="flex items-center justify-between p-3 transition-all border border-gray-200 rounded-xl bg-gray-50"
-                  >
-                    <div className="flex items-center gap-3">
-                      <IconContext.Provider
-                        value={{
-                          className:
-                            "text-lg bg-gradient-to-r from-purple-400 to-blue-400 text-transparent bg-clip-text",
-                        }}
-                      >
-                        {permissionIcons[key]}
-                      </IconContext.Provider>
-                      <span className="font-medium text-gray-700 capitalize">{key}</span>
-                    </div>
+        {/* RIGHT: PERMISSIONS */}
+        <div className="col-span-1 lg:col-span-3 space-y-10">
+          {modules.map((module) => (
+            <div key={module.name}>
+              <h2 className="mb-3 text-sm font-semibold text-gray-500 flex items-center gap-2">
+                {module.icon} {module.name.toUpperCase()}
+              </h2>
 
-                    <span
-                      className={`text-sm font-semibold ${
-                        value ? "text-green-500" : "text-red-400"
-                      }`}
-                    >
-                      {value ? "Allowed" : "Not allowed"}
-                    </span>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          );
-        })}
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+                className="space-y-4"
+              >
+                {["View", "Create", "Edit", "Delete"].map((perm) => {
+                  const id = `${activeRole}-${module.name}-${perm}`;
+                  return (
+                    <PermissionRow
+                      key={perm}
+                      title={`${perm} ${module.name}`}
+                      desc={`Allow role to ${perm.toLowerCase()} ${module.name} data.`}
+                      checked={permissions[id] || false}
+                      onClick={() =>
+                        togglePerm(activeRole, module.name, perm)
+                      }
+                      variants={rowVariants}
+                    />
+                  );
+                })}
+              </motion.div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
+  );
+}
+
+/* PERMISSION ROW */
+function PermissionRow({ title, desc, checked, onClick, variants }) {
+  return (
+    <motion.div
+      variants={variants}
+      initial="hidden"
+      animate="visible"
+      className="flex items-center justify-between px-3 sm:px-4 py-3 
+      transition border border-gray-200 rounded-lg hover:bg-gray-50"
+    >
+      <div className="pr-4">
+        <p className="text-xs sm:text-sm font-semibold text-gray-700">
+          {title}
+        </p>
+        <p className="text-[10px] sm:text-xs text-gray-500">{desc}</p>
+      </div>
+
+      <button
+        onClick={onClick}
+        className={`relative inline-flex h-5 w-10 items-center rounded-full transition-all
+          ${checked ? "bg-purple-600" : "bg-gray-300"}
+        `}
+      >
+        <span
+          className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform
+          ${checked ? "translate-x-5" : "translate-x-0.5"}
+        `}
+        />
+      </button>
+    </motion.div>
   );
 }

@@ -49,7 +49,7 @@ const ProfileTabs = ({ activeTab, setActiveTab }) => {
             {activeTab === tab.id && (
               <motion.span
                 layoutId="underline"
-                className="absolute bottom-0 left-0 w-full h-1 rounded-full bg-gradient-to-r from-purple-400 via-pink-500 to-red-500"
+                className="absolute bottom-0 left-0 w-full h-1 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ type: "spring", stiffness: 500, damping: 30 }}

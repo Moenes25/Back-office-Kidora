@@ -73,7 +73,7 @@ export default function NotificationsDropdown() {
           )}
         </div>
       }
-      classNames="py-2 top-6 -left-[230px] md:-left-[270px] w-max "
+      classNames="py-2 top-6 -left-[260px] md:-left-[270px] w-max "
       children={
         <div className="flex flex-col w-[300px] max-h-[200px] bg-white dark:bg-navy-700 rounded-xl p-3 shadow-lg overflow-y-auto space-y-3">
           {/* Header */}

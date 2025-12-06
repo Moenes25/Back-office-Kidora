@@ -1,53 +1,36 @@
-import React, { useState } from "react";
+"use client";
+
+
 import AdminList from "./AdminList";
-import { FaPlus } from "react-icons/fa6";
-import AddAdminModal from "./AddAdminModal";
+
+
 
 const SuperAdminSettings = () => {
-  const [openAddModal, setOpenAddModal] = useState(false);
-  const [newAdmin, setNewAdmin] = useState(null);
+  
 
   return (
-    <div className="p-6 border shadow-sm rounded-xl">
-      {/* Roles & Permissions */}
-      <div className="mb-8">
-        {/* <h4 className="mb-3 font-semibold">Gestion des rôles & permissions</h4> */}
+    <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm space-y-6 overflow-hidden shadow-xl -rounded-2xl">
+      
 
-        <button
-          className="flex items-center justify-center gap-2 px-4 py-2 font-medium text-black translate-x-3 bg-white shadow-lg hover: rounded-2xl"
-          onClick={() => setOpenAddModal(true)}
-        >
-          <div className="flex items-center justify-center w-6 h-6 rounded-full shadow-lg bg-gradient-to-br from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600">
-            <FaPlus color="white" />
-          </div>
-          Add Admin
-        </button>
-
-        <AdminList newAdmin={newAdmin} />
-      </div>
+      {/* Admin List */}
+      <AdminList  />
 
       {/* AI Settings */}
-      <div className="mb-8">
-        <h4 className="mb-3 font-semibold">Paramètres IA</h4>
+      <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
+        <h4 className="mb-3 text-lg font-semibold text-gray-700">AI Settings</h4>
 
-        <label className="flex items-center gap-3">
-          <input type="checkbox" defaultChecked />
-          Activer les recommandations IA
+        <label className="flex items-center gap-3 mb-2 cursor-pointer">
+          <input type="checkbox" defaultChecked className="accent-purple-600" />
+          Enable AI Recommendations
         </label>
 
-        <label className="flex items-center gap-3 mt-2">
-          <input type="checkbox" defaultChecked />
-          Analyse automatique des activités
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" defaultChecked className="accent-purple-600" />
+          Automatic Activity Analysis
         </label>
       </div>
-      <AddAdminModal
-        open={openAddModal}
-        onClose={() => setOpenAddModal(false)}
-        onSuccess={(admin) => {
-          setNewAdmin(admin);
-          setOpenAddModal(false);
-        }}
-      />
+
+      
     </div>
   );
 };

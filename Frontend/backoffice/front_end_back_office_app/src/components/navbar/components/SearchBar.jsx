@@ -9,7 +9,7 @@ const SearchBar = () => {
     <>
       {/* ===== Desktop Search ===== */}
       <div
-        className="items-center flex-1 hidden h-full px-3 mr-2 overflow-hidden rounded-full xl:flex bg-slate-100 ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10"
+        className="items-center flex-1 hidden h-full px-3 max-w-[400px] mr-2 overflow-hidden rounded-full xl:flex bg-slate-100 ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10"
       >
         <FiSearch className="w-6 h-6 mr-2 text-slate-400 dark:text-slate-300" />
         <input
@@ -21,10 +21,10 @@ const SearchBar = () => {
 
       {/* ===== Mobile Icon ===== */}
       <button
-        className="flex items-center justify-center rounded-full xl:hidden w-9 h-9 bg-white/80 dark:bg-slate-700"
+        className="flex items-center justify-center rounded-full xl:hidden w-9 h-9 bg-white/20 dark:bg-slate-700"
         onClick={() => setOpenMobile(true)}
       >
-        <FiSearch className="w-6 h-6 text-gray-700 dark:text-white" />
+        <FiSearch className="w-6 h-6 text-white dark:text-white" />
       </button>
 
       {/* ===== Mobile Fullscreen Search Overlay ===== */}

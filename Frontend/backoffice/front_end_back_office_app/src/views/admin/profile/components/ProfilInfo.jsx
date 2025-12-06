@@ -1,8 +1,17 @@
 "use client";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  FaUser,
+  FaEnvelope,
+  FaPhone,
+  FaUserShield,
+  FaCalendarAlt,
+  FaSignInAlt,
+  FaCamera,
+} from "react-icons/fa";
 
-const ProfileInfo = () => {
+export default function ProfileInfo() {
   const [isEditing, setIsEditing] = useState(false);
 
   const [form, setForm] = useState({
@@ -14,77 +23,138 @@ const ProfileInfo = () => {
     lastLogin: "Aujourd’hui à 10:45",
   });
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const [profileImage, setProfileImage] = useState("/default-avatar.png");
+  const [previewImage, setPreviewImage] = useState(null);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) setPreviewImage(URL.createObjectURL(file));
+  };
+
+  const saveImage = () => {
+    if (previewImage) {
+      setProfileImage(previewImage);
+      setPreviewImage(null);
+    }
   };
 
   const handleSave = () => {
     setIsEditing(false);
-    // 👉 Later: send updated info to backend via Axios
+    saveImage();
   };
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const fields = [
+    {
+      label: "Full Name",
+      name: "fullName",
+      icon: <FaUser className="text-purple-500" />,
+    },
+    {
+      label: "Email",
+      name: "email",
+      icon: <FaEnvelope className="text-blue-500" />,
+    },
+    {
+      label: "Phone",
+      name: "phone",
+      icon: <FaPhone className="text-green-500" />,
+    },
+    {
+      label: "Role",
+      name: "role",
+      icon: <FaUserShield className="text-orange-500" />,
+    },
+    {
+      label: "Account Created",
+      name: "createdAt",
+      icon: <FaCalendarAlt className="text-pink-500" />,
+    },
+    {
+      label: "Last Login",
+      name: "lastLogin",
+      icon: <FaSignInAlt className="text-yellow-500" />,
+    },
+  ];
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="p-6 bg-white border border-purple-200 shadow-lg dark:bg-navy-700 dark:border-navy-600 rounded-2xl"
+      transition={{ duration: 0.5 }}
+      className="w-full p-6 bg-white rounded-2xl shadow-xl border border-purple-200"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold text-purple-700 dark:text-white">
-          Personal Information
-        </h3>
+      {/* TOP HEADER */}
+      <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
+        {/* LEFT: PHOTO & BASIC INFO */}
+        <div className="flex items-center gap-6">
+          <div className="relative">
+            <img
+              src={previewImage ? previewImage : profileImage} alt="profil"
+              className="w-28 h-28 rounded-full object-cover shadow-lg border-4 border-purple-200"
+            />
 
+            {isEditing && (
+              <label className="absolute bottom-1 right-1 bg-purple-600 text-white p-2 rounded-full cursor-pointer shadow-md hover:bg-purple-700">
+                <FaCamera size={14} />
+                <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+              </label>
+            )}
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-purple-700">{form.fullName}</h2>
+            <p className="text-gray-600">{form.email}</p>
+          </div>
+        </div>
+
+        {/* EDIT BUTTON */}
         {!isEditing ? (
           <motion.button
-            whileTap={{ scale: 0.95 }}
             whileHover={{ scale: 1.05 }}
             onClick={() => setIsEditing(true)}
-            className="px-4 py-2 text-sm text-white transition bg-purple-600 rounded-lg shadow hover:bg-purple-700"
+            className="px-5 py-2 text-sm text-white  rounded-lg shadow bg-gradient-to-br from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
           >
-            Edit
+            Edit 
           </motion.button>
         ) : (
           <div className="flex gap-3">
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              whileHover={{ scale: 1.05 }}
-              onClick={() => setIsEditing(false)}
-              className="px-4 py-2 text-sm transition bg-gray-200 rounded-lg hover:bg-gray-300"
+            <button
+              onClick={() => {
+                setIsEditing(false);
+                setPreviewImage(null);
+              }}
+              className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
             >
               Cancel
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              whileHover={{ scale: 1.05 }}
+            </button>
+
+            <button
               onClick={handleSave}
-              className="px-4 py-2 text-sm text-white transition bg-green-500 rounded-lg shadow hover:bg-green-600"
+              className="px-4 py-2 bg-gradient-to-br from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white rounded-lg  shadow"
             >
               Save
-            </motion.button>
+            </button>
           </div>
         )}
       </div>
 
-      {/* Content */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        {[
-          { label: "Full Name", name: "fullName" },
-          { label: "Email", name: "email" },
-          { label: "Phone", name: "phone" },
-          { label: "Role", name: "role" },
-          { label: "Account Created", name: "createdAt" },
-          { label: "Last Login", name: "lastLogin" },
-        ].map((item, index) => (
+      {/* GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {fields.map((field, index) => (
           <motion.div
-            key={item.name}
-            initial={{ opacity: 0, y: 15 }}
+            key={field.name}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="p-4 transition bg-white shadow cursor-pointer dark:bg-navy-700 rounded-xl hover:shadow-xl"
+            transition={{ delay: index * 0.06 }}
+            className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-xl hover:bg-gray-50 transition cursor-pointer"
           >
-            <p className="mb-1 text-xs text-gray-400 dark:text-gray-300">{item.label}</p>
+            <p className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+              {field.icon} {field.label}
+            </p>
 
             <AnimatePresence mode="wait">
               {!isEditing ? (
@@ -93,21 +163,18 @@ const ProfileInfo = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="text-sm font-semibold text-gray-700 dark:text-white"
+                  className="text-sm font-semibold text-gray-700"
                 >
-                  {form[item.name]}
+                  {form[field.name]}
                 </motion.p>
               ) : (
                 <motion.input
                   key="edit"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 10 }}
                   type="text"
-                  name={item.name}
-                  value={form[item.name]}
+                  name={field.name}
+                  value={form[field.name]}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 mt-1 text-sm transition border border-gray-300 rounded-lg dark:border-gray-600 focus:ring-2 focus:ring-purple-400 dark:focus:ring-purple-500"
+                  className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-400 text-sm"
                 />
               )}
             </AnimatePresence>
@@ -116,6 +183,4 @@ const ProfileInfo = () => {
       </div>
     </motion.div>
   );
-};
-
-export default ProfileInfo;
+}
