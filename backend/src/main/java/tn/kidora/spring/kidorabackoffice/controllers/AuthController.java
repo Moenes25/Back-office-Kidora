@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.web.multipart.MultipartFile;
 import tn.kidora.spring.kidorabackoffice.dto.LoginDto;
 import tn.kidora.spring.kidorabackoffice.dto.RegisterDto;
 import tn.kidora.spring.kidorabackoffice.entities.Role;
@@ -45,6 +46,7 @@ public class AuthController {
 
     }
 
+
     @PostMapping(Constants.LOGIN)
     public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
          try {
@@ -59,6 +61,21 @@ public class AuthController {
 
          }
         }
+   @GetMapping(Constants.ALL)
+    public List<User> getAllUsersExceptSuperAdmin() {
+        return authService.getAllUsersExceptSuperAdmin();
+    }
+
+    @PutMapping(value = Constants.UPDATE_PROFILE, consumes = {"multipart/form-data"})
+    public User updateAdminProfile(
+            @RequestParam("email") String email,
+            @RequestParam(value = "nom", required = false) String nom,
+            @RequestParam(value = "tel", required = false) String tel,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile
+            ) {
+        return authService.updateAdminProfile(email, nom, tel, imageFile);
+    }
+
     // === OTP forgot/reset ===
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestParam String email) {

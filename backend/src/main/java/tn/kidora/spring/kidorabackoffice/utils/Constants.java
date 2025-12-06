@@ -32,7 +32,12 @@ public class Constants {
     public static final String EVENEMENT_UPDATE = "/evenement/update/{id}";
     public static final String EVENEMENT_DELETE = "/evenement/delete/{id}";
     public static final String EVENEMENT_COUNT_BY_TYPE = "/evenement/countByType";
+
     public static final String EN_ESSAYE = "/en-essaye";
     public static final String EN_RETARD = "/en-retard";
+
+    public static final String UPDATE_PROFILE = "/update-profile";
+
+
 
 }
