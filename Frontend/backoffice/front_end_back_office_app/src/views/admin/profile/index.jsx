@@ -12,9 +12,16 @@ import Notifications from "./components/Notification";
 import AgendaModal from "./components/AgendaModal";
 import ActivityFeedSection from "./components/Activity";
 import SuperAdminSettings from "./components/AdminSetting";
+import AdminCarouselMobile from "./components/AdminCarouselMobile";
 
 
-
+const admins = [
+  { id: 1, name: "Alice Johnson", role: "Designer", avatar: "https://randomuser.me/api/portraits/women/21.jpg", active: true },
+  { id: 2, name: "Bob Smith", role: "Developer", avatar: "https://randomuser.me/api/portraits/men/32.jpg", active: false },
+  { id: 3, name: "Carol White", role: "Product Manager", avatar: "https://randomuser.me/api/portraits/women/44.jpg", active: true },
+  { id: 4, name: "David Brown", role: "QA", avatar: "https://randomuser.me/api/portraits/men/55.jpg", active: false },
+  { id: 5, name: "Eve Black", role: "Marketing", avatar: "https://randomuser.me/api/portraits/women/66.jpg", active: true },
+];
 
 const VALID_TABS = ["profile", "settings", "security", "activity", "admin", "notification"];
 
@@ -63,7 +70,7 @@ const ProfilePage = () => {
 
   return (
     <div class="grid grid-cols-3 gap-4">
-      <section className="col-span-2">
+      <section className="w-full col-span-3 md:col-span-2">
         {/* Animate the header with fade + slide */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -94,8 +101,13 @@ const ProfilePage = () => {
         {renderTab()}
       </motion.div>
       </section>
-      <section className="flex flex-col gap-4">
-        <AdminCarousel />
+      <section className="flex-col  gap-4 md:flex min-w-[233px] "> 
+        {/* Mobile Messenger Style */}
+        <div className="">
+          <AdminCarouselMobile admins={admins} />
+        </div>
+        <div className="hidden lg:block">
+          <AdminCarousel />
 
       
           {/* Notes List */}
@@ -131,7 +143,10 @@ const ProfilePage = () => {
         />
       )}
         
-        <Notifications />
+       
+          <Notifications />
+        
+        </div>
       </section>
     </div>
   );
