@@ -27,6 +27,8 @@ public class User {
     Role role ;
     @Enumerated(EnumType.STRING)
     Status status;
+
+    private String imageUrl;
     // Champs OTP
     String otp;
     LocalDateTime otpExpiration;
