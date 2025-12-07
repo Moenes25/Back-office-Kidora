@@ -13,6 +13,7 @@ public interface AuthService {
     User register(RegisterDto dto);
     Map<String,Object> login(String email, String password);
     List<User> getAllUsersExceptSuperAdmin();
-    public User updateAdminProfile(String email, String nom, String tel, MultipartFile imageFile);
+     User updateAdminProfile(String email, String nom, String tel, MultipartFile imageFile);
+     void deleteUserById(Integer id);
 
 }

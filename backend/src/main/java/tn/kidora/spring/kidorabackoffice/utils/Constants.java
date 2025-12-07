@@ -37,6 +37,7 @@ public class Constants {
     public static final String EN_RETARD = "/en-retard";
 
     public static final String UPDATE_PROFILE = "/update-profile";
+    public static final String DELETE_USER = "/delete-user/{id}";
 
 
 
