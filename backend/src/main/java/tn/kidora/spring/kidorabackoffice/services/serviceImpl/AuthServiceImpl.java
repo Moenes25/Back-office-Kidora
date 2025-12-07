@@ -111,6 +111,10 @@ public class AuthServiceImpl implements  AuthService{
         return user;
     }
 
+    @Override
+    public void deleteUserById(Integer id) {
+        userRepository.deleteById(id);
+    }
 
 
 }

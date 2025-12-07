@@ -33,6 +33,7 @@ public class Constants {
     public static final String EVENEMENT_DELETE = "/evenement/delete/{id}";
     public static final String EVENEMENT_COUNT_BY_TYPE = "/evenement/countByType";
     public static final String UPDATE_PROFILE = "/update-profile";
+    public static final String DELETE_USER = "/delete-user/{id}";
 
 
 }
