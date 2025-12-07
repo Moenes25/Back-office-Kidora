@@ -1,22 +1,28 @@
 import axios from "axios";
 
-const axiosInstance = axios.create({
-  baseURL: process.env.REACT_APP_API_URL, // Par ex: http://localhost:8086/api
-  headers: {
-    "Content-Type": "application/json",
-  },
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_URL,
 });
 
-// 🔐 Intercepteur pour ajouter le token Authorization
-axiosInstance.interceptors.request.use(
-  (config) => {
+api.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
     const token = localStorage.getItem("token");
     if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
     }
-    return config;
-  },
-  (error) => Promise.reject(error)
+  }
+  return config;
+});
+
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/auth/login";
+    }
+    return Promise.reject(err);
+  }
 );
 
-export default axiosInstance;
+export default api;

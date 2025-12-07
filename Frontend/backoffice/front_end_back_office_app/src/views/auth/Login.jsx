@@ -56,14 +56,14 @@ export default function Login() {
               <label htmlFor="login-email" className="font-medium text-gray-700">
                 Email
               </label>
-              <div className="flex items-center gap-2 px-4 py-3 bg-gray-100 rounded-xl border border-gray-300">
+              <div className="flex items-center gap-2 px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl">
                 <MdMail className="text-gray-600" />
                 <input
                   id="login-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-transparent focus:outline-none text-gray-700"
+                  className="w-full text-gray-700 bg-transparent focus:outline-none"
                   placeholder="Enter your email"
                 />
               </div>
@@ -74,14 +74,14 @@ export default function Login() {
               <label htmlFor="login-password" className="font-medium text-gray-700">
                 Password
               </label>
-              <div className="flex items-center gap-2 px-4 py-3 bg-gray-100 rounded-xl border border-gray-300">
+              <div className="flex items-center gap-2 px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl">
                 <FaLock className="text-gray-600" />
                 <input
                   id="login-password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-transparent focus:outline-none text-gray-700"
+                  className="w-full text-gray-700 bg-transparent focus:outline-none"
                   placeholder="Enter your password"
                 />
               </div>

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import FloatingInput from "components/fields/FloatingInput";
+
 import { MdMail } from "react-icons/md";
-import logoImg from "../../assets/img/auth/logo.png";
+// import logoImg from "../../assets/img/auth/logo.png";
 import { IoIosArrowRoundBack, IoIosSend } from "react-icons/io";
 
 export default function ForgotPassword() {
@@ -68,25 +68,25 @@ export default function ForgotPassword() {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#667eea,#764ba2)] px-4 py-12 ">
       {/* Floating shapes */}
-      <div className="animate-pulse-slow absolute left-10 top-10 h-72 w-72 rounded-full bg-white/10 shadow-lg"></div>
-      <div className="animate-pulse-slow absolute bottom-20 right-10 h-96 w-96 rounded-full bg-white/10 shadow-lg"></div>
-      <div className="animate-pulse-slow absolute bottom-16 left-16 h-40 w-40 rounded-full bg-white/10 shadow-lg"></div>
-      <div className="animate-pulse-slow absolute right-16 top-16 h-48 w-48 rounded-full bg-white/10 shadow-lg"></div>
+      <div className="absolute rounded-full shadow-lg animate-pulse-slow left-10 top-10 h-72 w-72 bg-white/10"></div>
+      <div className="absolute rounded-full shadow-lg animate-pulse-slow bottom-20 right-10 h-96 w-96 bg-white/10"></div>
+      <div className="absolute w-40 h-40 rounded-full shadow-lg animate-pulse-slow bottom-16 left-16 bg-white/10"></div>
+      <div className="absolute w-48 h-48 rounded-full shadow-lg animate-pulse-slow right-16 top-16 bg-white/10"></div>
 
       {/* Main container */}
-      <div className="xl relative z-10 flex w-full max-w-lg overflow-hidden rounded-3xl border border-white/20 bg-white/10 shadow-xl backdrop-blur-xl">
+      <div className="relative z-10 flex w-full max-w-lg overflow-hidden border shadow-xl xl rounded-3xl border-white/20 bg-white/10 backdrop-blur-xl">
         {/* RIGHT SECTION – Forgot password form */}
-        <div className="flex w-full flex-col justify-center bg-white p-10 ">
-          <div className="flex w-full flex-col items-center justify-center text-center">
-            <img
+        <div className="flex flex-col justify-center w-full p-10 bg-white ">
+          <div className="flex flex-col items-center justify-center w-full text-center">
+            {/* <img
               src={logoImg}
               alt="Manage"
               className="mb-2 h-[150px] w-[150px] rounded-full bg-[linear-gradient(135deg,#667eea,#764ba2)]  shadow-lg"
-            />
+            /> */}
             <h2 className="text-transparent mb-2 bg-[linear-gradient(135deg,#667eea,#764ba2)] bg-clip-text text-2xl font-bold">
               Forgot Password?
             </h2>
-            <p className="mb-3 max-w-sm text-gray-600">
+            <p className="max-w-sm mb-3 text-gray-600">
               Enter your email and we'll send a link to reset your password.
             </p>
           </div>
@@ -95,13 +95,13 @@ export default function ForgotPassword() {
             <p className="mb-4 text-center text-red-600">{errorMsg}</p>
           )}
           {success && (
-            <div className="mb-4 rounded-lg bg-emerald-50 px-4 py-2 text-sm text-emerald-700">
+            <div className="px-4 py-2 mb-4 text-sm rounded-lg bg-emerald-50 text-emerald-700">
               {success}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="mt-4 space-y-8">
-            <FloatingInput
+            <input
               id="forgot-email"
               label="Email address"
               type="email"
@@ -113,7 +113,7 @@ export default function ForgotPassword() {
             />
             <button
               disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 p-3 font-semibold text-white transition hover:from-purple-600 hover:to-blue-600"
+              className="flex items-center justify-center w-full gap-2 p-3 font-semibold text-white transition rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
               aria-busy={loading}
             >
               <IoIosSend className="inline" />
@@ -128,12 +128,7 @@ export default function ForgotPassword() {
                 <IoIosArrowRoundBack size={20} />
                 Back to Login
               </Link>
-              <Link
-                to="/auth/register"
-                className="font-semibold text-gray-700 hover:text-indigo-600 hover:underline"
-              >
-                Create Account
-              </Link>
+              
             </div>
           </form>
         </div>

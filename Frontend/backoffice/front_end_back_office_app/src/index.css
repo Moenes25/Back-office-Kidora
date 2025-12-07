@@ -92,6 +92,22 @@ input:checked.defaultCheckbox::before {
 }
 
 
+.gradient-text {
+  background: linear-gradient(90deg, #8b5cf6, #c048ec, #3b82f6);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientMove 3s ease infinite;
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+
+
 .animate-gradient-x {
   background-size: 200% auto;
   animation: gradient-x 3s linear infinite;

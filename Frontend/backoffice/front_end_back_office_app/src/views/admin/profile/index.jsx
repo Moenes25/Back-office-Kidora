@@ -9,19 +9,12 @@ import ProfileHeader from "./ProfilHeader";
 import ProfileTabs from "./ProfilTabs";
 import AdminCarousel from "./components/AdminCarousel";
 import Notifications from "./components/Notification";
-import AgendaModal from "./components/AgendaModal";
 import ActivityFeedSection from "./components/Activity";
 import SuperAdminSettings from "./components/AdminSetting";
-import AdminCarouselMobile from "./components/AdminCarouselMobile";
 
 
-const admins = [
-  { id: 1, name: "Alice Johnson", role: "Designer", avatar: "https://randomuser.me/api/portraits/women/21.jpg", active: true },
-  { id: 2, name: "Bob Smith", role: "Developer", avatar: "https://randomuser.me/api/portraits/men/32.jpg", active: false },
-  { id: 3, name: "Carol White", role: "Product Manager", avatar: "https://randomuser.me/api/portraits/women/44.jpg", active: true },
-  { id: 4, name: "David Brown", role: "QA", avatar: "https://randomuser.me/api/portraits/men/55.jpg", active: false },
-  { id: 5, name: "Eve Black", role: "Marketing", avatar: "https://randomuser.me/api/portraits/women/66.jpg", active: true },
-];
+
+
 
 const VALID_TABS = ["profile", "settings", "security", "activity", "admin", "notification"];
 
@@ -29,8 +22,8 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const location = useLocation();
   const navigate = useNavigate();
-  const [headerNotes, setHeaderNotes] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
+ 
+  
 
   // Sync activeTab from URL hash on mount & when hash changes
   useEffect(() => {
@@ -80,6 +73,10 @@ const ProfilePage = () => {
         <ProfileHeader />
       </motion.div>
 
+       {/*  Mobile Admin Carousel */}
+      <motion.section className="my-4 md:hidden">
+        <AdminCarousel />
+      </motion.section>
       {/* Animate the tabs */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -100,50 +97,14 @@ const ProfilePage = () => {
       >
         {renderTab()}
       </motion.div>
-      </section>
+
+     
+     </section>
       <section className="flex-col  gap-4 md:flex min-w-[233px] "> 
-        {/* Mobile Messenger Style */}
-        <div className="">
-          <AdminCarouselMobile admins={admins} />
-        </div>
-        <div className="hidden lg:block">
+       
+        <div className="hidden space-y-4 lg:block">
           <AdminCarousel />
 
-      
-          {/* Notes List */}
-          <div className="relative flex flex-col w-full h-10 gap-4 p-4 pl-4 overflow-y-auto bg-white border-2 border-gray-200 rounded-lg shadow-md scrollbar-none">
-            <div className="absolute w-1 rounded-full bottom-2 left-2 top-2 bg-gradient-to-b from-purple-400 to-blue-400"></div>
-            {headerNotes.map((note) => (
-              <div key={note.id} className="relative flex items-start gap-3">
-                <div className="w-3 h-3 mt-1 rounded-full bg-gradient-to-br from-purple-400 to-blue-400"></div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-800">
-                    {note.title}
-                  </p>
-                  <p className="text-xs text-gray-400">{note.date}</p>
-                </div>
-              </div>
-            ))}
-
-            {/* Button to open modal */}
-            <button
-              onClick={() => setModalOpen(true)}
-              className="absolute px-3 py-1 font-bold text-white bg-purple-400 rounded-full shadow-md bottom-1 right-1 w-fit hover:bg-purple-500"
-            >
-              +
-            </button>
-          </div>
-       
-
-        {/* Modal */}
-      {modalOpen && (
-        <AgendaModal
-          onClose={() => setModalOpen(false)}
-          onSave={(note) => setHeaderNotes((prev) => [...prev, note])}
-        />
-      )}
-        
-       
           <Notifications />
         
         </div>

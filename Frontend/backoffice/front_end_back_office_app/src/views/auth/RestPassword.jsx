@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
-import FloatingInput from "components/fields/FloatingInput";
 import { FaLock } from "react-icons/fa6";
 
 export default function ResetPassword() {
@@ -58,21 +57,21 @@ export default function ResetPassword() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-[linear-gradient(135deg,#667eea,#764ba2)] px-4 py-12">
-      <div className="relative z-10 w-full max-w-md rounded-3xl bg-white p-8 shadow-xl">
-        <h2 className="mb-4 text-center text-xl font-bold">Reset password</h2>
+      <div className="relative z-10 w-full max-w-md p-8 bg-white shadow-xl rounded-3xl">
+        <h2 className="mb-4 text-xl font-bold text-center">Reset password</h2>
         <p className="mb-4 text-sm text-gray-600">
           Set a new password for {email}
         </p>
 
         {error && <div className="mb-3 text-sm text-red-600">{error}</div>}
         {okMsg && (
-          <div className="mb-3 rounded bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+          <div className="px-3 py-2 mb-3 text-sm rounded bg-emerald-50 text-emerald-700">
             {okMsg}
           </div>
         )}
 
         <form onSubmit={handleReset} className="space-y-4">
-          <FloatingInput
+          <input
             id="reset-password"
             label="New password"
             type="password"
@@ -81,7 +80,7 @@ export default function ResetPassword() {
             icon={<FaLock />}
             className="text-gray-700"
           />
-          <FloatingInput
+          <input
             id="reset-confirm"
             label="Confirm password"
             type="password"
@@ -95,7 +94,7 @@ export default function ResetPassword() {
             <button
               type="submit"
               disabled={loading}
-              className="rounded-xl bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+              className="px-4 py-2 text-white bg-indigo-600 rounded-xl hover:bg-indigo-700"
             >
               {loading ? "Saving..." : "Save password"}
             </button>

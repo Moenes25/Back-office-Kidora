@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
-import FloatingInput from "components/fields/FloatingInput";
 import { MdMail } from "react-icons/md";
 
 export default function VerifyCode() {
@@ -71,8 +70,8 @@ export default function VerifyCode() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-[linear-gradient(135deg,#667eea,#764ba2)] px-4 py-12">
-      <div className="relative z-10 w-full max-w-md rounded-3xl bg-white p-8 shadow-xl">
-        <h2 className="mb-4 text-center text-xl font-bold">Verify code</h2>
+      <div className="relative z-10 w-full max-w-md p-8 bg-white shadow-xl rounded-3xl">
+        <h2 className="mb-4 text-xl font-bold text-center">Verify code</h2>
         <p className="mb-4 text-sm text-gray-600">
           Enter the 6-digit code sent to <strong>{email}</strong>.
         </p>
@@ -80,7 +79,7 @@ export default function VerifyCode() {
         {error && <div className="mb-3 text-sm text-red-600">{error}</div>}
 
         <form onSubmit={handleVerify} className="space-y-4">
-          <FloatingInput
+          <input
             id="verify-code"
             label="Verification code"
             value={code}
@@ -93,7 +92,7 @@ export default function VerifyCode() {
             <button
               type="submit"
               disabled={checking}
-              className="rounded-xl bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+              className="px-4 py-2 text-white bg-indigo-600 rounded-xl hover:bg-indigo-700"
             >
               {checking ? "Checking..." : "Verify"}
             </button>

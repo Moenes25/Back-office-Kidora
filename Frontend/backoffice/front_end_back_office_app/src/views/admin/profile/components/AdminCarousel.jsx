@@ -8,70 +8,74 @@ const admins = [
   { id: 3, name: "Carol White", role: "Product Manager", avatar: "https://randomuser.me/api/portraits/women/44.jpg", active: true },
   { id: 4, name: "David Brown", role: "QA", avatar: "https://randomuser.me/api/portraits/men/55.jpg", active: false },
   { id: 5, name: "Eve Black", role: "Marketing", avatar: "https://randomuser.me/api/portraits/women/66.jpg", active: true },
-  { id: 6, name: "Alice Johnson", role: "Designer", avatar: "https://randomuser.me/api/portraits/women/21.jpg", active: true },
-  { id: 7, name: "Bob Smith", role: "Developer", avatar: "https://randomuser.me/api/portraits/men/32.jpg", active: false },
-  { id: 8, name: "Carol White", role: "Product Manager", avatar: "https://randomuser.me/api/portraits/women/44.jpg", active: true },
-  { id: 9, name: "David Brown", role: "QA", avatar: "https://randomuser.me/api/portraits/men/55.jpg", active: false },
-  { id: 10, name: "Eve Black", role: "Marketing", avatar: "https://randomuser.me/api/portraits/women/66.jpg", active: true },
 ];
 
 export default function AdminCarousel() {
   const [activeId, setActiveId] = useState(null);
 
   return (
-    <div className="relative w-full p-4 overflow-x-auto bg-white rounded-lg shadow-lg scrollbar-none">
+    <div className="w-full p-4 bg-white shadow-xl dark:bg-gray-900 rounded-xl ">
+        <motion.h4>
+          <span className="font-semibold text-gray-700 ">Team's Kidora</span>
+        </motion.h4>
       <motion.div
-        className="flex items-center space-x-0"
+        className="flex gap-3 mt-2 overflow-x-auto scrollbar-none"
         drag="x"
-        dragConstraints={{ left: -1200, right: 0 }}
+        dragConstraints={{ left: -800, right: 0 }}
       >
-        {admins.map((admin, index) => (
+        {admins.map((admin) => (
           <motion.div
             key={admin.id}
-            className="relative flex flex-col items-center cursor-pointer group"
-            whileHover={{ scale: 1.2, zIndex: 50 }}
+            className="relative flex-shrink-0 cursor-pointer w-36"
+            whileHover={{ scale: 1.05 }}
             onClick={() => setActiveId(admin.id)}
-            style={{ marginLeft: index === 0 ? 0 : -12 }} // overlapping
           >
-            {/* Avatar */}
-            <div className="relative">
-              <img
-                src={admin.avatar}
-                alt={admin.name}
-                className={`w-12 h-12 rounded-full border-2 shadow-md ${
-                  activeId === admin.id ? "border-purple-500" : "border-white"
-                }`}
-              />
-              {/* Status dot */}
-              <span
-                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
-                  admin.active ? "bg-green-500" : "bg-red-500"
-                }`}
-              />
-            </div>
+            <motion.div
+              className={`flex flex-col items-center p-3 rounded-2xl shadow-md border transition-all duration-300 ${
+                activeId === admin.id
+                  ? "border-purple-400 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100"
+                  : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+              }`}
+            >
+              <div className="relative">
+                <img
+                  src={admin.avatar}
+                  alt={admin.name}
+                  className="w-16 h-16 border-2 border-white rounded-full shadow-md"
+                />
+                <span
+                  className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
+                    admin.active ? "bg-green-500 animate-pulse" : "bg-red-500"
+                  }`}
+                />
+              </div>
 
-            {/* Tooltip */}
-            <div className="absolute z-50 px-3 py-1 text-[12px] text-gray-800 transition-opacity bg-white rounded-md shadow-lg opacity-0 top-2 left-8 group-hover:opacity-100 whitespace-nowrap">
-              <div className="font-semibold">{admin.name}</div>
-              <div className="text-[10px] text-gray-500">{admin.role}</div>
-            </div>
+              <div className="mt-2 text-center">
+                <h3 className="text-sm font-semibold text-gray-800 truncate dark:text-gray-100">
+                  {admin.name}
+                </h3>
+                <p className="text-[10px] text-gray-500 dark:text-gray-300 truncate">{admin.role}</p>
+              </div>
+            </motion.div>
           </motion.div>
         ))}
 
-        {/* Total admins at the end */}
-        <div className="flex items-center justify-center w-12 h-12 ml-4 text-sm font-semibold text-white rounded-full shadow-md bg-purple-500/40">
+        {/* Total admins */}
+        <motion.div
+          className="flex items-center justify-center flex-shrink-0 text-base font-semibold text-white shadow-md w-36 h-28 rounded-2xl bg-gradient-to-br from-purple-400 to-blue-400"
+          whileHover={{ scale: 1.05 }}
+        >
           +{admins.length}
-        </div>
+        </motion.div>
       </motion.div>
 
       <style jsx>{`
-        /* Hide scrollbar */
         .scrollbar-none::-webkit-scrollbar {
           display: none;
         }
         .scrollbar-none {
-          -ms-overflow-style: none;  /* IE and Edge */
-          scrollbar-width: none;     /* Firefox */
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
     </div>
