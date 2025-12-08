@@ -19,11 +19,9 @@ export default function Login() {
     try {
       const success = await login(email, password);
       if (success) {
-        console.log("✅ Login successful!");
         navigate("/admin");
       }
     } catch (error) {
-      console.error("❌ Login failed:", error);
       setErrorMsg(
         error.response?.data || "Failed to log in. Please check your credentials."
       );
@@ -31,7 +29,8 @@ export default function Login() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#667eea,#764ba2)] px-4 py-12 " >
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#667eea,#764ba2)] px-4 py-12 ">
+      
       {/* Floating shapes */}
       <div className="absolute rounded-full shadow-lg animate-pulse-slow left-10 top-10 h-72 w-72 bg-white/10"></div>
       <div className="absolute rounded-full shadow-lg animate-pulse-slow bottom-20 right-10 h-96 w-96 bg-white/10"></div>
@@ -39,9 +38,9 @@ export default function Login() {
       <div className="absolute w-48 h-48 rounded-full shadow-lg animate-pulse-slow right-16 top-16 bg-white/10"></div>
 
       {/* Main container */}
-      <div className="relative z-10 flex w-full max-w-lg overflow-hidden transition duration-700 ease-in-out border shadow-xl xl rounded-3xl border-white/20 bg-white/10 backdrop-blur-xl">
+      <div className="relative z-10 flex w-full max-w-lg overflow-hidden border shadow-xl rounded-3xl border-white/20 bg-white/10 backdrop-blur-xl">
         <div className="flex flex-col justify-center w-full p-10 bg-white ">
-          <div className="flex items-center justify-center w-full">
+          <div className="flex items-center justify-center w-full mb-4">
             <img src={logoImg} alt="Manage" className="w-[250px]" />
           </div>
 
@@ -51,40 +50,46 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-8">
 
-            {/* Email Input */}
-            <div className="flex flex-col space-y-1">
-              <label htmlFor="login-email" className="font-medium text-gray-700">
+            {/* ================= EMAIL INPUT ================= */}
+            <div className="relative w-full">
+              <MdMail className="absolute text-gray-600 -translate-y-1/2 left-4 top-1/2" />
+
+              <input
+                id="login-email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full py-4 pl-12 pr-4 text-gray-700 bg-transparent border border-gray-300 outline-none rounded-xl peer"
+              />
+
+              <label
+                htmlFor="login-email"
+                className="absolute px-1 text-gray-600 transition-all duration-200 -translate-y-1/2 bg-white left-12 top-1/2 peer-focus:top-0 peer-focus:text-xs peer-focus:text-gray-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-gray-600"
+              >
                 Email
               </label>
-              <div className="flex items-center gap-2 px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl">
-                <MdMail className="text-gray-600" />
-                <input
-                  id="login-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full text-gray-700 bg-transparent focus:outline-none"
-                  placeholder="Enter your email"
-                />
-              </div>
             </div>
 
-            {/* Password Input */}
-            <div className="flex flex-col space-y-1">
-              <label htmlFor="login-password" className="font-medium text-gray-700">
+            {/* ================= PASSWORD INPUT ================= */}
+            <div className="relative w-full">
+              <FaLock className="absolute text-gray-600 -translate-y-1/2 left-4 top-1/2" />
+
+              <input
+                id="login-password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full py-4 pl-12 pr-4 text-gray-700 bg-transparent border border-gray-300 outline-none rounded-xl peer"
+              />
+
+              <label
+                htmlFor="login-password"
+                className="absolute px-1 text-gray-600 transition-all duration-200 -translate-y-1/2 bg-white left-12 top-1/2 peer-focus:top-0 peer-focus:text-xs peer-focus:text-gray-600 peer-valid:top-0 peer-valid:text-sm peer-valid:text-gray-600"
+              >
                 Password
               </label>
-              <div className="flex items-center gap-2 px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl">
-                <FaLock className="text-gray-600" />
-                <input
-                  id="login-password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full text-gray-700 bg-transparent focus:outline-none"
-                  placeholder="Enter your password"
-                />
-              </div>
             </div>
 
             <button
@@ -98,7 +103,7 @@ export default function Login() {
             <div className="flex justify-between p-2 text-sm text-gray-800">
               <Link
                 to="/auth/forgot-password"
-                className="font-semibold text-gray-700 cursor-pointer hover:text-blueSecondary hover:underline"
+                className="font-semibold text-gray-700 hover:text-blue-600 hover:underline"
               >
                 Forgot Password?
               </Link>

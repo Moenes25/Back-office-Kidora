@@ -37,7 +37,7 @@ export default function ProfileInfo() {
         email: user.email || "",
         phone: user.tel || "",
         role: user.role || "",
-        createdAt: "N/A", // هذه قادمة لاحقاً من الباك
+        createdAt: "N/A", 
         lastLogin: "N/A",
       });
     }

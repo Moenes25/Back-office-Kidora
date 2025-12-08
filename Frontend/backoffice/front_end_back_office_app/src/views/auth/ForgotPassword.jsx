@@ -102,18 +102,29 @@ export default function ForgotPassword() {
           )}
 
           <form onSubmit={handleSubmit} className="mt-4 space-y-8">
-            <div className="flex items-center gap-2 px-4 border border-gray-600 rounded-xl hover:shadow-md ">
-              <FaMailBulk size={20} className="text-gray-600  focus:text-[18px] focus:translate-y-4  "/>
+            <div className="relative w-full">
+              <FaMailBulk
+                size={20}
+                className="absolute text-gray-600 -translate-y-1/2 left-4 top-1/2"
+              />
+
               <input
-              id="forgot-email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="w-full py-4 text-gray-700 bg-transparent outline-none    focus:translate-y-1/2 focus:text-[14px] "
-            />
+                id="forgot-email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full py-4 pl-12 pr-4 text-gray-700 bg-transparent border border-gray-600 outline-none peer rounded-xl"
+              />
+
+              <label
+                htmlFor="forgot-email"
+                className="absolute px-1 text-gray-600 transition-all duration-200 -translate-y-1/2 bg-white left-12 top-1/2 peer-valid:top-0 peer-valid:text-xs peer-valid:text-gray-600 peer-focus:top-0 peer-focus:text-sm peer-focus:text-gray-600"
+              >
+                Enter your email
+              </label>
             </div>
+
             <button
               disabled={loading}
               className="flex items-center justify-center w-full gap-2 p-3 font-semibold text-white transition rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"

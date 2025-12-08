@@ -25,9 +25,9 @@ const ProfileHeader = () => {
       </motion.div>
 
       {/* Bottom White Section */}
-      <div className="relative flex flex-col gap-4 p-6 bg-white">
+      <div className="relative flex flex-col gap-4 p-6 bg-white dark:bg-indigo-900">
         {/* Avatar + Active */}
-        <motion.div className="absolute w-32 h-32 overflow-hidden border-4 border-white rounded-full shadow-lg -top-14 left-6">
+        <motion.div className="absolute overflow-hidden border-4 border-white rounded-full shadow-lg w-28 h-28 md:w-32 md:h-32 -top-14 left-6">
           <img
             src={avatar11Img}
             alt="User"
@@ -37,7 +37,7 @@ const ProfileHeader = () => {
         </motion.div>
 
         {/* Name + Email + Messages icon */}
-        <div className="flex items-start justify-between pr-4 ml-32">
+        <div className="flex items-start justify-between pr-4 mt-8 md:ml-32">
           <div className="flex flex-col">
             <motion.h2
               className="text-xl font-bold text-gray-800"
@@ -79,7 +79,7 @@ const ProfileHeader = () => {
         </div>
 
         {/* Stats Cards — Gradient background + white content */}
-        <div className="grid grid-cols-2 gap-4 mt-6 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 mt-6 md:grid-cols-4 ">
           {[
             {
               label: "Admins",

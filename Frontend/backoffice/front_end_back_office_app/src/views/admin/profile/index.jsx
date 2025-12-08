@@ -63,7 +63,7 @@ const ProfilePage = () => {
 
   return (
     <div class="grid grid-cols-3 gap-4">
-      <section className="w-full col-span-3 md:col-span-2">
+      <section className="w-full col-span-3 lg:col-span-2">
         {/* Animate the header with fade + slide */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
