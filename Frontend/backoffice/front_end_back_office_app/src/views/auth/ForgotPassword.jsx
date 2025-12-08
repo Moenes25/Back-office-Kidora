@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { MdMail } from "react-icons/md";
-// import logoImg from "../../assets/img/auth/logo.png";
+import logoImg from "../../assets/img/auth/logo.png";
 import { IoIosArrowRoundBack, IoIosSend } from "react-icons/io";
+import { FaMailBulk } from "react-icons/fa";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -78,11 +79,11 @@ export default function ForgotPassword() {
         {/* RIGHT SECTION – Forgot password form */}
         <div className="flex flex-col justify-center w-full p-10 bg-white ">
           <div className="flex flex-col items-center justify-center w-full text-center">
-            {/* <img
+            <img
               src={logoImg}
               alt="Manage"
-              className="mb-2 h-[150px] w-[150px] rounded-full bg-[linear-gradient(135deg,#667eea,#764ba2)]  shadow-lg"
-            /> */}
+              className="mb-2 h-[100px] w-[100px] rounded-full bg-[linear-gradient(135deg,#667eea,#764ba2)]  shadow-lg"
+            />
             <h2 className="text-transparent mb-2 bg-[linear-gradient(135deg,#667eea,#764ba2)] bg-clip-text text-2xl font-bold">
               Forgot Password?
             </h2>
@@ -101,16 +102,18 @@ export default function ForgotPassword() {
           )}
 
           <form onSubmit={handleSubmit} className="mt-4 space-y-8">
-            <input
+            <div className="flex items-center gap-2 px-4 border border-gray-600 rounded-xl hover:shadow-md ">
+              <FaMailBulk size={20} className="text-gray-600  focus:text-[18px] focus:translate-y-4  "/>
+              <input
               id="forgot-email"
-              label="Email address"
               type="email"
+              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              icon={<MdMail />}
-              className="text-gray-700"
-              required
+              placeholder="Enter your email"
+              className="w-full py-4 text-gray-700 bg-transparent outline-none    focus:translate-y-1/2 focus:text-[14px] "
             />
+            </div>
             <button
               disabled={loading}
               className="flex items-center justify-center w-full gap-2 p-3 font-semibold text-white transition rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
@@ -128,7 +131,6 @@ export default function ForgotPassword() {
                 <IoIosArrowRoundBack size={20} />
                 Back to Login
               </Link>
-              
             </div>
           </form>
         </div>

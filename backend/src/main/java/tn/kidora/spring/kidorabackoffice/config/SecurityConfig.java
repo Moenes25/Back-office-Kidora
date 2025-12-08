@@ -1,5 +1,7 @@
 package tn.kidora.spring.kidorabackoffice.config;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,10 +13,15 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import lombok.AllArgsConstructor;
 import tn.kidora.spring.kidorabackoffice.services.serviceImpl.CustomUserDetailsService;
 import tn.kidora.spring.kidorabackoffice.utils.Constants;
+// /----------------------------------------------------
+
 
 @Configuration
 @EnableWebSecurity
@@ -40,7 +47,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                // .cors(cors -> cors.configurationSource(corsConfigurationSource()))  // Enable CORS with custom configuration
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))  // Enable CORS with custom configuration
                 .authorizeHttpRequests(auth
                         -> auth.requestMatchers(Constants.APP_ROOT + Constants.AUTH + Constants.LOGIN).permitAll()
                         .requestMatchers(
@@ -58,17 +65,17 @@ public class SecurityConfig {
     }
 
     // Simple CORS configuration allowing only React dev server
-    // @Bean
-    // public CorsConfigurationSource corsConfigurationSource() {
-    //     CorsConfiguration configuration = new CorsConfiguration();
-    //     configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-    //     configuration.setAllowedMethods(List.of("*"));
-    //     configuration.setAllowedHeaders(List.of("*"));
-    //     configuration.setAllowCredentials(true);
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedMethods(List.of("*"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
 
-    //     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    //     source.registerCorsConfiguration("/**", configuration);
-    //     return source;
-    // }
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
 }

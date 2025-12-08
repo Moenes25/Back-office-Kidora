@@ -3,7 +3,7 @@ import { useAuth } from "context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { MdMail } from "react-icons/md";
 import { FaLock, FaSignInAlt } from "react-icons/fa";
-// import logoImg from "../../assets/img/auth/logo.png";
+import logoImg from "../../assets/img/auth/logo.png";
 
 export default function Login() {
   const { login, loading } = useAuth();
@@ -31,7 +31,7 @@ export default function Login() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#667eea,#764ba2)] px-4 py-12 ">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#667eea,#764ba2)] px-4 py-12 " >
       {/* Floating shapes */}
       <div className="absolute rounded-full shadow-lg animate-pulse-slow left-10 top-10 h-72 w-72 bg-white/10"></div>
       <div className="absolute rounded-full shadow-lg animate-pulse-slow bottom-20 right-10 h-96 w-96 bg-white/10"></div>
@@ -39,10 +39,10 @@ export default function Login() {
       <div className="absolute w-48 h-48 rounded-full shadow-lg animate-pulse-slow right-16 top-16 bg-white/10"></div>
 
       {/* Main container */}
-      <div className="relative z-10 flex w-full max-w-lg overflow-hidden border shadow-xl xl rounded-3xl border-white/20 bg-white/10 backdrop-blur-xl">
+      <div className="relative z-10 flex w-full max-w-lg overflow-hidden transition duration-700 ease-in-out border shadow-xl xl rounded-3xl border-white/20 bg-white/10 backdrop-blur-xl">
         <div className="flex flex-col justify-center w-full p-10 bg-white ">
           <div className="flex items-center justify-center w-full">
-            {/* <img src={logoImg} alt="Manage" className="w-[250px]" /> */}
+            <img src={logoImg} alt="Manage" className="w-[250px]" />
           </div>
 
           {errorMsg && (

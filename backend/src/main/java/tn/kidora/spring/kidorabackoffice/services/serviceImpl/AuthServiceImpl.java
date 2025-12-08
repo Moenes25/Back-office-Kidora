@@ -61,11 +61,11 @@ public class AuthServiceImpl implements AuthService {
                 authData.put("type", "Bearer");
                 // authData.put("user", user);
                 //-----------------------------
-                // authData.put("id", user.getIdUser());
-                // authData.put("nom", user.getNom());
-                // authData.put("email", user.getEmail());
-                // authData.put("tel", user.getTel());
-                // authData.put("role", user.getRole());
+                authData.put("id", user.getIdUser());
+                authData.put("nom", user.getNom());
+                authData.put("email", user.getEmail());
+                authData.put("tel", user.getTel());
+                authData.put("role", user.getRole());
                 //-----------------------------
                 return authData;
 

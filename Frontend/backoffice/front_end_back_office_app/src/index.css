@@ -90,8 +90,13 @@ input:checked.defaultCheckbox::before {
     background-position: 0% 50%;
   }
 }
-
-
+/* gradient of background */
+.gradient-bg {
+  background: linear-gradient(90deg, #8b5cf6, #d4a2ef, #4456ba);
+  background-size: 200% 200%;
+  animation: gradientMove 4s ease infinite;
+}
+/* gradient of text */
 .gradient-text {
   background: linear-gradient(90deg, #8b5cf6, #c048ec, #3b82f6);
   background-size: 200% 200%;
