@@ -27,7 +27,7 @@ export default function ProfileInfo() {
 
   const [isEditing, setIsEditing] = useState(false);
 
-  const [profileImage, setProfileImage] = useState("/default-avatar.png");
+  const [profileImage, setProfileImage] = useState("../../../../assets/img/avatars/avatar11.png");
   const [previewImage, setPreviewImage] = useState(null);
 
   useEffect(() => {
@@ -105,14 +105,14 @@ export default function ProfileInfo() {
       className="w-full p-6 bg-white border border-purple-200 shadow-xl rounded-2xl"
     >
       {/* TOP AREA */}
-      <div className="flex flex-col items-center justify-between gap-6 mb-10 md:flex-row">
+      <div className="flex items-start justify-between gap-4 md:flex-row">
         <div className="flex items-center gap-6">
           <div className="relative w-20 h-20">
             {previewImage || profileImage ? (
               <img
                 src={previewImage || profileImage}
                 alt="profil"
-                className="object-cover w-full h-full border-2 border-purple-300 rounded-full shadow-inner"
+                className="object-cover w-48 h-12 border-2 border-purple-300 shadow-inner rounded-xl"
               />
             ) : (
               <div className="flex items-center justify-center w-full h-full text-purple-400 bg-gray-100 border-2 border-purple-300 rounded-full">

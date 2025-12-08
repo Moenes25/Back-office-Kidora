@@ -74,7 +74,7 @@ const ProfilePage = () => {
       </motion.div>
 
        {/*  Mobile Admin Carousel */}
-      <motion.section className="my-4 md:hidden">
+      <motion.section className="my-4 lg:hidden">
         <AdminCarousel />
       </motion.section>
       {/* Animate the tabs */}
