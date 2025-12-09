@@ -70,7 +70,7 @@ public class EtabServiceImpl implements EtabService {
         
          User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec ID: " + dto.getUserId()));
-        
+
         etab.setUser(user);
         etab.setNomEtablissement(dto.getNomEtablissement());
         etab.setAdresse_complet(dto.getAdresse_complet());

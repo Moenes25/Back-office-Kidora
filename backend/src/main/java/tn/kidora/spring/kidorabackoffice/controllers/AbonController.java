@@ -28,11 +28,11 @@ public class AbonController {
         return abonnementService.addAbonnement(dto);
     }
     @PutMapping(Constants.UPDATE + Constants.ID)
-    public ResponseEntity<AbonnementResponseDTO> updateAbonnement(@PathVariable Long id,@RequestBody AbonnementRequestDTO dto) {
+    public ResponseEntity<AbonnementResponseDTO> updateAbonnement(@PathVariable String id,@RequestBody AbonnementRequestDTO dto) {
         return abonnementService.updateAbonnement(id, dto);
     }
     @DeleteMapping(Constants.DELETE + Constants.ID)
-    public ResponseEntity<Void> deleteAbonnement(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteAbonnement(@PathVariable String id) {
         return abonnementService.deleteAbonnement(id);
     }
     @GetMapping(Constants.ALL)
@@ -40,7 +40,7 @@ public class AbonController {
         return abonnementService.getAllAbonnements();
     }
     @GetMapping(Constants.BY_ETABLISSEMENT + Constants.ID)
-    public ResponseEntity<List<AbonnementResponseDTO>> getAbonnementsByEtablissement(@PathVariable("id")  Integer etablissementId) {
+    public ResponseEntity<List<AbonnementResponseDTO>> getAbonnementsByEtablissement(@PathVariable("id")  String etablissementId) {
         return abonnementService.getAbonnementsByEtablissement(etablissementId);
     }
     @GetMapping(Constants.BY_STATUS+ "/{statut}")

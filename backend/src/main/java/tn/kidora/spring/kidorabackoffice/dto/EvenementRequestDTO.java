@@ -15,6 +15,6 @@ public class EvenementRequestDTO {
     private LocalTime heureDebut;
     private LocalTime heureFin;
     private Type_Etablissement type;
-    private Integer etablissementId;
+    private String etablissementId;
 
 }

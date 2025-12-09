@@ -33,12 +33,12 @@ public class EventController {
         return evenementService.getEvenementsParDate(date);
     }
     @PutMapping(Constants.EVENEMENT_UPDATE)
-    public ResponseEntity <EvenementResponseDTO> modifierEvenement(@PathVariable Long id, @RequestBody EvenementRequestDTO dto) {
-        EvenementResponseDTO response = evenementService.modifierEvenement(id, dto);
+    public ResponseEntity <EvenementResponseDTO> modifierEvenement(@PathVariable String id, @RequestBody EvenementRequestDTO dto) {
+        EvenementResponseDTO response = evenementService.modifierEvenement( id, dto);
         return ResponseEntity.ok(response);
     }
     @DeleteMapping(Constants.EVENEMENT_DELETE)
-    public ResponseEntity<String>supprimerEvenement(@PathVariable Long id) {
+    public ResponseEntity<String>supprimerEvenement(@PathVariable String id) {
         evenementService.supprimerEvenement(id);
         return ResponseEntity.ok("Événement supprimé avec succès !");
 

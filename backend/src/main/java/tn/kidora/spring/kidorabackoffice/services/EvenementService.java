@@ -14,8 +14,8 @@ public interface EvenementService {
     ResponseEntity<List<EvenementResponseDTO>> getAllEvenements();
     ResponseEntity<List<EvenementResponseDTO>> getEvenementsParDate(LocalDate date);
     Map<Type_Etablissement, Long> getNombreEvenementParTypeEtablissement();
-   void supprimerEvenement(Long id);
-   EvenementResponseDTO modifierEvenement(Long id, EvenementRequestDTO dto);
+   void supprimerEvenement(String id);
+   EvenementResponseDTO modifierEvenement(String id, EvenementRequestDTO dto);
     public long getNombreEvenementSemaineCouranteParType(String type);
     long getNombreEvenementPourUnJour(LocalDate date, Type_Etablissement type);
     double getTotalHeuresPlanifieesParType(String type);

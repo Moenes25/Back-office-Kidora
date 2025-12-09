@@ -78,7 +78,7 @@ public class EvenementServiceImpl implements EvenementService {
 
 
     @Override
-    public void supprimerEvenement(Long id) {
+    public void supprimerEvenement(String id) {
         Evenement evenement = evenementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Événement non trouvé avec l'id : " + id));
 
@@ -87,7 +87,7 @@ public class EvenementServiceImpl implements EvenementService {
 
 
     @Override
-    public EvenementResponseDTO modifierEvenement(Long id, EvenementRequestDTO dto) {
+    public EvenementResponseDTO modifierEvenement(String id, EvenementRequestDTO dto) {
         Evenement evenementExistant = evenementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Événement non trouvé avec l'id : " + id));
 
@@ -111,8 +111,14 @@ public class EvenementServiceImpl implements EvenementService {
         LocalDate today = LocalDate.now();
         int currentWeek = today.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
         int currentYear = today.getYear();
+        List<Evenement> evenements = evenementRepository.findAll();
 
-        return evenementRepository.countEvenementSemaineParType(currentYear, currentWeek, type);
+        return evenements.stream()
+                .filter(e -> e.getDate() != null)
+                .filter(e -> e.getDate().getYear() == currentYear)
+                .filter(e -> e.getDate().get(IsoFields.WEEK_OF_WEEK_BASED_YEAR) == currentWeek)
+                .filter(e -> type == null || e.getType().toString().equals(type))
+                .count();
     }
 
     @Override
@@ -126,8 +132,22 @@ public class EvenementServiceImpl implements EvenementService {
         LocalDate today = LocalDate.now();
         int currentWeek = today.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
         int currentYear = today.getYear();
+        List<Evenement> evenements = evenementRepository.findAll();
 
-        return evenementRepository.getTotalHeuresPlanifieesParType(currentYear, currentWeek, type);
+
+        return evenements.stream()
+                .filter(e -> e.getDate() != null && e.getHeureDebut() != null && e.getHeureFin() != null)
+                .filter(e -> e.getDate().getYear() == currentYear)
+                .filter(e -> e.getDate().get(IsoFields.WEEK_OF_WEEK_BASED_YEAR) == currentWeek)
+                .filter(e -> {
+                    if (type == null) return true; // pas de filtre = tous types
+                    if (e.getEtablissement() == null) return false;
+                    return e.getEtablissement().getType().toString().equals(type);
+                })
+                .mapToDouble(e ->
+                        java.time.Duration.between(e.getHeureDebut(), e.getHeureFin()).toMinutes() / 60.0
+                )
+                .sum();
     }
 
     @Override

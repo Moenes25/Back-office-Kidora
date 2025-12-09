@@ -7,7 +7,7 @@ import tn.kidora.spring.kidorabackoffice.entities.StatutPaiement;
 
 @Data
 public class AbonnementResponseDTO {
-     private Long idAbonnement;
+     private String idAbonnement;
     private LocalDate dateDebutAbonnement;
     private LocalDate dateFinAbonnement;
     private Double montantPaye;

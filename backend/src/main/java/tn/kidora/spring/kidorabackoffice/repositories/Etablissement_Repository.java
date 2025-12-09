@@ -4,13 +4,14 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.User;
 import tn.kidora.spring.kidorabackoffice.entities.Type_Etablissement;
 
 @Repository
-public interface Etablissement_Repository extends JpaRepository<Etablissement,Integer> {
+public interface Etablissement_Repository extends MongoRepository<Etablissement,String> {
     List<Etablissement> findByType(Type_Etablissement type);
     List<Etablissement> findByRegion(String region);
     boolean existsByEmail(String email);

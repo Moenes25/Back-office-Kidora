@@ -1,24 +1,17 @@
 package tn.kidora.spring.kidorabackoffice.entities;
 
-import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-@Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@Data
 public class Evenement {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long idEvenement;
+    String idEvenement;
 
     String titre;
     String description;
@@ -26,11 +19,10 @@ public class Evenement {
     LocalDate date;
     LocalTime heureDebut;
     LocalTime heureFin;
-    @Enumerated(EnumType.STRING)
+
     Type_Etablissement type;
 
-    @ManyToOne
-    @JoinColumn(name = "idEtablissment")
+    @DBRef
     Etablissement etablissement;
 
 }

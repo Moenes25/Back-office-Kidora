@@ -106,6 +106,7 @@ public class AuthServiceImpl implements  AuthService{
         }
         if (imageFile != null && !imageFile.isEmpty()) {
             user.setImageUrl(imageFile.getOriginalFilename());
+
         }
         userRepository.save(user);
         return user;
