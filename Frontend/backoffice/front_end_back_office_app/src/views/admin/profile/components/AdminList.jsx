@@ -133,7 +133,7 @@ const AdminList = () => {
         <div className="flex items-center justify-between w-full px-2">
           <button
             onClick={() => setOpenAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition rounded-lg r bg-gradient-to-b from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
           >
             <FiUserPlus /> Add Admin
           </button>
@@ -172,9 +172,7 @@ const AdminList = () => {
                     />
                     <span
                       className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white ${
-                        admin.status === "ACTIVE"
-                          ? "bg-green-500"
-                          : "bg-red-500"
+                        admin.status === "ACTIF" ? "bg-green-500" : "bg-red-500"
                       }`}
                     ></span>
                   </div>

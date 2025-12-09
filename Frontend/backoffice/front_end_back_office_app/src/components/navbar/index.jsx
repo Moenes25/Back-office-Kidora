@@ -34,7 +34,7 @@ const Navbar = ({ onOpenSidenav, brandText }) => {
       className="nav-animated sticky top-2 z-40 mb-2 flex min-h-[52px] w-full
       items-center justify-between rounded-xl
       bg-[linear-gradient(115deg,#6d28d9_0%,#7c3aed_30%,#8b5cf6_60%,#a78bfa_100%)]
-      px-2 py-1.5 text-white shadow-xl md:px-3 md:py-2"
+      px-2 py-1.5 text-white shadow-xl md:px-3 md:py-2 "
     >
       {/* BRAND */}
       <div className="ml-2">
@@ -47,25 +47,27 @@ const Navbar = ({ onOpenSidenav, brandText }) => {
 
       {/* SEARCH + ACTIONS */}
       <div
-        className=" relative flex justify-between max-w-[330px] items-center
-        rounded-full px-2 
-        dark:bg-navy-800/70 dark:ring-white/10 md:w-[340px]"
+        className="relative flex lg:max-w-[400px] items-center justify-between gap-2 rounded-full bg-white px-4
+  py-1 backdrop-blur-sm dark:bg-navy-800/70 dark:ring-white/10"
       >
-
-        {/* MOBILE SIDENAV */}
+        {/* MOBILE SIDENAV TOGGLE */}
         <span
-          className="mr-2 text-xl text-gray-600 cursor-pointer xl:hidden"
+          className="text-xl text-gray-600 cursor-pointer xl:hidden"
           onClick={onOpenSidenav}
         >
           <FiAlignJustify className="w-5 h-5" />
         </span>
 
-        <SearchBar />
+        {/* SEARCH BAR */}
+        <div className="flex-1">
+          <SearchBar />
+        </div>
+
         {/* DARK MODE TOGGLE */}
         <ThemeToggle darkmode={darkmode} toggleTheme={toggleTheme} />
 
-        {/* NOTIFICATIONS + PROFILE */}
-        <div className="flex items-center gap-3 ml-auto">
+        {/* NOTIFICATIONS & PROFILE */}
+        <div className="flex items-center gap-2">
           <NotificationsDropdown />
           <ProfileDropdown />
         </div>

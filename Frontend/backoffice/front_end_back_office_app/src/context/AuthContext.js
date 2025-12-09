@@ -40,6 +40,7 @@ export const AuthProvider = ({ children }) => {
         email: data.email,
         tel: data.tel,
         role: data.role,
+        imageUrl: data.imageUrl,
           
       };
 

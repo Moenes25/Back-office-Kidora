@@ -4,6 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import Dropdown from "components/dropdown";
 import { FaBuilding, FaTrashAlt, FaUserPlus, FaEdit, FaBell } from "react-icons/fa";
+import { IoMdNotificationsOutline } from "react-icons/io";
 
 const rawNotifications = [
   {
@@ -64,8 +65,8 @@ export default function NotificationsDropdown() {
   return (
     <Dropdown
       button={
-        <div className="relative cursor-pointer">
-          <FaBell size={22} className="text-white dark:text-white" />
+        <div className="relative cursor-pointer ">
+          <IoMdNotificationsOutline size={24} className="text-purple-600 dark:text-white" />
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
               {unreadCount}
@@ -73,7 +74,7 @@ export default function NotificationsDropdown() {
           )}
         </div>
       }
-      classNames="py-2 top-6 -left-[260px] md:-left-[270px] w-max "
+      classNames="py-2 top-6 -left-[260px] md:-left-[270px] w-max  "
       children={
         <div className="flex flex-col w-[300px] max-h-[200px] bg-white dark:bg-navy-700 rounded-xl p-3 shadow-lg overflow-y-auto space-y-3">
           {/* Header */}

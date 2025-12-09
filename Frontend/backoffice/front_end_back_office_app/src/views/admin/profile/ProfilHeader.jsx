@@ -9,13 +9,14 @@ const ProfileHeader = () => {
   const [imageURL, setImageURL] = useState(null);
   const [newNom, setNewNom] = useState(user?.nom || "");
   const [newEmail, setNewEmail] = useState(user?.email || "");
+  const [imageUrl, setImageUrl] = useState(null);
   
 
   const handleUpdate = async () => {
     const form = new FormData();
     form.append("email", user.email);
     form.append("nom", newNom);
-
+    form.append("image", imageUrl);
    
     const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/update-profile`, {
       method: "PUT",
@@ -170,3 +171,5 @@ const ProfileHeader = () => {
 };
 
 export default ProfileHeader;
+
+
