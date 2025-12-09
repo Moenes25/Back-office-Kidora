@@ -16,14 +16,26 @@ import {
   IoCheckmarkCircleOutline,
 } from "react-icons/io5";
 
+// Role options for the select
 const roles = [
   {
-    name: "Super Admin",
-    icon: <IoShieldCheckmarkOutline className="text-purple-500" />,
+    name: "Support Tech",
+    backendValue: "SUPPORT_TECH",
+    icon: <IoSettingsOutline className="text-blue-500" />,
   },
-  { name: "Admin", icon: <IoSettingsOutline className="text-blue-500" /> },
   {
-    name: "Moderator",
+    name: "Commercial",
+    backendValue: "COMMERCIAL",
+    icon: <IoCheckmarkCircleOutline className="text-green-500" />,
+  },
+  {
+    name: "Comptable",
+    backendValue: "COMPTABLE",
+    icon: <IoCheckmarkCircleOutline className="text-green-500" />,
+  },
+  {
+    name: "Responsable Reglement",
+    backendValue: "RESPONSABLE_REG",
     icon: <IoCheckmarkCircleOutline className="text-green-500" />,
   },
 ];
@@ -33,8 +45,6 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [shake, setShake] = useState(false);
   const [errors, setErrors] = useState({});
-  const [focusField, setFocusField] = useState(""); // Track focused input
-
   const [newAdmin, setNewAdmin] = useState({
     nom: "",
     email: "",
@@ -64,9 +74,23 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
     }
 
     try {
-      const res = await api.post("/auth/register", newAdmin);
+      const selectedRole = roles.find(
+        (r) => r.name === newAdmin.role
+      )?.backendValue;
+
+      const payload = {
+        nom: newAdmin.nom,
+        email: newAdmin.email,
+        tel: newAdmin.tel,
+        password: newAdmin.password,
+        role: selectedRole,
+      };
+
+      const res = await api.post("/auth/register", payload);
+
       onSuccess(res.data);
       onClose();
+
       setNewAdmin({
         nom: "",
         email: "",
@@ -77,7 +101,8 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
       });
     } catch (error) {
       console.error("Error adding admin:", error);
-      alert("Failed to add admin");
+      const message = error.response?.data || error.message;
+      alert("Failed to add admin: " + message);
     }
   };
 
@@ -113,19 +138,13 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
         </button>
 
         {/* Title */}
-        <h3 className="mb-6 text-3xl font-bold text-center gradient-text ">
-          Register
+        <h3 className="mb-6 text-3xl font-bold text-center gradient-text">
+          Register Admin
         </h3>
 
         <div className={`flex flex-col gap-4 ${shake ? "animate-shake" : ""}`}>
           {/* Role */}
-          <motion.div
-            className="relative"
-            whileFocus={{
-              scale: 1.02,
-              boxShadow: "0 0 10px rgba(128,0,128,0.3)",
-            }}
-          >
+          <motion.div className="relative">
             <span className="absolute text-lg left-3 top-4">
               {getRoleIcon(newAdmin.role)}
             </span>
@@ -134,18 +153,13 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
               onChange={(e) =>
                 setNewAdmin({ ...newAdmin, role: e.target.value })
               }
-              onFocus={() => setFocusField("role")}
-              onBlur={() => setFocusField("")}
-              className={`w-full appearance-none rounded-xl border bg-gradient-to-r from-purple-50 to-blue-50 p-3 pl-10 focus:ring-2 focus:ring-purple-400 
-                ${errors.role ? "border-red-400" : "border-gray-300"}`}
+              className={`w-full appearance-none rounded-xl border bg-gradient-to-r from-purple-50 to-blue-50 p-3 pl-10 focus:ring-2 focus:ring-purple-400 ${
+                errors.role ? "border-red-400" : "border-gray-300"
+              }`}
             >
               <option value="">Select Role</option>
               {roles.map((role, idx) => (
-                <option
-                  key={idx}
-                  value={role.name}
-                  className="hover:bg-purple-100"
-                >
+                <option key={idx} value={role.name}>
                   {role.name}
                 </option>
               ))}
@@ -157,13 +171,7 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
 
           {/* Name + Phone */}
           <div className="flex flex-col gap-4 md:flex-row">
-            <motion.div
-              className="relative flex-1"
-              whileFocus={{
-                scale: 1.02,
-                boxShadow: "0 0 8px rgba(0,0,255,0.2)",
-              }}
-            >
+            <motion.div className="relative flex-1">
               <IoPersonOutline className="absolute text-lg text-blue-500 left-3 top-4" />
               <input
                 type="text"
@@ -176,13 +184,7 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
               />
             </motion.div>
 
-            <motion.div
-              className="relative flex-1"
-              whileFocus={{
-                scale: 1.02,
-                boxShadow: "0 0 8px rgba(0,128,0,0.2)",
-              }}
-            >
+            <motion.div className="relative flex-1">
               <IoCallOutline className="absolute text-lg text-green-500 left-3 top-4" />
               <input
                 type="text"
@@ -197,13 +199,7 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
           </div>
 
           {/* Email */}
-          <motion.div
-            className="relative"
-            whileFocus={{
-              scale: 1.02,
-              boxShadow: "0 0 8px rgba(255,0,128,0.2)",
-            }}
-          >
+          <motion.div className="relative">
             <IoMailOutline className="absolute text-lg text-pink-500 left-3 top-4" />
             <input
               type="email"
@@ -212,8 +208,9 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
               onChange={(e) =>
                 setNewAdmin({ ...newAdmin, email: e.target.value })
               }
-              className={`w-full rounded-xl border p-3 pl-10 focus:ring-2 focus:ring-purple-400 
-                ${errors.email ? "border-red-400" : "border-gray-300"}`}
+              className={`w-full rounded-xl border p-3 pl-10 focus:ring-2 focus:ring-purple-400 ${
+                errors.email ? "border-red-400" : "border-gray-300"
+              }`}
             />
             {errors.email && (
               <p className="mt-1 text-sm text-red-500">{errors.email}</p>
@@ -222,14 +219,7 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
 
           {/* Password + Confirm */}
           <div className="flex flex-col gap-4 md:flex-row">
-            {/* Password */}
-            <motion.div
-              className="relative flex-1"
-              whileFocus={{
-                scale: 1.02,
-                boxShadow: "0 0 8px rgba(255,165,0,0.3)",
-              }}
-            >
+            <motion.div className="relative flex-1">
               <IoKeyOutline className="absolute text-lg text-yellow-500 left-3 top-4" />
               <input
                 type={showPassword ? "text" : "password"}
@@ -238,8 +228,9 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
                 onChange={(e) =>
                   setNewAdmin({ ...newAdmin, password: e.target.value })
                 }
-                className={`w-full rounded-xl border p-3 pl-10 pr-10 focus:ring-2 focus:ring-purple-400
-                  ${errors.password ? "border-red-400" : "border-gray-300"}`}
+                className={`w-full rounded-xl border p-3 pl-10 pr-10 focus:ring-2 focus:ring-purple-400 ${
+                  errors.password ? "border-red-400" : "border-gray-300"
+                }`}
               />
               <button
                 type="button"
@@ -257,31 +248,18 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
               )}
             </motion.div>
 
-            {/* Confirm */}
-            <motion.div
-              className="relative flex-1"
-              whileFocus={{
-                scale: 1.02,
-                boxShadow: "0 0 8px rgba(255,165,0,0.3)",
-              }}
-            >
+            <motion.div className="relative flex-1">
               <IoKeyOutline className="absolute text-lg text-yellow-500 left-3 top-4" />
               <input
                 type={showConfirm ? "text" : "password"}
                 placeholder="Confirm Password"
                 value={newAdmin.confirmPassword}
                 onChange={(e) =>
-                  setNewAdmin({
-                    ...newAdmin,
-                    confirmPassword: e.target.value,
-                  })
+                  setNewAdmin({ ...newAdmin, confirmPassword: e.target.value })
                 }
-                className={`w-full rounded-xl border p-3 pl-10 pr-10 focus:ring-2 focus:ring-purple-400
-                  ${
-                    errors.confirmPassword
-                      ? "border-red-400"
-                      : "border-gray-300"
-                  }`}
+                className={`w-full rounded-xl border p-3 pl-10 pr-10 focus:ring-2 focus:ring-purple-400 ${
+                  errors.confirmPassword ? "border-red-400" : "border-gray-300"
+                }`}
               />
               <button
                 type="button"
@@ -309,8 +287,7 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <IoPersonAdd size={20} />
-            Save
+            <IoPersonAdd size={20} /> Save
           </motion.button>
         </div>
       </motion.div>
