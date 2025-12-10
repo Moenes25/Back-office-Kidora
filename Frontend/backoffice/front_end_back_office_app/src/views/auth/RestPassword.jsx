@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
-import { FaLock } from "react-icons/fa6";
+import { FaLock } from "react-icons/fa";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
   const email = searchParams.get("email") || "";
+  const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
   const [okMsg, setOkMsg] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (!email) navigate("/auth/forgot-password");
@@ -32,24 +32,25 @@ export default function ResetPassword() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const API_URL = process.env.REACT_APP_API_URL;
+
+      const res = await fetch(
+        `${API_URL}/auth/reset-password?email=${encodeURIComponent(
+          email
+        )}&newPassword=${encodeURIComponent(password)}`,
+        { method: "POST" }
+      );
+
       if (res.ok) {
         setOkMsg("Password reset successfully. Redirecting to login...");
         setTimeout(() => navigate("/auth/login"), 1500);
       } else {
-        // fallback mock update (store password in local storage)
-        localStorage.setItem(`mock_password:${email}`, password);
-        setOkMsg("Password reset (mock). Redirecting to login...");
-        setTimeout(() => navigate("/auth/login"), 1500);
+        const text = await res.text();
+        setError(text || "Failed to reset password.");
       }
-    } catch {
-      localStorage.setItem(`mock_password:${email}`, password);
-      setOkMsg("Password reset (mock). Redirecting to login...");
-      setTimeout(() => navigate("/auth/login"), 1500);
+    } catch (err) {
+      console.error(err);
+      setError("Network error. Try again.");
     } finally {
       setLoading(false);
     }
@@ -72,22 +73,18 @@ export default function ResetPassword() {
 
         <form onSubmit={handleReset} className="space-y-4">
           <input
-            id="reset-password"
-            label="New password"
             type="password"
+            placeholder="New password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            icon={<FaLock />}
-            className="text-gray-700"
+            className="w-full px-4 py-3 border border-gray-400 outline-none rounded-xl"
           />
           <input
-            id="reset-confirm"
-            label="Confirm password"
             type="password"
+            placeholder="Confirm password"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
-            icon={<FaLock />}
-            className="text-gray-700"
+            className="w-full px-4 py-3 border border-gray-400 outline-none rounded-xl"
           />
 
           <div className="flex items-center gap-2">

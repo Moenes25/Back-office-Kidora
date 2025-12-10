@@ -6,53 +6,48 @@ import { useAuth } from "context/AuthContext";
 const ProfileHeader = () => {
   const { user, token, updateUser } = useAuth(); 
   const [openMessages, setOpenMessages] = useState(false);
-  const [imageURL, setImageURL] = useState(null);
   const [newNom, setNewNom] = useState(user?.nom || "");
   const [newEmail, setNewEmail] = useState(user?.email || "");
-  const [imageUrl, setImageUrl] = useState(null);
-  
 
   const handleUpdate = async () => {
     const form = new FormData();
     form.append("email", user.email);
     form.append("nom", newNom);
-    form.append("image", imageUrl);
-   
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/update-profile`, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: form,
-    });
 
-    const data = await res.json();
-    updateUser(data);
+
+    try {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/update-profile`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      });
+      if (!res.ok) throw new Error("Failed to update profile");
+      const data = await res.json();
+      updateUser(data); 
+    } catch (err) {
+      console.error(err);
+    }
   };
 
+
   useEffect(() => {
-    const fetchImage = async () => {
+    const fetchUser = async () => {
       if (!user?.id) return;
 
       try {
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/user/${user.id}/avatar`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/${user.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
-
-        if (res.ok) {
-          const blob = await res.blob();
-          const url = URL.createObjectURL(blob);
-          setImageURL(url);
-        }
+        if (!res.ok) throw new Error("Failed to fetch user");
+        const data = await res.json();
+        updateUser(data);
       } catch (err) {
-        console.error("Error fetching avatar:", err);
+        console.error(err);
       }
     };
 
-    fetchImage();
-  }, [user, token]);
+    fetchUser();
+  }, [user?.id, token]);
 
   const messageCount = 5;
 
@@ -74,7 +69,7 @@ const ProfileHeader = () => {
         {/* Avatar + Active */}
         <motion.div className="absolute overflow-hidden border-4 border-white rounded-full shadow-lg -top-14 left-6 h-28 w-28 md:h-32 md:w-32">
           <img
-            src={imageURL || user?.imageUrl || "../../../assets/img/avatars/avatar11.png"}
+            src={user?.imageUrl || "../../../assets/img/avatars/avatar11.png"}
             alt="User"
             className="object-cover w-full h-full"
           />
@@ -105,15 +100,14 @@ const ProfileHeader = () => {
           </div>
 
           {/* Messages Icon */}
-          <div className="">
+          <div>
             <button
               onClick={() => setOpenMessages(true)}
               className={`underline-offset-3 relative flex items-center gap-1 rounded-xl p-3 text-gray-600 transition-all hover:underline ${
                 openMessages ? "text-red-600" : ""
               }`}
             >
-              {/* Badge */}
-              <span className=" absolute left-5 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+              <span className="absolute left-5 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
                 {messageCount}
               </span>
 
@@ -124,7 +118,7 @@ const ProfileHeader = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-4 mt-6 md:grid-cols-4 ">
+        <div className="grid grid-cols-2 gap-4 mt-6 md:grid-cols-4">
           {[
             { label: "Admins", value: 12, icon: <FiUsers />, gradient: "from-purple-500 to-purple-300" },
             { label: "Entreprises", value: 8, icon: <FiActivity />, gradient: "from-blue-400 to-blue-200" },
@@ -171,5 +165,3 @@ const ProfileHeader = () => {
 };
 
 export default ProfileHeader;
-
-

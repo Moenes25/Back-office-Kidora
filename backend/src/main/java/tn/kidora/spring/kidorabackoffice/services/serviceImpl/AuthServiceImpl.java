@@ -61,6 +61,7 @@ public class AuthServiceImpl implements  AuthService{
                 authData.put("token", token);
                 authData.put("type", "Bearer");
                 // authData.put("user", user);
+                authData.put("id", user.getId());
                 return authData;
             
             }

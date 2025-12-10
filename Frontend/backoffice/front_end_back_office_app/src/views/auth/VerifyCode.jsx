@@ -10,16 +10,6 @@ export default function VerifyCode() {
   const [error, setError] = useState("");
   const [checking, setChecking] = useState(false);
 
-  const getStoredCode = () => {
-    try {
-      const raw = localStorage.getItem(`forgot_code:${email}`);
-      if (!raw) return null;
-      return JSON.parse(raw);
-    } catch {
-      return null;
-    }
-  };
-
   const handleVerify = async (e) => {
     e?.preventDefault();
     setError("");
@@ -28,43 +18,32 @@ export default function VerifyCode() {
     setChecking(true);
 
     try {
-      // try server verification if available
-      const res = await fetch("/api/auth/verify-code", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code }),
-      });
+      const API_URL = process.env.REACT_APP_API_URL;
+
+      const res = await fetch(
+        `${API_URL}/auth/verify-otp?email=${encodeURIComponent(
+          email
+        )}&otp=${encodeURIComponent(code)}`,
+        {
+          method: "POST",
+        }
+      );
 
       if (res.ok) {
         navigate(`/auth/reset-password?email=${encodeURIComponent(email)}`);
-        return;
+      } else {
+        const text = await res.text();
+        setError(text || "Verification failed. Try again.");
       }
-
-      // fallback localStorage verification
-      const stored = getStoredCode();
-      if (!stored) {
-        setError("No verification code was requested for this email.");
-        return;
-      }
-      if (Date.now() > stored.expiresAt) {
-        setError("Verification code expired. Please request again.");
-        return;
-      }
-      if (stored.code !== code) {
-        setError("Invalid code. Please try again.");
-        return;
-      }
-      // verified
-      navigate(`/auth/reset-password?email=${encodeURIComponent(email)}`);
     } catch (err) {
-      setError("Verification failed — please try again.");
+      console.error(err);
+      setError("Network error. Try again.");
     } finally {
       setChecking(false);
     }
   };
 
   useEffect(() => {
-    // if no email, redirect to forgot password
     if (!email) navigate("/auth/forgot-password");
   }, [email, navigate]);
 
@@ -80,12 +59,11 @@ export default function VerifyCode() {
 
         <form onSubmit={handleVerify} className="space-y-4">
           <input
-            id="verify-code"
-            label="Verification code"
+            type="text"
             value={code}
             onChange={(e) => setCode(e.target.value.trim())}
-            icon={<MdMail />}
-            className="text-gray-700"
+            placeholder="Enter verification code"
+            className="w-full px-4 py-3 border border-gray-400 outline-none rounded-xl"
           />
 
           <div className="flex items-center gap-2">
