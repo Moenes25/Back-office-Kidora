@@ -17,7 +17,7 @@ public class Etab_Dto {
     Type_Etablissement type;
     String email;
     Boolean isActive;
-    Integer userId;
+    String userId;
     String userNom;
     String userEmail;
     Integer nombreEducateurs;

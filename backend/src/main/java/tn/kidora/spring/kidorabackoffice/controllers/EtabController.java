@@ -16,14 +16,11 @@ import tn.kidora.spring.kidorabackoffice.dto.DonneesCroissanceDTo;
 import tn.kidora.spring.kidorabackoffice.dto.Etab_Dto;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementUpdateDTO;
-import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
-import tn.kidora.spring.kidorabackoffice.entities.StatutPaiement;
-// import tn.kidora.spring.kidorabackoffice.services.AbonnementService;
+import tn.kidora.spring.kidorabackoffice.services.AbonnementService;
 import tn.kidora.spring.kidorabackoffice.services.EtabService;
 import tn.kidora.spring.kidorabackoffice.utils.Constants;
+import tn.kidora.spring.kidorabackoffice.entities.StatutPaiement;
 import tn.kidora.spring.kidorabackoffice.entities.Type_Etablissement;
-import tn.kidora.spring.kidorabackoffice.repositories.Etablissement_Repository;
-import tn.kidora.spring.kidorabackoffice.repositories.UserRepository;
 
 
 @RestController
@@ -31,9 +28,7 @@ import tn.kidora.spring.kidorabackoffice.repositories.UserRepository;
 @RequestMapping(Constants.APP_ROOT + Constants.ETABLISSEMENT)
 public class EtabController {
     private final EtabService etabService;
-    private final Etablissement_Repository etablissementRepository;
-    private final UserRepository userRepository;
-    // private final AbonnementService abonnementService;
+    private final AbonnementService abonnementService;
     @PostMapping(Constants.SAVE)
     public ResponseEntity <Etab_Dto> addEtablissement(@RequestBody EtablissementRequestDTO dto) {
         // Etablissement saved= etabService.addEtablissement(dto);
@@ -80,10 +75,10 @@ public class EtabController {
         return etabService.toggleEtablissementStatus(id);
     }
 
-    // @GetMapping(Constants.CEMOIS)
-    // public ResponseEntity<List<Etab_Dto>> getEtablissementsAbonnesCeMois() {
-    //     return etabService.getEtablissementsAbonnesCeMois();
-    // }
+    @GetMapping(Constants.CEMOIS)
+    public ResponseEntity<List<Etab_Dto>> getEtablissementsAbonnesCeMois() {
+        return etabService.getEtablissementsAbonnesCeMois();
+    }
 
     @GetMapping(Constants.ECOLE_ACTIVE)
     public ResponseEntity<List<Etab_Dto>> getEcoleActive() {
@@ -118,62 +113,43 @@ public class EtabController {
                                                            .collect(Collectors.toList());
         return ResponseEntity.status(HttpStatus.OK).body(etablissementsDtos);
     }
-    // @GetMapping(Constants.CROISSANCE)
-    // public ResponseEntity<List<DonneesCroissanceDTo>>obtenirCroissanceMensuelle() {
-    //     List<DonneesCroissanceDTo> donnees = etabService.obtenirCroissanceMensuelle();
-    //     if (donnees.isEmpty()) {
-    //         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Collections.emptyList());
-    //     }
+    @GetMapping(Constants.CROISSANCE)
+    public ResponseEntity<List<DonneesCroissanceDTo>>obtenirCroissanceMensuelle() {
+        List<DonneesCroissanceDTo> donnees = etabService.obtenirCroissanceMensuelle();
+        if (donnees.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Collections.emptyList());
+        }
 
-    //     return ResponseEntity.ok(donnees);
-    // }
+        return ResponseEntity.ok(donnees);
+    }
 
-//    @GetMapping(Constants.EN_ESSAYE)
-//     public ResponseEntity<List<Etab_Dto>> getEtablissementsStatutEssaye() {
-//         List<AbonnementResponseDTO> abonnementResponseDTOs = this.abonnementService.getByStatut(StatutPaiement.ESSAYE.toString()).getBody();
-//         if (abonnementResponseDTOs.isEmpty()) {
-//             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Collections.emptyList());
-//         }
-//         List<Etab_Dto> etablissementsDTOs = abonnementResponseDTOs.stream()
-//                  .map(abnmt -> abnmt.getEtablissement())
-//                  .distinct()
-//                  .collect(Collectors.toList());
-//         return ResponseEntity.status(HttpStatus.OK).body(etablissementsDTOs);
+   @GetMapping(Constants.EN_ESSAYE)
+    public ResponseEntity<List<Etab_Dto>> getEtablissementsStatutEssaye() {
+        List<AbonnementResponseDTO> abonnementResponseDTOs = this.abonnementService.getByStatut(StatutPaiement.ESSAYE.toString()).getBody();
+        if (abonnementResponseDTOs.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Collections.emptyList());
+        }
+        List<Etab_Dto> etablissementsDTOs = abonnementResponseDTOs.stream()
+                 .map(abnmt -> abnmt.getEtablissement())
+                 .distinct()
+                 .collect(Collectors.toList());
+        return ResponseEntity.status(HttpStatus.OK).body(etablissementsDTOs);
 
-//     }
+    }
     
-//     @GetMapping(Constants.EN_RETARD)
-//     public ResponseEntity<List<Etab_Dto>> getEtablissementsStatutEnRetarddePaiement() {
-//         List<AbonnementResponseDTO> abonnementResponseDTOs = this.abonnementService.getByStatut(StatutPaiement.RETARD.toString()).getBody();
-//         if (abonnementResponseDTOs.isEmpty()) {
-//             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Collections.emptyList());
-//         }
-//         List<Etab_Dto> etablissementsDTOs = abonnementResponseDTOs.stream()
-//                  .map(abnmt -> abnmt.getEtablissement())
-//                  .distinct()
-//                  .collect(Collectors.toList());
-//         return ResponseEntity.status(HttpStatus.OK).body(etablissementsDTOs);
-//     }
+    @GetMapping(Constants.EN_RETARD)
+    public ResponseEntity<List<Etab_Dto>> getEtablissementsStatutEnRetarddePaiement() {
+        List<AbonnementResponseDTO> abonnementResponseDTOs = this.abonnementService.getByStatut(StatutPaiement.RETARD.toString()).getBody();
+        if (abonnementResponseDTOs.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Collections.emptyList());
+        }
+        List<Etab_Dto> etablissementsDTOs = abonnementResponseDTOs.stream()
+                 .map(abnmt -> abnmt.getEtablissement())
+                 .distinct()
+                 .collect(Collectors.toList());
+        return ResponseEntity.status(HttpStatus.OK).body(etablissementsDTOs);
+    }
 
    
-@PostMapping("/create-test-etablissement")
-    public Etablissement createTestEtablissement() {
-        User user = userRepository.findByEmail("superadmin@kidora.com");
-        if (user == null) {
-            throw new RuntimeException("Super admin not found");
-        }
-        Etablissement etab = Etablissement.builder()
-            .nomEtablissement("Test Etablissement")
-            .adresse_complet("Adresse test")
-            .region("Test Region 2")
-            .telephone("0600000067")
-            .url_localisation("")
-            .type(Type_Etablissement.ECOLE)
-            .email("test2@kidora.com")
-            .isActive(true)
-            .user(user)
-            .build();
-        
-        return etablissementRepository.save(etab);
-    }
+
 }

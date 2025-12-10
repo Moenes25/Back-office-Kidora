@@ -1,36 +1,43 @@
-// package tn.kidora.spring.kidorabackoffice.entities;
+package tn.kidora.spring.kidorabackoffice.entities;
 
-// import jakarta.persistence.*;
-// import lombok.*;
-// import lombok.experimental.FieldDefaults;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-// import java.time.LocalDate;
-// import java.time.LocalTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
-// @Entity
-// @Getter
-// @Setter
-// @NoArgsConstructor
-// @AllArgsConstructor
-// @Builder
-// @FieldDefaults(level = AccessLevel.PRIVATE)
-// public class Evenement {
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
-//     @Id
-//     @GeneratedValue(strategy = GenerationType.IDENTITY)
-//     Long idEvenement;
 
-//     String titre;
-//     String description;
 
-//     LocalDate date;
-//     LocalTime heureDebut;
-//     LocalTime heureFin;
-//     @Enumerated(EnumType.STRING)
-//     Type_Etablissement type;
 
-//     @ManyToOne
-//     @JoinColumn(name = "idEtablissment")
-//     Etablissement etablissement;
+@Document(collection = "evenements")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder //pour un constructeur par defaut
+@ToString
+public class Evenement {
 
-// }
+    @Id
+    private String idEvenement;
+
+    private String titre;
+    private String description;
+    private LocalDate date;
+    private LocalTime heureDebut;
+    private LocalTime heureFin;
+
+    private Type_Etablissement type;
+
+    @DocumentReference
+    private Etablissement etablissement;
+
+
+}

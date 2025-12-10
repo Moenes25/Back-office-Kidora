@@ -10,7 +10,8 @@ import org.springframework.data.mongodb.core.mapping.Field;
 // import jakarta.persistence.PreUpdate;
 // import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
+
+
 
 
 @Document(collection = "admins")
@@ -36,9 +37,11 @@ public class User {
     private LocalDateTime updatedAt = LocalDateTime.now();
     
 
-    // @PreUpdate
-    // public void preUpdate() {
-    //     this.updatedAt = LocalDateTime.now();
-    // }
+
+    private String imageUrl;
+    // Champs OTP
+    String otp;
+    LocalDateTime otpExpiration;
+
 
 }

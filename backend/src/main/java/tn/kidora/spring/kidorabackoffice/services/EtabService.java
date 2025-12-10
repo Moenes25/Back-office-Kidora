@@ -20,8 +20,8 @@ public interface EtabService {
     ResponseEntity<List<Etab_Dto>> getEtablissementsByRegion(String region);
     ResponseEntity<List<Etab_Dto>> getActiveEtablissements();
     ResponseEntity<Etab_Dto> toggleEtablissementStatus(String id);
-    // ResponseEntity<List<Etab_Dto>> getEtablissementsAbonnesCeMois();
-    // List<DonneesCroissanceDTo> obtenirCroissanceMensuelle();
+    ResponseEntity<List<Etab_Dto>> getEtablissementsAbonnesCeMois();
+    List<DonneesCroissanceDTo> obtenirCroissanceMensuelle();
    
 
 

@@ -2,8 +2,20 @@ package tn.kidora.spring.kidorabackoffice.services.serviceImpl;
 
 import lombok.AllArgsConstructor;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -12,9 +24,11 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import org.springframework.web.multipart.MultipartFile;
 import tn.kidora.spring.kidorabackoffice.config.JwtUtils;
 import tn.kidora.spring.kidorabackoffice.dto.RegisterDto;
 import tn.kidora.spring.kidorabackoffice.entities.Role;
+import tn.kidora.spring.kidorabackoffice.entities.Status;
 import tn.kidora.spring.kidorabackoffice.entities.User;
 import tn.kidora.spring.kidorabackoffice.repositories.UserRepository;
 import tn.kidora.spring.kidorabackoffice.services.AuthService;
@@ -67,6 +81,42 @@ public class AuthServiceImpl implements  AuthService{
             throw new RuntimeException("Email ou mot de passe incorrect");
         }
     }
+
+    @Override
+    public List<User> getAllUsersExceptSuperAdmin() {
+        return userRepository.findAll()
+                .stream().filter(user->user.getRole() !=Role.SUPER_ADMIN)
+                .collect(Collectors.toList());
+
+    }
+
+
+    @Override
+    public User updateAdminProfile(String email, String nom, String tel, MultipartFile imageFile) {
+        User user = userRepository.findByEmail(email);
+       // System.out.println("Email reçu : '" + email + "'");
+        if (user == null) {
+            throw new RuntimeException("Utilisateur introuvable !");
+        }
+        if (nom != null && !nom.isEmpty()) {
+            user.setNom(nom);
+        }
+        if (tel != null && !tel.isEmpty()) {
+            user.setTel(tel);
+        }
+        if (imageFile != null && !imageFile.isEmpty()) {
+            user.setImageUrl(imageFile.getOriginalFilename());
+
+        }
+        userRepository.save(user);
+        return user;
+    }
+
+    @Override
+    public void deleteUserById(String id) {
+        userRepository.deleteById(id);
+    }
+
 
 }
 

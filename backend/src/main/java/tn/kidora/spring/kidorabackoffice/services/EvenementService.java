@@ -13,7 +13,11 @@ public interface EvenementService {
     ResponseEntity<EvenementResponseDTO> ajouterEvenement(EvenementRequestDTO dto);
     ResponseEntity<List<EvenementResponseDTO>> getAllEvenements();
     ResponseEntity<List<EvenementResponseDTO>> getEvenementsParDate(LocalDate date);
-    public Map<Type_Etablissement, Long> getNombreEvenementParTypeEtablissement();
-   void supprimerEvenement(Long id);
-    public EvenementResponseDTO modifierEvenement(Long id, EvenementRequestDTO dto);
+    Map<Type_Etablissement, Long> getNombreEvenementParTypeEtablissement();
+   void supprimerEvenement(String id);
+   EvenementResponseDTO modifierEvenement(String id, EvenementRequestDTO dto);
+    public long getNombreEvenementSemaineCouranteParType(String type);
+    long getNombreEvenementPourUnJour(LocalDate date, Type_Etablissement type);
+    double getTotalHeuresPlanifieesParType(String type);
+    long getNombreEvenementParType(Type_Etablissement type);
 }

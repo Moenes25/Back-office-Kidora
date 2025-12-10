@@ -34,7 +34,7 @@ public class Etablissement {
     @DocumentReference
     private User user; 
 
-    // @OneToMany(mappedBy = "etablissement", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    // @ToString.Exclude
-    // private List<Abonnement> abonnements = new ArrayList<>();
+    @DocumentReference
+    private List<Abonnement> abonnements;
+
 }

@@ -8,7 +8,7 @@ import java.time.LocalTime;
 
 @Data
 public class EvenementResponseDTO {
-    private Long idEvenement;
+    private String idEvenement;
     private String titre;
     private String description;
     private LocalDate date;

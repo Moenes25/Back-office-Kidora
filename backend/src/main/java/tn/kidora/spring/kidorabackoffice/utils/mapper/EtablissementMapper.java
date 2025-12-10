@@ -25,7 +25,7 @@ public class EtablissementMapper {
         // etabDto.setNombreEnfants(etab.getNombreEnfants());
 
         if (etab.getUser() != null) {
-            // etabDto.setUserId(etab.getUser().getIdUser());
+            etabDto.setUserId(etab.getUser().getId());
             etabDto.setUserNom(etab.getUser().getNom());
             etabDto.setUserEmail(etab.getUser().getEmail());
             
