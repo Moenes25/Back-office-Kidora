@@ -20,12 +20,12 @@ public class EtablissementMapper {
         etabDto.setType(etab.getType());
         etabDto.setEmail(etab.getEmail());
         etabDto.setIsActive(etab.getIsActive());
-        etabDto.setNombreEducateurs(etab.getNombreEducateurs());
-        etabDto.setNombreParents(etab.getNombreParents());
-        etabDto.setNombreEnfants(etab.getNombreEnfants());
+        // etabDto.setNombreEducateurs(etab.getNombreEducateurs());
+        // etabDto.setNombreParents(etab.getNombreParents());
+        // etabDto.setNombreEnfants(etab.getNombreEnfants());
 
         if (etab.getUser() != null) {
-            etabDto.setUserId(etab.getUser().getIdUser());
+            // etabDto.setUserId(etab.getUser().getIdUser());
             etabDto.setUserNom(etab.getUser().getNom());
             etabDto.setUserEmail(etab.getUser().getEmail());
             
@@ -42,11 +42,7 @@ public class EtablissementMapper {
                 .url_localisation(requestDTO.getUrl_localisation())
                 .type(requestDTO.getType())
                 .email(requestDTO.getEmail())
-                .password(requestDTO.getPassword()) 
                 .isActive(requestDTO.getIsActive() != null ? requestDTO.getIsActive() : true)
-                .nombreEducateurs(requestDTO.getNombreEducateurs())
-                .nombreParents(requestDTO.getNombreParents())
-                .nombreEnfants(requestDTO.getNombreEnfants())
                 .build();
         
     }

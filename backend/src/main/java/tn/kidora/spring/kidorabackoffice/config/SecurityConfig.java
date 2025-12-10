@@ -42,7 +42,8 @@ public class SecurityConfig {
         return http
                .csrf(AbstractHttpConfigurer::disable)
                .authorizeHttpRequests(auth ->
-               auth.requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.LOGIN).permitAll()
+               auth.requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.LOGIN,
+               Constants.APP_ROOT+Constants.ETABLISSEMENT+"/create-test-etablissement").permitAll()
                        .requestMatchers(
                                Constants.APP_ROOT + Constants.ABONNEMENT +"/**"
                        ).authenticated()

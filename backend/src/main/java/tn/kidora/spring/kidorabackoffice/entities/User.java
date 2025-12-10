@@ -1,27 +1,44 @@
 package tn.kidora.spring.kidorabackoffice.entities;
 
-import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+// import jakarta.persistence.PreUpdate;
+// import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Entity
-@Getter
-@Setter
+
+@Document(collection = "admins")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder //pour un constructeur par defaut
 @ToString
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    Integer idUser;
-    String nom ;
-    @Column(nullable = false, unique = true)
-    String email;
-    String tel ;
-    String password ;
-    @Enumerated(EnumType.STRING)
-    Role role ;
+    private String id;
+    private String nom ;
+    @Indexed(unique = true)
+    private String email;
+    private String tel ;
+    private String password ;
+    private Role role ;
+    private Boolean isActive = true;
+    @Field("created_at")
+    private LocalDateTime createdAt = LocalDateTime.now();
+    
+    @Field("updated_at")
+    private LocalDateTime updatedAt = LocalDateTime.now();
+    
+
+    // @PreUpdate
+    // public void preUpdate() {
+    //     this.updatedAt = LocalDateTime.now();
+    // }
 
 }
