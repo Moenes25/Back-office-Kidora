@@ -1,22 +1,31 @@
-package tn.kidora.spring.kidorabackoffice.entities;
-import java.time.LocalDate;
+ package tn.kidora.spring.kidorabackoffice.entities;
+ import java.time.LocalDate;
 
-import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-@Entity
+import lombok.NoArgsConstructor;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
+
+@Document(collection = "abonnements")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Abonnement {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idAbonnement;
+    private String idAbonnement;
     private LocalDate dateDebutAbonnement;
     private LocalDate dateFinAbonnement;
     private Double montantPaye;
     private Double montantDu;
-    @Enumerated(EnumType.STRING)
+
     private StatutPaiement statut;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "etablissement_id")
-    private Etablissement etablissement;
+   @DocumentReference
+   private Etablissement etablissement;
 }
+

@@ -76,7 +76,7 @@ public class AuthController {
         return authService.updateAdminProfile(email, nom, tel, imageFile);
     }
     @DeleteMapping(Constants.DELETE_USER)
-    public ResponseEntity<String> deleteUserById(@PathVariable("id")Integer id) {
+    public ResponseEntity<String> deleteUserById(@PathVariable("id") String id) {
         authService.deleteUserById(id);
         return ResponseEntity.ok("Utilisateur supprimé avec succès !");
     }

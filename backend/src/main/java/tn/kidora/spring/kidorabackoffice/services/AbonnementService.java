@@ -9,10 +9,10 @@ import java.util.Map;
 
 public interface AbonnementService {
     ResponseEntity<AbonnementResponseDTO> addAbonnement(AbonnementRequestDTO dto);
-     ResponseEntity<AbonnementResponseDTO> updateAbonnement(Long id, AbonnementRequestDTO dto);
-     ResponseEntity<Void> deleteAbonnement(Long id);
+     ResponseEntity<AbonnementResponseDTO> updateAbonnement(String id, AbonnementRequestDTO dto);
+     ResponseEntity<Void> deleteAbonnement(String id);
      ResponseEntity<List<AbonnementResponseDTO>> getAllAbonnements();
-    ResponseEntity<List<AbonnementResponseDTO>> getAbonnementsByEtablissement(Integer etablissementId);
+    ResponseEntity<List<AbonnementResponseDTO>> getAbonnementsByEtablissement(String etablissementId);
     ResponseEntity<List<AbonnementResponseDTO>> getByStatut(String statut);
     List<Map<String, Object>> getRepartitionAnnuelle(int annee);
     
