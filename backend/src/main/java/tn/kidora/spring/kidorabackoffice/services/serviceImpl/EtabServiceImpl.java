@@ -2,7 +2,9 @@ package tn.kidora.spring.kidorabackoffice.services.serviceImpl;
 
 import lombok.AllArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.Month;
+import java.time.ZoneId;
 import java.time.format.TextStyle;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,6 +19,7 @@ import tn.kidora.spring.kidorabackoffice.dto.Etab_Dto;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementUpdateDTO;
 import tn.kidora.spring.kidorabackoffice.entities.Abonnement;
+// import tn.kidora.spring.kidorabackoffice.entities.Abonnement;
 import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.Type_Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.User;
@@ -45,7 +48,7 @@ public class EtabServiceImpl implements EtabService {
 
         Etablissement etab = etablissementMapper.toEntity(dto);
         etab.setUser(user);
-        etab.setPassword(encoder.encode(dto.getPassword()));
+        // etab.setPassword(encoder.encode(dto.getPassword()));
         // Etablissement.builder()
         //         .nomEtablissement(dto.getNomEtablissement())
         //         .adresse_complet(dto.getAdresse_complet())
@@ -64,13 +67,13 @@ public class EtabServiceImpl implements EtabService {
     }
 
     @Override
-    public  ResponseEntity<Etab_Dto>  updateEtablissement(Integer id, EtablissementUpdateDTO dto) {
+    public  ResponseEntity<Etab_Dto>  updateEtablissement(String id, EtablissementUpdateDTO dto) {
         Etablissement etab = etablissementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Etablissement non trouvé avec id : " + id));
         
          User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec ID: " + dto.getUserId()));
-        
+
         etab.setUser(user);
         etab.setNomEtablissement(dto.getNomEtablissement());
         etab.setAdresse_complet(dto.getAdresse_complet());
@@ -85,7 +88,7 @@ public class EtabServiceImpl implements EtabService {
         
     }
     @Override
-    public void deleteEtablissement(Integer id) {
+    public void deleteEtablissement(String id) {
         Etablissement etab = etablissementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Etablissement non trouvé avec id : " + id));
 
@@ -134,7 +137,7 @@ public class EtabServiceImpl implements EtabService {
     }
 
     @Override
-    public ResponseEntity<Etab_Dto> toggleEtablissementStatus(Integer id) {
+    public ResponseEntity<Etab_Dto> toggleEtablissementStatus(String id) {
         Etablissement etab = etablissementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Etablissement non trouvé avec id : " + id));
 
@@ -146,7 +149,14 @@ public class EtabServiceImpl implements EtabService {
     @Override
     public ResponseEntity<List<Etab_Dto>> getEtablissementsAbonnesCeMois() {
         try{
-            List<Etablissement> etablissements = etablissementRepository.findEtablissementsAbonnesCeMois();
+            LocalDate now = LocalDate.now();
+            LocalDate debutMois = now.withDayOfMonth(1);
+            LocalDate finMois = debutMois.plusMonths(1);
+
+            Date debut = Date.from(debutMois.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            Date fin = Date.from(finMois.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+            List<Etablissement> etablissements = etablissementRepository.findEtablissementsAbonnesCeMois(debut, fin);
             if (etablissements.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Collections.emptyList());
             }

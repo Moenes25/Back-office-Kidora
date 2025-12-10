@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import tn.kidora.spring.kidorabackoffice.entities.User  ;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,14 +16,11 @@ import tn.kidora.spring.kidorabackoffice.dto.DonneesCroissanceDTo;
 import tn.kidora.spring.kidorabackoffice.dto.Etab_Dto;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementUpdateDTO;
-import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
-import tn.kidora.spring.kidorabackoffice.entities.StatutPaiement;
 import tn.kidora.spring.kidorabackoffice.services.AbonnementService;
 import tn.kidora.spring.kidorabackoffice.services.EtabService;
 import tn.kidora.spring.kidorabackoffice.utils.Constants;
+import tn.kidora.spring.kidorabackoffice.entities.StatutPaiement;
 import tn.kidora.spring.kidorabackoffice.entities.Type_Etablissement;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
@@ -37,12 +35,12 @@ public class EtabController {
         return etabService.addEtablissement(dto);
     }
     @PutMapping(Constants.UPDATE + Constants.ID)
-    public ResponseEntity<Etab_Dto> updateEtablissement( @PathVariable Integer id, @RequestBody EtablissementUpdateDTO dto) {
+    public ResponseEntity<Etab_Dto> updateEtablissement( @PathVariable String id, @RequestBody EtablissementUpdateDTO dto) {
          return etabService.updateEtablissement(id, dto);
         
     }
     @DeleteMapping(Constants.DELETE + Constants.ID)
-    public ResponseEntity<?> deleteEtablissement(@PathVariable Integer id) {
+    public ResponseEntity<?> deleteEtablissement(@PathVariable String id) {
         try{
              etabService.deleteEtablissement(id);
         return ResponseEntity.ok("Etablissement supprimé avec succès !");
@@ -73,7 +71,7 @@ public class EtabController {
 
     // activer ou désactiver l'etablissement
     @PatchMapping(Constants.TOOGLE_STATUS + Constants.ID)
-    public ResponseEntity<Etab_Dto> toggleEtablissementStatus(@PathVariable Integer id) {
+    public ResponseEntity<Etab_Dto> toggleEtablissementStatus(@PathVariable String id) {
         return etabService.toggleEtablissementStatus(id);
     }
 
@@ -153,4 +151,5 @@ public class EtabController {
     }
 
    
+
 }

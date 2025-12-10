@@ -1,7 +1,7 @@
 package tn.kidora.spring.kidorabackoffice.dto;
 
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+// import jakarta.persistence.EnumType;
+// import jakarta.persistence.Enumerated;
 import lombok.Data;
 import tn.kidora.spring.kidorabackoffice.entities.Type_Etablissement;
 
@@ -12,9 +12,9 @@ public class EtablissementUpdateDTO  {
     String region;
     String telephone ;
     String url_localisation;
-    @Enumerated(EnumType.STRING)
+    // @Enumerated(EnumType.STRING)
     Type_Etablissement type;
     String email;
     Boolean isActive;
-     Integer userId;
+    String userId;
 }

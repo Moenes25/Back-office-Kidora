@@ -6,13 +6,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.kidora.spring.kidorabackoffice.dto.EvenementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EvenementResponseDTO;
+
 import tn.kidora.spring.kidorabackoffice.entities.Type_Etablissement;
+
 import tn.kidora.spring.kidorabackoffice.services.EvenementService;
 import tn.kidora.spring.kidorabackoffice.utils.Constants;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
+
 
 @RestController
 @AllArgsConstructor
@@ -33,12 +37,12 @@ public class EventController {
         return evenementService.getEvenementsParDate(date);
     }
     @PutMapping(Constants.EVENEMENT_UPDATE)
-    public ResponseEntity <EvenementResponseDTO> modifierEvenement(@PathVariable Long id, @RequestBody EvenementRequestDTO dto) {
-        EvenementResponseDTO response = evenementService.modifierEvenement(id, dto);
+    public ResponseEntity <EvenementResponseDTO> modifierEvenement(@PathVariable String id, @RequestBody EvenementRequestDTO dto) {
+        EvenementResponseDTO response = evenementService.modifierEvenement( id, dto);
         return ResponseEntity.ok(response);
     }
     @DeleteMapping(Constants.EVENEMENT_DELETE)
-    public ResponseEntity<String>supprimerEvenement(@PathVariable Long id) {
+    public ResponseEntity<String>supprimerEvenement(@PathVariable String id) {
         evenementService.supprimerEvenement(id);
         return ResponseEntity.ok("Événement supprimé avec succès !");
 
@@ -71,4 +75,7 @@ public class EventController {
         long nombre = evenementService.getNombreEvenementParType(type);
         return  ResponseEntity.ok(nombre);
     }
+
+    
+    
 }

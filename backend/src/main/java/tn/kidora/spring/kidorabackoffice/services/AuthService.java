@@ -14,6 +14,6 @@ public interface AuthService {
     Map<String,Object> login(String email, String password);
     List<User> getAllUsersExceptSuperAdmin();
      User updateAdminProfile(String email, String nom, String tel, MultipartFile imageFile);
-     void deleteUserById(Integer id);
+     void deleteUserById(String id);
 
 }
