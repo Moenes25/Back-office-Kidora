@@ -8,10 +8,31 @@ import CrechesMap from "components/maps/CrechesMap";
 import Card from "components/card";
 import BarChart from "components/charts/BarChart";
 import PieChart from "components/charts/PieChart";
-import Widget from "components/widget/Widget";
-import AnimatedStatCard from "components/KpiBar";
+import WidgetKids from "components/widget/Widget";
+import KpiBar from "components/KpiBar";
 import AlertsPanel from "components/AlertsPanel";
 import AppointmentPlanner from "components/calendar/AppointmentPlanner";
+import AIIndicatorsPanel from "components/ai/AIIndicatorsPanel";
+
+import {
+  getCrecheActives,
+  getEcoleActives,
+  getGarderieActives,
+  getEtablissementsCeMois,
+} from "services/dashboardService";
+
+
+
+// icons (lucide via react-icons)
+import {
+  LuBuilding2,     // établissements
+  LuUsers2,        // parents
+  LuBaby,          // enfants
+  LuTrendingUp,    // chiffre d'affaires
+  LuActivity,      // activité
+  LuFileBarChart2, // rapports
+  LuGauge          // fallback
+} from "react-icons/lu";
 
 
 
@@ -19,27 +40,144 @@ import AppointmentPlanner from "components/calendar/AppointmentPlanner";
 
 
 
-// icons
-import { PiUsersThree, PiBaby, PiChalkboardTeacher, PiMoney } from "react-icons/pi";
-import { MdChildCare, MdPersonAddAlt1, MdPersonOff, MdCheckCircle } from "react-icons/md";
-import { AiOutlineWarning } from "react-icons/ai";
 
 
 
-/* ---------------------------------------------------
-  MOCK DATA
---------------------------------------------------- */
-const kpis = {
-  totalClientsActifs: 312,
-  garderies: 140,
-  creches: 128,
-  ecoles: 44,
-  nouveauxCeMois: 18,
-  resiliesCeMois: 5,
-  tauxRetention: 0.93,
-  tauxUtilisation: 0.78,
-  tauxPaiement: 0.88,
+
+
+
+
+// sans types TS
+const ICONS = {
+  "Nombre Totale d'etablissements": <LuBuilding2 />,
+  "Nombre Totale de Parents":        <LuUsers2 />,
+  "Nombre Totale des Enfants":       <LuBaby />,
+  "Chiffres d'Affaires Totales":     <LuTrendingUp />,
+  "Nombre d'activité d'etablissement": <LuActivity />,
+  "Nombre de raports par jours":     <LuFileBarChart2 />,
 };
+
+const pickIcon = (title) => ICONS[title] ?? <LuGauge />;
+
+
+
+// à placer au-dessus des 3 configs (près des MOCK DATA)
+const MOTION = {
+  chart: {
+    animations: {
+      enabled: true,
+      easing: "easeinout",
+      speed: 800,
+      animateGradually: { enabled: true, delay: 120 }, // cascade bar-by-bar
+      dynamicAnimation: { enabled: true, speed: 600 },  // quand les data changent
+    },
+    dropShadow: { enabled: true, top: 1, left: 0, blur: 3, opacity: 0.12 },
+    toolbar: { show: false },
+  },
+  states: {
+    hover:  { filter: { type: "lighten", value: 0.08 } },
+    active: { filter: { type: "darken",  value: 0.25 } },
+  },
+};
+
+
+
+// Libellés + couleurs + mois (si tu veux des couleurs cohérentes)
+const TYPE_LABELS = ["Garderies", "Crèches", "Écoles"];
+const TYPE_COLORS = ["#60a5fa", "#a78bfa", "#34d399"];
+const MONTHS_FR = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"];
+
+/* === Objectif du mois (RadialBar multiseries) === */
+const goalSeries = [78, 72, 65];              // Garderies / Crèches / Écoles
+
+const radialGoalOptions = {
+  chart: {
+    type: "radialBar",
+    toolbar: { show: false },
+    animations: {
+      enabled: true,
+      easing: "easeinout",
+      speed: 900,
+      animateGradually: { enabled: true, delay: 140 },
+      dynamicAnimation: { enabled: true, speed: 600 },
+    },
+    dropShadow: { enabled: true, top: 2, left: 0, blur: 6, opacity: 0.18 }, // léger 3D
+  },
+  labels: TYPE_LABELS,                        // ["Garderies","Crèches","Écoles"]
+  colors: TYPE_COLORS,                        // ["#60a5fa","#a78bfa","#34d399"]
+  stroke: { lineCap: "round" },               // extrémités arrondies
+  fill: {
+    type: "gradient",
+    gradient: {
+      shade: "light",
+      type: "diagonal1",
+      shadeIntensity: 0.3,
+      gradientToColors: ["#93c5fd", "#c4b5fd", "#6ee7b7"],
+      opacityFrom: 0.95,
+      opacityTo: 0.8,
+      stops: [0, 60, 100],
+    },
+  },
+  plotOptions: {
+    radialBar: {
+      startAngle: -90,
+      endAngle: 270,                           // cercle complet avec petite rotation
+      hollow: {
+        size: "58%",
+        background: "transparent",
+        dropShadow: { enabled: true, top: 3, blur: 6, opacity: 0.12 }, // 3D dans le “trou”
+      },
+      track: {
+        background: "rgba(2,6,23,.06)",       // slate-950/6
+        strokeWidth: "100%",
+        margin: 6,
+        dropShadow: { enabled: true, top: 1, blur: 3, opacity: 0.08 },
+      },
+      dataLabels: {
+        show: true,
+        name: {
+          show: true,
+          offsetY: 18,
+          fontSize: "12px",
+          color: "#64748b",
+        },
+        value: {
+          show: true,
+          offsetY: -8,
+          fontSize: "24px",
+          fontWeight: 800,
+          formatter: (v) => `${Math.round(v)}%`, // valeur centrale
+        },
+        total: {
+          show: true,
+          label: "Moyenne",
+          fontSize: "12px",
+          color: "#475569",
+          formatter: (w) => {
+            const arr = w.globals.seriesTotals;
+            const avg = arr.reduce((a, b) => a + b, 0) / arr.length || 0;
+            return `${Math.round(avg)}%`;
+          },
+        },
+      },
+    },
+  },
+  legend: {
+    show: true,
+    position: "bottom",                        // “labels en dessous”
+    fontSize: "12px",
+    markers: { width: 10, height: 10, radius: 12 },
+    itemMargin: { horizontal: 10, vertical: 4 },
+    formatter: (seriesName, opts) =>
+      `${seriesName}: ${opts.w.globals.series[opts.seriesIndex]}%`,
+  },
+  tooltip: { enabled: true, y: { formatter: (v) => `${v}%` } },
+};
+
+
+
+
+
 
 // Libellés + couleurs communs à nos cartes
 const CATEGORY_LABELS = ["Garderies", "Crèches", "Écoles"];
@@ -75,33 +213,126 @@ const revenusParType = {
   },
 };
 
-// 🧁 Paiements par type (en %)
-const kpiPaiements = {
-  // 🔁 MODIFIE ICI tes pourcentages (doivent totaliser ~100)
-  series: [40, 30, 30], // [Garderies, Crèches, Écoles]
+export const kpiPaiements = {
+  series: [40, 30, 30],
   options: {
-    labels: CATEGORY_LABELS,
-    chart: { type: "donut", toolbar: { show: false }, animations: { enabled: true, speed: 700 } },
-    stroke: { width: 0 },
-    legend: { position: "top", fontSize: "11px" },
-    colors: CATEGORY_COLORS,
-    dataLabels: { enabled: false },
-   plotOptions: {
-  pie: {
-    donut: {
-      size: "80%",
-      labels: {
-        show: true,
-        total: { show: true, label: "Total", fontSize: "14px" },
-        value: { formatter: (v) => `${Number(v || 0)}%` },
+    ...MOTION,
+    chart: {
+      ...MOTION.chart,
+      type: "donut",
+      animations: {
+        ...MOTION.chart.animations,
+        speed: 900,
+        animateGradually: { enabled: true, delay: 150 },
       },
     },
-  },
-},
-
+    stroke: { width: 0 },
+    labels: CATEGORY_LABELS,
+    legend: { position: "top", fontSize: "12px" },
+    colors: CATEGORY_COLORS,
+    // dégradé doux entre segments (peut être omis si tu veux des couleurs pleines)
+    fill: {
+      type: "gradient",
+      gradient: {
+        shade: "light",
+        type: "diagonal1",
+        shadeIntensity: 0.25,
+        gradientToColors: ["#93c5fd", "#c4b5fd", "#6ee7b7"],
+        opacityFrom: 0.95,
+        opacityTo: 0.85,
+        stops: [0, 70, 100],
+      },
+    },
+    plotOptions: {
+      pie: {
+        expandOnClick: true,
+        donut: {
+          size: "80%",
+          labels: {
+            show: true,
+            total: { show: true, label: "Total", fontSize: "14px", color: "#334155" },
+            value: { formatter: (v) => `${Number(v || 0)}%` },
+          },
+        },
+      },
+    },
     tooltip: { y: { formatter: (v) => `${v}%` } },
+    states: {
+      ...MOTION.states,
+      hover: { filter: { type: "lighten", value: 0.12 } },
+    },
   },
 };
+
+/* ===== Helpers charts (sans fichier externe) ===== */
+const buildPolarArea = (labels, values) => ({
+  type: "polarArea",
+  series: values,
+  options: {
+    ...MOTION,
+    labels,
+    colors: TYPE_COLORS,
+    chart: { ...MOTION.chart, type: "polarArea", dropShadow: { enabled: true, top: 4, blur: 12, opacity: 0.18 } },
+    stroke: { width: 0 },
+    fill: { opacity: 0.92 },
+    yaxis: { show: false },
+    legend: { position: "bottom", fontSize: "12px" },
+    plotOptions: { polarArea: { rings: { strokeWidth: 1 }, spokes: { strokeWidth: 1 } } },
+  },
+});
+
+const buildBubbleGalaxy = (series) => ({
+  type: "bubble",
+  series,
+  options: {
+    ...MOTION,
+    chart: { ...MOTION.chart, type: "bubble", dropShadow: { enabled: true, top: 2, blur: 8, opacity: 0.18 } },
+    colors: TYPE_COLORS,
+    dataLabels: { enabled: false },
+    stroke: { width: 1 },
+    xaxis: { type: "numeric", tickAmount: 12, labels: { style: { colors: "#64748b" } } },
+    yaxis: { labels: { style: { colors: "#94a3b8" } } },
+    fill: {
+      opacity: 0.85,
+      gradient: { shade: "light", type: "vertical", opacityFrom: 0.95, opacityTo: 0.55, stops: [0, 60, 100] },
+    },
+    tooltip: { y: { formatter: (v) => `${v}` }, z: { title: "Taille: " } },
+  },
+});
+
+const buildRangeTimeline = (categories, series) => ({
+  type: "rangeBar",
+  series,
+  options: {
+    ...MOTION,
+    chart: { ...MOTION.chart, type: "rangeBar" },
+    plotOptions: { bar: { horizontal: true, borderRadius: 8, rangeBarGroupRows: true } },
+    colors: TYPE_COLORS,
+    xaxis: { type: "numeric", labels: { style: { colors: "#64748b" } } },
+    yaxis: { categories, labels: { style: { colors: "#94a3b8" } } },
+    grid: { borderColor: "rgba(2,6,23,.08)", strokeDashArray: 4 },
+    tooltip: { y: { formatter: (val) => (Array.isArray(val) ? `${val[1] - val[0]} h` : val) } },
+    legend: { position: "bottom" },
+  },
+});
+
+const buildTreemap = (data) => ({
+  type: "treemap",
+  series: [{ data }],
+  options: {
+    ...MOTION,
+    chart: { ...MOTION.chart, type: "treemap" },
+    colors: TYPE_COLORS,
+    plotOptions: { treemap: { enableShades: true, shadeIntensity: 0.25, useFillColorAsStroke: true } },
+    dataLabels: {
+      enabled: true,
+      style: { fontSize: "12px", fontWeight: 700 },
+      formatter: (txt, opt) => `${txt}\n${opt.value}`,
+    },
+    legend: { show: false },
+    tooltip: { y: { formatter: (v) => `${v.toLocaleString("fr-TN")}` } },
+  },
+});
 
 
 /* ---------- KPI mini charts (axes visibles) ---------- */
@@ -127,87 +358,96 @@ const yConf = {
 export const kpiRetention = {
   series: [{ name: "Rétention", data: retentionValues }],
   options: {
-    chart: {
-      type: "bar",
-      toolbar: { show: false },
-      animations: { enabled: true, speed: 600 },
-    },
-
-    plotOptions: { 
-      bar: { 
-        columnWidth: "45%", 
-        borderRadius: 6,
+    ...MOTION,
+    chart: { ...MOTION.chart, type: "bar" },
+    colors: ["#7dd3fc"],
+    fill: {
+      type: "gradient",
+      gradient: {
+        shade: "light",
+        type: "vertical",
+        shadeIntensity: 0.25,
+        opacityFrom: 0.95,
+        opacityTo: 0.8,
+        stops: [0, 60, 100],
       },
     },
-
+    plotOptions: {
+      bar: {
+        columnWidth: "45%",
+        borderRadius: 8,
+        borderRadiusApplication: "end", // arrondi en haut
+      },
+    },
     dataLabels: { enabled: false },
-    colors: ["#7dd3fc"],
-
     xaxis: {
       categories: retentionCategories,
       labels: {
-        style: {
-          colors: "#64748b",
-          fontSize: "12px",
-          fontWeight: 600,
-        },
+        style: { colors: "#64748b", fontSize: "12px", fontWeight: 600 },
       },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
     },
-
     yaxis: {
       min: 0,
       max: 100,
       tickAmount: 5,
-      labels: {
-        formatter: (v) => `${v}%`
-      }
+      labels: { formatter: (v) => `${v}%`, style: { colors: "#94a3b8", fontSize: "11px", fontWeight: 600 } },
     },
-
-    grid: {
-      borderColor: "rgba(0,0,0,.12)",
-      strokeDashArray: 4,
-    },
-
-    tooltip: {
-      y: { formatter: (v) => `${v}% de rétention` }
-    }
-  }
+    grid: { borderColor: "rgba(0,0,0,.08)", strokeDashArray: 4 },
+    tooltip: { y: { formatter: (v) => `${v}% de rétention` } },
+    legend: { show: false },
+  },
 };
+
 
 
 
 export const kpiUtilisation = {
   series: [{ name: "Utilisation", data: utilisationValues }],
   options: {
-    chart: {
-      type: "bar",
-      toolbar: { show: false },
-      animations: { enabled: true, speed: 600 },
-    },
-    plotOptions: { bar: { columnWidth: "45%", borderRadius: 6 } },
-    dataLabels: { enabled: false },
+    ...MOTION,
+    chart: { ...MOTION.chart, type: "bar" },
     colors: ["#c4b5fd"],
-
+    fill: {
+      type: "gradient",
+      gradient: {
+        shade: "light",
+        type: "vertical",
+        shadeIntensity: 0.25,
+        opacityFrom: 0.95,
+        opacityTo: 0.8,
+        stops: [0, 60, 100],
+      },
+    },
+    plotOptions: {
+      bar: {
+        columnWidth: "45%",
+        borderRadius: 8,
+        borderRadiusApplication: "end",
+      },
+    },
+    dataLabels: { enabled: false },
     xaxis: {
       categories: utilisationCategories,
       labels: {
-        style: { colors: "#64748b", fontSize: "12px", fontWeight: 600 }
+        style: { colors: "#64748b", fontSize: "12px", fontWeight: 600 },
       },
-      
+      axisBorder: { show: false },
+      axisTicks: { show: false },
     },
-
     yaxis: {
       min: 0,
       max: 100,
       tickAmount: 5,
-      labels: { formatter: (v) => `${v}%` }
+      labels: { formatter: (v) => `${v}%`, style: { colors: "#94a3b8", fontSize: "11px", fontWeight: 600 } },
     },
-
-    tooltip: {
-      y: { formatter: (v) => `${v}% d’utilisation` }
-    }
-  }
+    grid: { borderColor: "rgba(0,0,0,.08)", strokeDashArray: 4 },
+    tooltip: { y: { formatter: (v) => `${v}% d’utilisation` } },
+    legend: { show: false },
+  },
 };
+
 
 
 
@@ -255,9 +495,30 @@ const totalByType = {
   ecoles: monthlyNew.ecoles.reduce((a,b)=>a+b,0),
 };
 
+// EntityFilter.jsx (ou dans le même fichier)
+// Composant drop-down avec style “pill”, 3D léger, accessibilité & clavier
+
+function FilterFX() {
+  return (
+    <style>{`
+      @keyframes pop {
+        0% { opacity:0; transform: translateY(6px) scale(.98) }
+        70%{ opacity:1; transform: translateY(-2px) scale(1.01) }
+        100%{ opacity:1; transform: translateY(0) scale(1) }
+      }
+      @media (prefers-reduced-motion: reduce){
+        .anim-pop{ animation:none !important }
+        .tilt{ transform:none !important }
+      }
+    `}</style>
+  );
+}
+
 function EntityFilter({ value, onChange, counts = { creches:0, garderies:0, ecoles:0 } }) {
   const [open, setOpen] = React.useState(false);
+  const [hover, setHover] = React.useState(-1);
   const ref = React.useRef(null);
+  const btnRef = React.useRef(null);
 
   React.useEffect(() => {
     const onDocClick = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
@@ -266,47 +527,129 @@ function EntityFilter({ value, onChange, counts = { creches:0, garderies:0, ecol
   }, []);
 
   const options = [
-    { v: "creches",   label: "Crèches",   count: counts.creches ?? 0 },
-    { v: "garderies", label: "Garderies", count: counts.garderies ?? 0 },
-    { v: "ecoles",    label: "Écoles",    count: counts.ecoles ?? 0 },
+    { v: "creches",   label: "Crèches",   count: counts.creches ?? 0,   color: "bg-indigo-500"  },
+    { v: "garderies", label: "Garderies", count: counts.garderies ?? 0, color: "bg-amber-500"   },
+    { v: "ecoles",    label: "Écoles",    count: counts.ecoles ?? 0,    color: "bg-emerald-500" },
   ];
-  const current = options.find(o => o.v === value)?.label ?? "Crèches";
-  const currentCount = options.find(o => o.v === value)?.count ?? 0;
+  const current = options.find(o => o.v === value) ?? options[0];
+  const currentIndex = options.findIndex(o => o.v === value);
+
+  const toggle  = () => { setOpen(s => !s); setHover(currentIndex); };
+  const select  = (v) => { onChange?.(v); setOpen(false); btnRef.current?.focus(); };
+  const onKeyDown = (e) => {
+    if (!open && (e.key === "Enter" || e.key === " " || e.key === "ArrowDown")) {
+      e.preventDefault(); setOpen(true); setHover(currentIndex); return;
+    }
+    if (!open) return;
+    if (e.key === "Escape") { setOpen(false); btnRef.current?.focus(); }
+    if (e.key === "ArrowDown") { e.preventDefault(); setHover(i => (i+1) % options.length); }
+    if (e.key === "ArrowUp")   { e.preventDefault(); setHover(i => (i-1+options.length) % options.length); }
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(options[Math.max(0, hover)].v); }
+  };
 
   return (
     <div ref={ref} className="relative">
+      <FilterFX/>
+
+      {/* Bouton pill */}
       <button
+        ref={btnRef}
         type="button"
-        onClick={() => setOpen(s => !s)}
-        className="inline-flex items-center gap-2 rounded-xl border border-black/10 bg-white/80 px-3 py-1.5 text-sm font-semibold shadow-sm hover:bg-white"
-        aria-haspopup="menu"
+        onClick={toggle}
+        onKeyDown={onKeyDown}
+        aria-haspopup="listbox"
         aria-expanded={open}
+        className="
+          group inline-flex items-center gap-2 rounded-2xl border border-black/10
+          bg-white/80 px-3 py-1.5 text-sm font-semibold shadow-sm
+          hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300
+          transition
+
+          dark:bg-slate-800/80 dark:text-slate-200 dark:border-white/10
+          dark:hover:bg-slate-800 dark:focus-visible:ring-sky-800
+        "
+        style={{
+          boxShadow: "inset 0 -1px 0 rgba(2,6,23,.06), 0 6px 18px -10px rgba(2,6,23,.18)",
+        }}
       >
-        {current}
-        <span className="ml-1 rounded-full bg-black/5 px-2 text-[11px] font-bold">{currentCount}</span>
-        <svg width="16" height="16" viewBox="0 0 20 20" className="opacity-70">
+        {/* pastille colorée */}
+        <span className={`h-2 w-2 rounded-full ${current.color}`} aria-hidden />
+        <span className="truncate">{current.label}</span>
+
+        {/* compteur */}
+        <span className="ml-1 rounded-full bg-black/5 px-2 text-[11px] font-bold dark:bg-white/10">
+          {current.count}
+        </span>
+
+        {/* chevron */}
+        <svg
+          width="16" height="16" viewBox="0 0 20 20"
+          className={`opacity-70 transition-transform ${open ? "rotate-180" : ""} text-slate-600 dark:text-slate-300`}
+          aria-hidden
+        >
           <path fill="currentColor" d="M5.23 7.21a.75.75 0 011.06.02L10 11.1l3.71-3.87a.75.75 0 111.08 1.04l-4.24 4.41a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"/>
         </svg>
       </button>
 
+      {/* Menu */}
       {open && (
-        <div role="menu" className="absolute right-0 z-20 mt-2 w-48 rounded-xl border border-black/10 bg-white p-1 shadow-lg">
-          {options.map(o => (
-            <button
-              key={o.v}
-              role="menuitem"
-              onClick={() => { onChange(o.v); setOpen(false); }}
-              className={`w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center justify-between ${value === o.v ? "bg-gray-100 font-semibold" : ""}`}
-            >
-              <span>{o.label}</span>
-              <span className="rounded-full bg-black/5 px-2 text-[11px] font-bold">{o.count}</span>
-            </button>
-          ))}
+        <div
+          role="listbox"
+          aria-activedescendant={hover >= 0 ? `opt-${options[hover].v}` : undefined}
+          className="
+            absolute right-0 z-20 mt-2 w-56 rounded-2xl border border-black/10 bg-white/95
+            backdrop-blur shadow-[0_18px_45px_-22px_rgba(2,6,23,.35)] anim-pop
+
+            dark:bg-slate-900/90 dark:text-slate-200 dark:border-white/10
+          "
+        >
+          {/* pointe */}
+          <span className="absolute -top-2 right-6 h-3 w-3 rotate-45 bg-white border-l border-t border-black/10
+                           dark:bg-slate-900 dark:border-white/10" />
+
+          <ul className="p-1">
+            {options.map((o, i) => {
+              const active = value === o.v;
+              const hovered = hover === i;
+              return (
+                <li key={o.v} id={`opt-${o.v}`}>
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={active}
+                    onMouseEnter={() => setHover(i)}
+                    onClick={() => select(o.v)}
+                    className={[
+                      "w-full rounded-xl px-3 py-2 text-left text-sm transition flex items-center justify-between",
+                      hovered ? "bg-sky-50 dark:bg-slate-800" : "hover:bg-gray-50 dark:hover:bg-slate-800/80",
+                      active
+                        ? "ring-1 ring-sky-200 bg-sky-50/70 dark:ring-sky-800 dark:bg-sky-900/30"
+                        : "",
+                    ].join(" ")}
+                  >
+                    <span className="flex items-center gap-2 min-w-0">
+                      <span className={`h-2 w-2 rounded-full ${o.color}`} />
+                      <span className="truncate">{o.label}</span>
+                      {active && (
+                        <svg width="14" height="14" viewBox="0 0 20 20" className="text-sky-600 dark:text-sky-400">
+                          <path fill="currentColor" d="M7.5 13.3l-3-3 1.1-1.1 1.9 1.9 5.4-5.4 1.1 1.1z"/>
+                        </svg>
+                      )}
+                    </span>
+                    <span className="rounded-full bg-black/5 px-2 text-[11px] font-bold dark:bg-white/10">
+                      {o.count}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       )}
     </div>
   );
 }
+
 
 
 
@@ -428,12 +771,62 @@ function WidgetFX() {
 --------------------------------------------------- */
 
 const Dashboard = () => {
-  const impayes = 1 - kpis.tauxPaiement;
- const [barFilter, setBarFilter] = useState("creches");
+
+  /* ---------------------------------------------------
+  Widget DATA
+--------------------------------------------------- */
+const [kpis, setKpis] = useState({
+  totalClientsActifs: 0,
+  nouveauxCeMois: 0,
+  resiliesCeMois: 0,
+  ecoles: 0,
+  garderies: 0,
+  creches: 0,
+});
+
+useEffect(() => {
+  const fetchKpis = async () => {
+    try {
+      const [creches, ecoles, garderies, abonnesCeMois] = await Promise.all([
+        getCrecheActives(),
+        getEcoleActives(),
+        getGarderieActives(),
+        getEtablissementsCeMois(),
+      ]);
+
+      setKpis({
+  totalClientsActifs: creches.length + ecoles.length + garderies.length,
+  creches: creches.length,
+  ecoles: ecoles.length,
+  garderies: garderies.length,
+  nouveauxCeMois: abonnesCeMois.length,
+  resiliesCeMois: 0,
+});
+
+    } catch (error) {
+      console.error("Erreur lors du chargement des KPI:", error);
+    }
+  };
+
+  fetchKpis();
+}, []);
+const impayes = 1 - kpis.tauxPaiement;
+const [barFilter, setBarFilter] = useState("creches");
 
 // états indépendants
 const [cardFilter, setCardFilter]   = useState("creches");   // pour la CARTE
 const [tableFilter, setTableFilter] = useState("creches");   // pour la TABLE
+
+// ⚠️ Définir nextExp AVANT de l'utiliser
+const nextExp = nextExpirationByType[cardFilter]; // données de la carte selon cardFilter
+
+// Sévérité d’alarme à partir de "J-5", "J-12", etc.
+const alarm = React.useMemo(() => {
+  const rest = String(nextExp?.restant ?? "");      // ex: "J-5"
+  const n = parseInt(rest.replace(/[^\d]/g, ""), 10); // -> 5
+  if (!Number.isFinite(n)) return "ok";
+  return n <= 3 ? "critical" : n <= 10 ? "warn" : "ok";
+}, [nextExp]);
 
 // libellés par type (déclaré DANS Dashboard)
 const typeLabel = { creches: "crèches", garderies: "garderies", ecoles: "écoles" };
@@ -458,7 +851,8 @@ const tableRows =
   tableFilter === "garderies" ? topGarderies :
   tableFilter === "ecoles"    ? topEcoles    : [];
 
-const nextExp = nextExpirationByType[cardFilter]; // données de la carte selon cardFilter
+
+
 
 const [page, setPage] = useState(1);
 
@@ -504,15 +898,57 @@ const availability = (() => {
       {/* 🔵 KPI CARDS */}
       {/* *********************************************************** */}
 <WidgetFX />
-
 <div className="mt-3 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-6">
-  <Widget stacked tone="indigo"  animated delay={0}   icon={<PiUsersThree />}      title="Clients actifs"       subtitle={kpis.totalClientsActifs} />
-  <Widget stacked tone="amber"   animated delay={60}  icon={<MdPersonAddAlt1 />}   title="Nouveaux ce mois"     subtitle={kpis.nouveauxCeMois} />
-  <Widget stacked tone="sky"     animated delay={120} icon={<AiOutlineWarning />}   title="Résiliés ce mois"     subtitle={kpis.resiliesCeMois} />
-  <Widget stacked tone="emerald" animated delay={180} icon={<PiChalkboardTeacher />}title="Écoles actives"       subtitle={kpis.ecoles} />
-  <Widget stacked tone="emerald" animated delay={300} icon={<MdChildCare />}       title="Garderies actives"    subtitle={kpis.garderies} />
-  <Widget stacked tone="emerald" animated delay={240} icon={<PiBaby />}            title="Crèches actives"      subtitle={kpis.creches} />
+  <WidgetKids
+    tone="green"
+    style={{ "--dark": 0.35, "--glow": 0.25, "--border-speed": "12s", "--float-speed": "7s" }}
+    icon={pickIcon("Nombre Totale d'etablissements")}
+    title="Nombre Totale d'etablissements"
+    value={155}               // ← nombre (sans guillemets)
+    duration={900}            // (optionnel) vitesse
+    startOnView={true}        // (optionnel) démarre à l’apparition
+  />
+  <WidgetKids
+    tone="blue"
+    style={{ "--dark": 0.4, "--glow": 0.25, "--border-speed": "12s", "--float-speed": "7s" }}
+    icon={pickIcon("Nombre Totale de Parents")}
+    title="Nombre Totale de Parents"
+    value={230}
+  />
+  <WidgetKids
+    tone="orange"
+    style={{ "--dark": 0.4, "--glow": 0.25, "--border-speed": "12s", "--float-speed": "7s" }}
+    icon={pickIcon("Nombre Totale des Enfants")}
+    title="Nombre Totale des Enfants"
+    value={405}
+  />
+  <WidgetKids
+    tone="red"
+    style={{ "--dark": 0.4, "--glow": 0.25, "--border-speed": "12s", "--float-speed": "7s" }}
+    icon={pickIcon("Chiffres d'Affaires Totales")}
+    title="Chiffres d'Affaires Totales"
+    value={2055}
+    // exemple format monnaie (TND) :
+    format={(n)=> n.toLocaleString('fr-FR',{ style:'currency', currency:'TND', maximumFractionDigits:0 })}
+  />
+  <WidgetKids
+    tone="blue"
+    style={{ "--dark": 0.4, "--glow": 0.25, "--border-speed": "12s", "--float-speed": "7s" }}
+    icon={pickIcon("Nombre d'activité d'etablissement")}
+    title="Nombre d'activité d'etablissement"
+    value={228}
+  />
+  <WidgetKids
+    tone="green"
+    style={{ "--dark": 0.4, "--glow": 0.25, "--border-speed": "12s", "--float-speed": "7s" }}
+    icon={pickIcon("Nombre de raports par jours")}
+    title="Nombre de rapports par jour"
+    value={85}
+  />
 </div>
+
+
+
 
 
 
@@ -520,97 +956,35 @@ const availability = (() => {
       {/* *********************************************************** */}
       {/* 🔥 KPI BARS */}
       {/* *********************************************************** */}
-{/* *********************************************************** */}
-{/* 📈 KPI CHARTS (nouveau look) */}
-{/* *********************************************************** */}
-<div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-3">
 
-  {/* 1) Rétention – mini bar chart + valeur en haut à gauche */}
-  <Card extra="relative p-5 rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
-    <div className="mb-3 flex items-center justify-between">
-      <div>
-        <p className="text-md font-semibold uppercase tracking-wide text-gray-500">Taux de rétention</p>
-        <p className="mt-1 text-3xl font-extrabold tabular-nums">{Math.round(kpis.tauxRetention * 100)}%</p>
-      </div>
-    </div>
-    <div className="h-[250px]">
-      <BarChart chartData={kpiRetention.series} chartOptions={kpiRetention.options} />
-    </div>
-  </Card>
+<div className="mt-5 gap-5 ">
+   <KpiBar />
 
-  {/* 2) Utilisation – mini bar chart mauve */}
-  <Card extra="relative p-5 rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
-    <div className="mb-3 flex items-center justify-between">
-      <div>
-        <p className="text-md font-semibold uppercase tracking-wide text-gray-500">Taux d’utilisation</p>
-        <p className="mt-1 text-3xl font-extrabold tabular-nums">{Math.round(kpis.tauxUtilisation * 100)}%</p>
-      </div>
-    </div>
-    <div className="h-[250px]">
-      <BarChart chartData={kpiUtilisation.series} chartOptions={kpiUtilisation.options} />
-    </div>
-  </Card>
-
-  {/* 3) Paiements – donut “anneau” */}
-  <Card extra="relative p-5 rounded-2xl shadow-sm hover:-translate-y-0.5 transition">
-    <div className="mb-3 flex items-center justify-between">
-      <div>
-        <p className="text-md font-semibold uppercase tracking-wide text-gray-500">Paiements</p>
-        <p className="mt-1 text-3xl font-extrabold tabular-nums">{Math.round(kpis.tauxPaiement * 100)}%</p>
-      </div>
-    </div>
-    <div className="h-[250px]">
-      <PieChart series={kpiPaiements.series} options={kpiPaiements.options} />
-    </div>
-  </Card>
 
 </div>
 
+ {/* *****<AIIndicatorsPanel
+  stats={{
+    creches: { count: 128, info: "actives" },
+    garderies: { count: 140, info: "actives" },
+    ecoles: { count: 44, info: "actives" }
+  }}
+  onSelect={(type) => {
+    // route, filtre, ou open modal :
+    // ex: router.push(`/admin/${type}`);
+    console.log("Nuage cliqué:", type);
+  }}
+  links={{ chatbot: "/assistant" }}
+/>*** */}
+
+
+    
 
 
 
-      {/* *********************************************************** */}
-      {/* 📊 CHARTS */}
-      {/* *********************************************************** */}
-      <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
-        
-        {/* PIE */}
-        <Card extra="relative group p-5 rounded-2xl shadow-lg hover:-translate-y-1 transition-all">
-          <div className="card-glow"></div>
-          <h3 className="relative z-10 mb-4 text-lg font-extrabold bg-gradient-to-r from-indigo-500 via-purple-500 to-sky-400 bg-clip-text text-transparent animate-gradient-x">
-            🍩 Revenus par type de client
-          </h3>
-          <PieChart series={revenusParType.series} options={revenusParType.options} />
-        </Card>
-
-        {/* BAR */}
-       {/* BAR (filtrable par type) */}
-<Card extra="relative group p-5 rounded-2xl shadow-lg hover:-translate-y-1 transition-all">
-  <div className="card-glow"></div>
-
-  <div className="relative z-10 mb-4 flex items-start justify-between">
-    <h3 className="text-lg font-extrabold bg-gradient-to-r from-indigo-500 via-purple-500 to-sky-400 bg-clip-text text-transparent animate-gradient-x">
-      📈 Nouvelles {labelMap[barFilter]} par mois
-    </h3>
-
-    {/* filtre à droite */}
-    <EntityFilter
-      value={barFilter}
-      onChange={setBarFilter}
-      counts={totalByType}   // badge = total annuel par type
-    />
-  </div>
-
-  <div className="h-[230px]">
-    <BarChart
-      chartData={barSeriesFor(barFilter)}
-      chartOptions={barOptionsFor(barFilter)}
-    />
-  </div>
-</Card>
 
 
-      </div>
+
 
       {/* *********************************************************** */}
       {/* 🗺 MAP */}
@@ -622,7 +996,7 @@ const availability = (() => {
 
 {/* 📅 PLANNER : calendrier + modal + liste de RDV */}
 <Card extra="
-  mt-6 p-6 rounded-3xl relative group overflow-visible
+  hidden mt-6 p-6 rounded-3xl relative group overflow-visible
   shadow-[0_0.0625em_0.0625em_rgba(0,0,0,0.25),0_0.125em_0.5em_rgba(0,0,0,0.25),inset_0_0_0_1px_rgba(255,255,255,0.1)]
   hover:shadow-[0_0.125em_0.125em_rgba(0,0,0,0.28),0_0.5em_1em_-0.2em_rgba(0,0,0,0.3),inset_0_0_0_1px_rgba(255,255,255,0.12)]
 "
@@ -648,36 +1022,151 @@ const availability = (() => {
    </div>
 
 <div className="mt-6 grid grid-cols-1 gap-5">
-  {/* === CARTE PROCHAINE EXPIRATION (avec son filtre propre) === */}
-  <Card extra="col-span-full p-6 rounded-3xl relative group overflow-hidden shadow-lg">
-    <div className="card-glow"></div>
+{/* === CARTE PROCHAINE EXPIRATION (style amélioré) === */}
+<Card
+  extra={`
+    col-span-full p-6 rounded-3xl relative group overflow-hidden
+    bg-white/80 backdrop-blur-xl border border-black/10
+    shadow-[0_28px_70px_-24px_rgba(2,6,23,.28),0_12px_24px_-18px_rgba(2,6,23,.22)]
+  `}
+  data-alarm={alarm} // ← "ok" | "warn" | "critical"
+>
+  {/* HALO DE FOND (indigo) */}
+  <span
+    className="pointer-events-none absolute -inset-16 -z-10 opacity-0 blur-3xl transition-opacity duration-300 group-hover:opacity-40"
+    style={{ background: "radial-gradient(700px 340px at 20% 0%, rgba(99,102,241,.18), transparent 60%)" }}
+  />
 
-    {/* Filtre à droite — INDEPENDANT */}
-    <div className="absolute right-6 top-6 flex items-center gap-3">
+  {/* HALO ROUGE ANIMÉ (visible si alarme) */}
+  <span
+    aria-hidden
+    className="alarm-glow pointer-events-none absolute inset-0 -z-10 opacity-0"
+  />
+
+  {/* LIGNE SCAN EN HAUT (accent danger) */}
+  <span
+    className="absolute left-0 right-0 top-0 h-[3px] overflow-hidden"
+    aria-hidden
+  >
+    <span className="block h-full w-[40%] alarm-scan" />
+  </span>
+
+  {/* Header : label + filtre */}
+  <div className="flex items-start justify-between gap-4">
+    <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-gray-500">
+      {/* point d’état */}
+      <span
+        className="inline-block h-2 w-2 rounded-full bg-rose-500"
+        style={{ animation: alarm === "critical" ? "alarm-blink .9s steps(2,end) infinite" : alarm === "warn" ? "alarm-blink 1.4s steps(2,end) infinite" : "none" }}
+      />
+      Prochaine expiration — <span className="normal-case text-gray-700">{typeLabel[cardFilter]}</span>
+    </p>
+
+    <div className="shrink-0 z-10">
       <EntityFilter value={cardFilter} onChange={setCardFilter} counts={countsCard} />
-
     </div>
+  </div>
 
-    <p className="flex items-center gap-2 text-xs font-semibold uppercase">
-      <span className="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
-      Prochaine expiration — <span className="normal-case">{typeLabel[cardFilter]}</span>
-    </p>
+  {/* Titre (légère secousse si CRITIQUE) */}
+  <h3
+    className="mt-2 text-2xl font-black leading-tight bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 bg-clip-text text-transparent inline-flex items-center gap-2"
+    style={{ animation: alarm === "critical" ? "alarm-wiggle .36s ease-in-out 3" : "none" }}
+  >
+    {/* petite sirène si critique */}
+    {alarm === "critical" && (
+      <span className="inline-grid h-6 w-6 place-items-center rounded-md bg-rose-100 text-rose-600 ring-1 ring-rose-200">
+        🔔
+      </span>
+    )}
+    {nextExp.nom}
+  </h3>
 
-    <h3 className="mt-3 text-xl font-extrabold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
-      {nextExp.nom}
-    </h3>
-
-    <p className="mt-2 text-sm text-gray-600 flex items-center gap-2">
-      📄 {nextExp.licence} — expire le{" "}
-      <span className="font-bold text-red-500">{nextExp.date}</span>
-    </p>
-
-    <span className="mt-4 inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold bg-red-500/20 text-red-600 border border-red-200 animate-pulse">
-      ⏰ {nextExp.restant} restant
+  {/* Métadonnées */}
+  <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
+    <span className="inline-flex items-center gap-2 rounded-xl border border-black/10 bg-white/70 px-3 py-1 font-semibold text-gray-700">
+      <svg width="16" height="16" viewBox="0 0 24 24" className="opacity-70"><path fill="currentColor" d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm8 1.5V8h4.5L14 3.5Z"/></svg>
+      {nextExp.licence}
     </span>
 
-    <div className="mt-4 h-1 w-full rounded-full bg-gradient-to-r from-purple-500 via-blue-500 to-emerald-400 animate-gradient-slide"></div>
-  </Card>
+    <span className="inline-flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-1 font-semibold text-rose-700 ring-1 ring-rose-200">
+      <svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M7 2v2H5a2 2 0 0 0-2 2v2h18V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7Zm14 8H3v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V10Zm-4 3h-4v4h4v-4Z"/></svg>
+      expire le <span className="font-black ml-1">{nextExp.date}</span>
+    </span>
+  </div>
+
+  {/* Badge alarme + message */}
+  <div
+    className={[
+      "mt-3 rounded-2xl px-3 py-2 text-sm font-semibold flex items-center gap-2",
+      alarm === "critical"
+        ? "border border-rose-300 bg-rose-50/80 text-rose-700"
+        : alarm === "warn"
+        ? "border border-amber-300 bg-amber-50/80 text-amber-800"
+        : "border border-emerald-200 bg-emerald-50/80 text-emerald-700",
+    ].join(" ")}
+  >
+    <span className="inline-block h-2 w-2 rounded-full bg-current opacity-70" />
+    {alarm !== "ok" ? "⏰" : "✅"} {nextExp.restant} restant
+  </div>
+
+  {/* Barre de progression / activité – couleur selon alarme */}
+  <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-black/10">
+    <span
+      className="block h-full w-[45%] rounded-full"
+      style={{
+        background:
+          alarm === "critical"
+            ? "linear-gradient(90deg,#fb7185,#ef4444,#fb7185)"
+            : alarm === "warn"
+            ? "linear-gradient(90deg,#f59e0b,#f97316,#f59e0b)"
+            : "linear-gradient(90deg,#34d399,#10b981,#34d399)",
+        backgroundSize: "200% 100%",
+        animation: "stripes 2.4s linear infinite",
+        filter: "saturate(1.05)",
+      }}
+    />
+  </div>
+
+  {/* Styles d’animation & alarme */}
+  <style>{`
+    @keyframes stripes {
+      0% { transform: translateX(-120%); }
+      100% { transform: translateX(120%); }
+    }
+    @keyframes alarm-glow {
+      0%, 100% { opacity: .35; }
+      50%      { opacity: .65; }
+    }
+    @keyframes alarm-blink {
+      50% { opacity: .2 }
+    }
+    @keyframes alarm-wiggle {
+      0%   { transform: translateX(0) rotate(0) }
+      25%  { transform: translateX(-1px) rotate(-1.2deg) }
+      50%  { transform: translateX(1px) rotate(1.2deg) }
+      75%  { transform: translateX(-.5px) rotate(-.8deg) }
+      100% { transform: translateX(0) rotate(0) }
+    }
+
+    /* Aura rouge animée quand data-alarm != ok */
+    [data-alarm="warn"]   .alarm-glow,
+    [data-alarm="critical"] .alarm-glow { 
+      background: radial-gradient(60% 60% at 50% 0%, rgba(251,113,133,.18), transparent 65%);
+      animation: alarm-glow 2.2s ease-in-out infinite;
+    }
+    [data-alarm="critical"] .alarm-glow {
+      background: radial-gradient(60% 60% at 50% 0%, rgba(239,68,68,.22), transparent 65%);
+      animation-duration: 1.5s;
+    }
+
+    /* Ligne scan en haut – teinte selon état */
+    [data-alarm="critical"] .alarm-scan { background: linear-gradient(90deg,transparent,#ef4444,transparent); animation: stripes 1.3s linear infinite; }
+    [data-alarm="warn"]     .alarm-scan { background: linear-gradient(90deg,transparent,#f59e0b,transparent); animation: stripes 1.8s linear infinite; }
+    [data-alarm="ok"]       .alarm-scan { background: linear-gradient(90deg,transparent,#10b981,transparent); animation: stripes 2.4s linear infinite; }
+  `}</style>
+</Card>
+
+
 
   {/* === TABLE TOP 10 (avec SON filtre propre) === */}
   <Card extra="col-span-full p-6 rounded-3xl relative group overflow-hidden shadow-lg ">
@@ -699,7 +1188,7 @@ const availability = (() => {
           Aucune donnée pour les {typeLabel[tableFilter]} pour le moment.
         </div>
       ) : (
-        <table className="w-full text-left border-collapse">
+        <table className="w-full text-left border-collapse   text-slate-800 dark:text-black">
           <thead>
             <tr className="text-xs font-semibold uppercase tracking-wide text-gray-500 bg-gradient-to-r from-gray-50 to-gray-100 ">
               <th className="py-3 px-3">Nom</th>
