@@ -105,6 +105,12 @@ public class AuthServiceImpl implements  AuthService{
         userRepository.deleteById(id);
     }
 
+    @Override
+    public User getUserById(String id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable avec l'ID : " + id));
+    }
+
 
 }
 

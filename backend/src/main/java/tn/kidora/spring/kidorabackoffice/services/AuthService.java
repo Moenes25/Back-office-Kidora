@@ -15,5 +15,7 @@ public interface AuthService {
     List<User> getAllUsersExceptSuperAdmin();
      User updateAdminProfile(String email, String nom, String tel, MultipartFile imageFile);
      void deleteUserById(String id);
+    User getUserById(String id);
+
 
 }
