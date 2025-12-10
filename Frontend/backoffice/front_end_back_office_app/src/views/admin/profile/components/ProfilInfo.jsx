@@ -1,131 +1,124 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  FaUser,
-  FaEnvelope,
-  FaPhone,
-  FaUserShield,
- 
-  FaCamera,
-} from "react-icons/fa";
-
+import { motion } from "framer-motion";
+import { FaUser, FaEnvelope, FaPhone, FaUserShield, FaCamera, FaCalendar } from "react-icons/fa";
 import api from "services/api";
 import { useAuth } from "context/AuthContext";
 
-
 export default function ProfileInfo() {
-  const { user, updateUser } = useAuth();
+  const { user, token, updateUser } = useAuth();
 
   const [form, setForm] = useState({
     fullName: "",
     email: "",
     phone: "",
     role: "",
-    createdAt: "N/A",
-    lastLogin: "N/A",
+  });
+
+  const [readOnlyData, setReadOnlyData] = useState({
+    createdAt: "",
+    updatedAt: "",
   });
 
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState("/default-avatar.png");
   const [previewImage, setPreviewImage] = useState(null);
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "N/A";
+    const date = new Date(dateStr);
+    return date.toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   useEffect(() => {
-    if (user) {
-      setForm({
-        fullName: user.nom || "",
-        email: user.email || "", 
-        phone: user.tel || "",
-        role: user.role || "",
-        createdAt: "N/A",
-        lastLogin: "N/A",
-      });
+    const fetchUser = async () => {
+      if (!user?.id || !token) return;
+      try {
+        const res = await api.get(`/auth/${user.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = res.data;
 
-      if (user.image_url) setProfileImage(user.image_url);
-    }
-  }, [user]);
+        setForm({
+          fullName: data.nom || "",
+          email: data.email || "",
+          phone: data.tel || "",
+          role: data.role || "",
+        });
 
- 
+        setReadOnlyData({
+          createdAt: data.createdAt || "",
+          updatedAt: data.updatedAt || "",
+        });
 
+        setProfileImage(data.imageUrl || "/default-avatar.png");
+      } catch (err) {
+        console.error("Failed to fetch user:", err);
+      }
+    };
+
+    fetchUser();
+  }, [user?.id, token]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) setPreviewImage(file);
   };
 
-  const handleSave = async () => {
-  try {
-    const formData = new FormData();
-
-    formData.append("email", form.email);
-    formData.append("nom", form.fullName);
-    formData.append("tel", form.phone);
-
-    
-    if (previewImage) {
-      formData.append("image", previewImage);
-    }
-
-    const res = await api.put("/auth/update-profile", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    console.log("Success:", res.data);
-
-    // update user in context
-    updateUser({
-      nom: res.data.nom,
-      email: res.data.email,
-      tel: res.data.tel,
-      role: res.data.role, 
-      // imageUrl
-    });
-
-    // Update profile image also preview
-    if (previewImage) {
-      setProfileImage(URL.createObjectURL(previewImage));
-    }
-
-    setPreviewImage(null);
-    setIsEditing(false);
-
-    alert("Profile updated successfully!");
-  } catch (err) {
-    console.error("Update failed:", err);
-    alert("Update failed");
-  }
-};
-
-
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const fields = [
-    {
-      label: "Full Name",
-      name: "fullName",
-      icon: <FaUser className="text-purple-500" />,
-      editable: true,
-    },
-    {
-      label: "Email",
-      name: "email",
-      icon: <FaEnvelope className="text-blue-500" />,
-      editable: false,
-    },
-    {
-      label: "Phone",
-      name: "phone",
-      icon: <FaPhone className="text-green-500" />,
-      editable: true,
-    },
-    {
-      label: "Role",
-      name: "role",
-      icon: <FaUserShield className="text-orange-500" />,
-      editable: false,
-    },
+  const handleSave = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("email", form.email);
+      formData.append("nom", form.fullName);
+      formData.append("tel", form.phone);
+
+      if (previewImage) formData.append("image", previewImage);
+
+      const res = await api.put("/auth/update-profile", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const updatedUser = res.data;
+      updateUser(updatedUser);
+
+      if (previewImage) {
+        setProfileImage(URL.createObjectURL(previewImage));
+      } else if (updatedUser.imageUrl) {
+        setProfileImage(updatedUser.imageUrl || "/default-avatar.png");
+      }
+
+      setPreviewImage(null);
+      setIsEditing(false);
+      alert("Profile updated successfully!");
+    } catch (err) {
+      console.error("Update failed:", err);
+      alert("Update failed");
+    }
+  };
+
+  const editableFields = [
+    { label: "Full Name", name: "fullName", icon: <FaUser className="text-purple-500" />, editable: true },
+    { label: "Email", name: "email", icon: <FaEnvelope className="text-blue-500" />, editable: false },
+    { label: "Phone", name: "phone", icon: <FaPhone className="text-green-500" />, editable: true },
+    { label: "Role", name: "role", icon: <FaUserShield className="text-orange-500" />, editable: false },
+  ];
+
+  const readOnlyFields = [
+    { label: "Created At", name: "createdAt", icon: <FaCalendar className="text-yellow-500" />, value: readOnlyData.createdAt },
+    { label: "Updated At", name: "updatedAt", icon: <FaCalendar className="text-red-500" />, value: readOnlyData.updatedAt },
   ];
 
   return (
@@ -134,29 +127,19 @@ export default function ProfileInfo() {
       animate={{ opacity: 1, y: 0 }}
       className="w-full p-6 bg-white border border-purple-200 shadow-xl rounded-2xl"
     >
-      {/* TOP AREA */}
+      {/* Top Area */}
       <div className="flex items-start justify-between gap-4 md:flex-row">
         <div className="flex items-center gap-6">
           <div className="relative w-20 h-20">
             <img
-              src={
-                previewImage
-                  ? URL.createObjectURL(previewImage)
-                  : profileImage
-              }
+              src={previewImage ? URL.createObjectURL(previewImage) : profileImage}
               alt="profile"
               className="object-cover w-20 h-20 border-2 border-purple-300 shadow-inner rounded-xl"
             />
-
             {isEditing && (
               <label className="absolute bottom-0 right-0 flex items-center justify-center w-6 h-6 text-white bg-purple-600 rounded-full shadow-md cursor-pointer hover:bg-purple-700">
                 <FaCamera size={14} />
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
+                <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
               </label>
             )}
           </div>
@@ -180,7 +163,6 @@ export default function ProfileInfo() {
             >
               Cancel
             </button>
-
             <button
               onClick={handleSave}
               className="px-4 py-2 text-white rounded-lg shadow bg-gradient-to-br from-purple-500 to-blue-500"
@@ -191,22 +173,12 @@ export default function ProfileInfo() {
         )}
       </div>
 
-      {/* FIELDS GRID */}
+      {/* Editable Fields */}
       <div className="grid grid-cols-1 gap-6 mt-6 md:grid-cols-2">
-        {fields.map((field) => (
-          <div
-            key={field.name}
-            className="p-5 bg-white border border-gray-200 shadow-sm rounded-xl"
-          >
-            <p className="flex items-center gap-2 mb-1 text-xs text-gray-500">
-              {field.icon} {field.label}
-            </p>
-
-            {!isEditing || !field.editable ? (
-              <p className="text-sm font-semibold text-gray-700">
-                {form[field.name]}
-              </p>
-            ) : (
+        {editableFields.map((field) => (
+          <div key={field.name} className="p-5 bg-white border border-gray-200 shadow-sm rounded-xl">
+            <p className="flex items-center gap-2 mb-1 text-xs text-gray-500">{field.icon} {field.label}</p>
+            {isEditing && field.editable ? (
               <input
                 type="text"
                 name={field.name}
@@ -214,7 +186,17 @@ export default function ProfileInfo() {
                 onChange={handleChange}
                 className="w-full px-3 py-2 mt-1 text-sm border border-gray-300 rounded-lg"
               />
+            ) : (
+              <p className="text-sm font-semibold text-gray-700">{form[field.name]}</p>
             )}
+          </div>
+        ))}
+
+        {/* Read-only Fields */}
+        {readOnlyFields.map((field) => (
+          <div key={field.name} className="p-5 border border-gray-200 shadow-sm bg-gray-50 rounded-xl">
+            <p className="flex items-center gap-2 mb-1 text-xs text-gray-500">{field.icon} {field.label}</p>
+            <p className="text-sm font-semibold text-gray-700">{formatDate(field.value)}</p>
           </div>
         ))}
       </div>

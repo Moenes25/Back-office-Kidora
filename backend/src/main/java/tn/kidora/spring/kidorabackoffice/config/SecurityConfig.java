@@ -11,12 +11,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import tn.kidora.spring.kidorabackoffice.utils.Constants;
 
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import tn.kidora.spring.kidorabackoffice.services.serviceImpl.CustomUserDetailsService;
-import tn.kidora.spring.kidorabackoffice.config.JwtFilter;
+import tn.kidora.spring.kidorabackoffice.utils.Constants;
 @Configuration
 @EnableWebSecurity
 @AllArgsConstructor
@@ -63,4 +61,5 @@ public class SecurityConfig {
     }
 
     
+
 

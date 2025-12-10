@@ -36,11 +36,6 @@ export const AuthProvider = ({ children }) => {
 
       const userData = {
         id: data.id,
-        nom: data.nom,
-        email: data.email,
-        tel: data.tel,
-        role: data.role,
-        imageUrl: data.imageUrl,
           
       };
 
