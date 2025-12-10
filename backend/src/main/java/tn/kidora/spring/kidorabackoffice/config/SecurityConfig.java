@@ -69,8 +69,11 @@ import lombok.AllArgsConstructor;
 import tn.kidora.spring.kidorabackoffice.services.serviceImpl.CustomUserDetailsService;
 import tn.kidora.spring.kidorabackoffice.utils.Constants;
 
+<<<<<<< Updated upstream
 import java.util.List;
 
+=======
+>>>>>>> Stashed changes
 @Configuration
 @EnableWebSecurity
 @AllArgsConstructor
@@ -78,6 +81,7 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtUtils jwtUtils;
+    private final JwtFilter jwtFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -95,6 +99,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
+<<<<<<< Updated upstream
                 .cors() // <-- enable CORS support
                 .and()
                 .authorizeHttpRequests(auth
@@ -102,14 +107,38 @@ public class SecurityConfig {
                         .requestMatchers(Constants.APP_ROOT + Constants.ABONNEMENT + "/**").authenticated()
                         .requestMatchers(
                                 Constants.APP_ROOT + Constants.ETABLISSEMENT + Constants.SAVE,
+=======
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS with custom configuration
+                .authorizeHttpRequests(auth
+
+                          // Public endpoints
+                        -> auth.requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/forgot-password").permitAll()
+                        .requestMatchers("/api/auth/verify-otp").permitAll()
+                        .requestMatchers("/api/auth/reset-password").permitAll()
+                        .requestMatchers("/api/auth/update-profile/**").permitAll()
+
+                           // Only SUPER_ADMIN can access 
+                         .requestMatchers("/api/auth/all").hasRole("SUPER_ADMIN")
+                         .requestMatchers("/api/auth/delete-user/**").hasRole("SUPER_ADMIN")
+                         
+
+                        .requestMatchers(Constants.APP_ROOT + Constants.ETABLISSEMENT + Constants.SAVE,
+>>>>>>> Stashed changes
                                 Constants.APP_ROOT + Constants.ETABLISSEMENT + Constants.UPDATE,
                                 Constants.APP_ROOT + Constants.ETABLISSEMENT + Constants.DELETE,
                                 Constants.APP_ROOT + Constants.TOOGLE_STATUS
                         ).hasAnyRole("ADMIN_GENERAL", "SUPER_ADMIN")
                         .requestMatchers(Constants.APP_ROOT + Constants.AUTH + Constants.REGISTER).hasRole("SUPER_ADMIN")
+<<<<<<< Updated upstream
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtFilter(customUserDetailsService, jwtUtils), UsernamePasswordAuthenticationFilter.class)
+=======
+                        .anyRequest().authenticated())
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                // .addFilterBefore(new JwtFilter(customUserDetailsService, jwtUtils), UsernamePasswordAuthenticationFilter.class)
+>>>>>>> Stashed changes
                 .build();
     }
 
@@ -120,7 +149,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.of("http://localhost:3000")); // <-- allow React dev server
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-        configuration.setAllowedMethods(List.of("*"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
 
         configuration.setAllowCredentials(true); // <-- allow sending cookies/auth headers if needed
