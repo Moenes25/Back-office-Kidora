@@ -109,6 +109,9 @@ public class AuthController {
 
         return ResponseEntity.ok("Mot de passe réinitialisé avec succès !");
     }
-
+    @GetMapping(Constants.ID)
+    public User getUserById( @PathVariable String id) {
+        return authService.getUserById(id);
+    }
 }
 
