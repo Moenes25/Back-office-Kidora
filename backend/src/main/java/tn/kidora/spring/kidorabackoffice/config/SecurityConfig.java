@@ -70,8 +70,11 @@ import tn.kidora.spring.kidorabackoffice.services.serviceImpl.CustomUserDetailsS
 import tn.kidora.spring.kidorabackoffice.utils.Constants;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import java.util.List;
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 @Configuration
@@ -100,6 +103,7 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 .cors() // <-- enable CORS support
                 .and()
                 .authorizeHttpRequests(auth
@@ -110,6 +114,10 @@ public class SecurityConfig {
 =======
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS with custom configuration
                 .authorizeHttpRequests(auth
+=======
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS with custom configuration
+                .authorizeHttpRequests(auth
+>>>>>>> Stashed changes
 
                           // Public endpoints
                         -> auth.requestMatchers("/api/auth/login").permitAll()
@@ -131,9 +139,15 @@ public class SecurityConfig {
                         ).hasAnyRole("ADMIN_GENERAL", "SUPER_ADMIN")
                         .requestMatchers(Constants.APP_ROOT + Constants.AUTH + Constants.REGISTER).hasRole("SUPER_ADMIN")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtFilter(customUserDetailsService, jwtUtils), UsernamePasswordAuthenticationFilter.class)
+=======
+                        .anyRequest().authenticated())
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                // .addFilterBefore(new JwtFilter(customUserDetailsService, jwtUtils), UsernamePasswordAuthenticationFilter.class)
+>>>>>>> Stashed changes
 =======
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
