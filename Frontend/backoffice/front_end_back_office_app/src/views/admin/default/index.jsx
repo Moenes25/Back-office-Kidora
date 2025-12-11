@@ -14,12 +14,6 @@ import AlertsPanel from "components/AlertsPanel";
 import AppointmentPlanner from "components/calendar/AppointmentPlanner";
 import AIIndicatorsPanel from "components/ai/AIIndicatorsPanel";
 
-import {
-  getCrecheActives,
-  getEcoleActives,
-  getGarderieActives,
-  getEtablissementsCeMois,
-} from "services/dashboardService";
 
 
 
@@ -784,32 +778,7 @@ const [kpis, setKpis] = useState({
   creches: 0,
 });
 
-useEffect(() => {
-  const fetchKpis = async () => {
-    try {
-      const [creches, ecoles, garderies, abonnesCeMois] = await Promise.all([
-        getCrecheActives(),
-        getEcoleActives(),
-        getGarderieActives(),
-        getEtablissementsCeMois(),
-      ]);
 
-      setKpis({
-  totalClientsActifs: creches.length + ecoles.length + garderies.length,
-  creches: creches.length,
-  ecoles: ecoles.length,
-  garderies: garderies.length,
-  nouveauxCeMois: abonnesCeMois.length,
-  resiliesCeMois: 0,
-});
-
-    } catch (error) {
-      console.error("Erreur lors du chargement des KPI:", error);
-    }
-  };
-
-  fetchKpis();
-}, []);
 const impayes = 1 - kpis.tauxPaiement;
 const [barFilter, setBarFilter] = useState("creches");
 

@@ -8,7 +8,7 @@ import tn.kidora.spring.kidorabackoffice.entities.Type_Etablissement;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
 public class Etab_Dto {
-    Integer idEtablissment;
+    String idEtablissment;
     String nomEtablissement;
     String adresse_complet;
     String region;
@@ -17,7 +17,10 @@ public class Etab_Dto {
     Type_Etablissement type;
     String email;
     Boolean isActive;
-    Integer userId;
+    String userId;
     String userNom;
     String userEmail;
+    Integer nombreEducateurs;
+    Integer nombreParents;
+    Integer nombreEnfants;
 }

@@ -42,7 +42,7 @@ public class AbonnementMapper {
             etabDto.setEmail(abonnement.getEtablissement().getEmail());
             etabDto.setIsActive(abonnement.getEtablissement().getIsActive());
             if (abonnement.getEtablissement().getUser() != null) {
-                etabDto.setUserId(abonnement.getEtablissement().getUser().getIdUser());
+                // etabDto.setUserId(abonnement.getEtablissement().getUser().getIdUser());
                 etabDto.setUserNom(abonnement.getEtablissement().getUser().getNom());
                 etabDto.setUserEmail(abonnement.getEtablissement().getUser().getEmail());
                 

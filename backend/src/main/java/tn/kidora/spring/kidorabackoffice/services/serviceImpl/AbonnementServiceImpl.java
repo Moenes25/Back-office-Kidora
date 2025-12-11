@@ -16,6 +16,7 @@ import tn.kidora.spring.kidorabackoffice.services.AbonnementService;
 import tn.kidora.spring.kidorabackoffice.utils.mapper.AbonnementMapper;
 
 import java.util.List;
+import java.util.Map;
 
 @AllArgsConstructor
 @Service
@@ -55,7 +56,7 @@ AbonnementMapper abonnementMapper;
     }
 //updateAbonnement
     @Override
-    public ResponseEntity<AbonnementResponseDTO> updateAbonnement(Long id, AbonnementRequestDTO dto) {
+    public ResponseEntity<AbonnementResponseDTO> updateAbonnement(String id, AbonnementRequestDTO dto) {
         Abonnement abonnement = abonnementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Abonnement introuvable !"));
         Etablissement etab = etablissementRepository.findById(dto.getEtablissementId())
@@ -81,7 +82,7 @@ AbonnementMapper abonnementMapper;
     }
 //deleteAbonnement
     @Override
-    public ResponseEntity<Void> deleteAbonnement(Long id) {
+    public ResponseEntity<Void> deleteAbonnement(String id) {
         Abonnement abonnement = abonnementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Abonnement introuvable !"));
         abonnementRepository.delete(abonnement);
@@ -106,7 +107,7 @@ AbonnementMapper abonnementMapper;
     }
 //getAbonnementsByEtablissement
     @Override
-    public ResponseEntity<List<AbonnementResponseDTO>> getAbonnementsByEtablissement(Integer etablissementId) {
+    public ResponseEntity<List<AbonnementResponseDTO>> getAbonnementsByEtablissement(String etablissementId) {
         List<Abonnement> abonnements = abonnementRepository.findByEtablissement_IdEtablissment(etablissementId);
         List<AbonnementResponseDTO> response = abonnements.stream().map(a -> {
             AbonnementResponseDTO dto = new AbonnementResponseDTO();
@@ -147,5 +148,10 @@ return  ResponseEntity.ok(response);
                 .toList();
 
         return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public List<Map<String, Object>> getRepartitionAnnuelle(int annee) {
+        return abonnementRepository.getRepartitionParTypeEtablissement(annee);
     }
 }

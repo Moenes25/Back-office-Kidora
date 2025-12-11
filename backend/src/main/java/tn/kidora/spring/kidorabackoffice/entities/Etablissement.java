@@ -4,13 +4,16 @@ package tn.kidora.spring.kidorabackoffice.entities;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
+
+// import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Entity
-@Getter
-@Setter
+@Document(collection = "etablissements")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -18,24 +21,20 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Etablissement {
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    Integer idEtablissment;
-    String nomEtablissement;
-    String adresse_complet;
-    String region;
-    String telephone ;
-    String url_localisation;
-    @Enumerated(EnumType.STRING)
-    Type_Etablissement type;
-    String email;
-    String password ;
-    Boolean isActive;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false) 
-    @ToString.Exclude
-    User user; 
+    private String idEtablissment;
+    private String nomEtablissement;
+    private String adresse_complet;
+    private String region;
+    private String telephone ;
+    private String url_localisation;
+    
+    private Type_Etablissement type;
+    private String email;
+    private Boolean isActive;
+    @DocumentReference
+    private User user; 
 
-    @OneToMany(mappedBy = "etablissement", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @ToString.Exclude
-    private List<Abonnement> abonnements = new ArrayList<>();
+    @DocumentReference
+    private List<Abonnement> abonnements;
+
 }
