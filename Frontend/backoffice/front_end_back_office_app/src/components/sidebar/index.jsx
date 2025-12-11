@@ -3,7 +3,6 @@ import React from "react";
 import { HiX, HiChevronLeft, HiChevronRight } from "react-icons/hi";
 import Links from "./components/Links";
 import routes from "routes.js";
-import kidoraLogo from "assets/img/logo/logo2.png";
 
 const Sidebar = ({ open, collapsed = false, onClose, onToggleCollapsed }) => {
   return (
@@ -57,17 +56,17 @@ const Sidebar = ({ open, collapsed = false, onClose, onToggleCollapsed }) => {
       <div className={["shrink-0", collapsed ? "px-4 pt-5" : "px-6 pt-6"].join(" ")}>
       <div className={["relative rounded-3xl", 
           collapsed ? "p-3.5" : "p-5",
-      // clair
-      "bg-indigo-50/70 ring-1 ring-indigo-200/70 shadow-[0_10px_40px_rgba(99,102,241,.20)]",
-       // sombre
-       "dark:bg-white/5 dark:ring-white/10 dark:shadow-[0_10px_40px_rgba(2,6,23,.35)]"
-       ].join(" ")}>
+  // clair
+  "bg-indigo-50/70 ring-1 ring-indigo-200/70 shadow-[0_10px_40px_rgba(99,102,241,.20)]",
+  // sombre
+  "dark:bg-white/5 dark:ring-white/10 dark:shadow-[0_10px_40px_rgba(2,6,23,.35)]"
+].join(" ")}>
           <span
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 rounded-3xl bg-white/30 dark:bg-white/10 mix-blend-overlay"
           />
           <img
-             src={kidoraLogo} 
+            src="http://31.97.54.88:4200/assets/All_Logo.png"
             alt="Kidora Logo"
              className={["relative mx-auto w-full object-contain drop-shadow",collapsed ? "h-12 max-w-[110px]" : "h-18 max-w-[240px]"].join(" ")}/>
         </div>

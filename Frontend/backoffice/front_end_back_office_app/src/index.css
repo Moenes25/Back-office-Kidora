@@ -74,6 +74,60 @@ input:checked.defaultCheckbox::before {
     100% { background-position: 0% 50%; }
   }
 
+  .gradient-text-animation {
+  background-size: 200% 200%;
+  animation: gradient-slide 3s ease infinite;
+}
+
+@keyframes gradient-slide {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+/* gradient of background */
+.gradient-bg {
+  background: linear-gradient(90deg, #8b5cf6, #d4a2ef, #4456ba);
+  background-size: 200% 200%;
+  animation: gradientMove 4s ease infinite;
+}
+/* gradient of text */
+.gradient-text {
+  background: linear-gradient(90deg, #8b5cf6, #c048ec, #3b82f6);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientMove 3s ease infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+
+
+.animate-gradient-x {
+  background-size: 200% auto;
+  animation: gradient-x 3s linear infinite;
+}
+
+
   .animate-bounce-slow {
     animation: bounce 2.4s infinite;
   }

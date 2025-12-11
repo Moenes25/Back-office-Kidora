@@ -17,7 +17,7 @@ import ReportsPage from "views/admin/reports";   // rapports & exports
 import { MdCalendarToday } from "react-icons/md"; 
 
 /* === Auth === */
-import SignIn from "views/auth/SignIn";
+import Login from "views/auth/Login";
 
 /* === Icons === */
 import {
@@ -33,6 +33,7 @@ import {
   MdPerson,
   MdLock,
 } from "react-icons/md";
+import ProfilePage from "views/admin/profile";
 
 /**
  * IMPORTANT :
@@ -45,7 +46,7 @@ const routes = [
     name: "Dashboard",
     layout: "/admin",
     path: "default",
-    icon: <MdHome className="h-6 w-6" />,
+    icon: <MdHome className="w-6 h-6" />,
     component: <MainDashboard />,
   },
 
@@ -54,7 +55,7 @@ const routes = [
     name: "Entreprises",
     layout: "/admin",
     path: "Entreprises",
-    icon: <MdBusiness className="h-6 w-6" />,
+    icon: <MdBusiness className="w-6 h-6" />,
     component: <ClientsPage />,
   },
   // (optionnel, caché du menu) détail client :
@@ -65,7 +66,7 @@ const routes = [
     name: "Calendrier",
     layout: "/admin",
     path: "calendrier",
-    icon: <MdCalendarToday className="h-6 w-6" />,
+    icon: <MdCalendarToday className="w-6 h-6" />,
     component: <CalendarPage />,
   },
 
@@ -76,7 +77,7 @@ const routes = [
     name: "Équipe Kidora",
     layout: "/admin",
     path: "equipe",
-    icon: <MdGroups className="h-6 w-6" />,
+    icon: <MdGroups className="w-6 h-6" />,
     component: <TeamPage />,
   },
 
@@ -85,7 +86,7 @@ const routes = [
     name: "Support & Tickets",
     layout: "/admin",
     path: "support",
-    icon: <MdSupportAgent className="h-6 w-6" />,
+    icon: <MdSupportAgent className="w-6 h-6" />,
     component: <SupportPage />,
   },
 
@@ -96,7 +97,7 @@ const routes = [
     name: "Analyse IA",
     layout: "/admin",
     path: "ia",
-    icon: <MdPsychology className="h-6 w-6" />,
+    icon: <MdPsychology className="w-6 h-6" />,
     component: <IAPage />,
   },
 
@@ -105,8 +106,17 @@ const routes = [
     name: "Paiements",
     layout: "/admin",
     path: "paiements",                 // URL => /admin/paiements
-    icon: <MdPayments className="h-6 w-6" />, // 👈 icône de paiement
+    icon: <MdPayments className="w-6 h-6" />, // 👈 icône de paiement
     component: <PaymentsPage />,       // 👈 composant
+  },
+
+    {
+    name: "Profile",
+    layout: "/admin",
+    path: "profile",
+    icon: MdPerson,
+    component: <ProfilePage />,
+    secondary: true, // keep reachable but hidden from main navigation
   },
 
 
