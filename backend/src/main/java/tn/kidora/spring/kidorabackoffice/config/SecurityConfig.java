@@ -1,5 +1,4 @@
 package tn.kidora.spring.kidorabackoffice.config;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,20 +20,16 @@ import tn.kidora.spring.kidorabackoffice.utils.Constants;
 public class SecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtUtils jwtUtils;    
-    
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
     @Bean 
     public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder passwordEncoder) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder =http.getSharedObject(AuthenticationManagerBuilder.class);
         authenticationManagerBuilder.userDetailsService(customUserDetailsService).passwordEncoder(passwordEncoder);
         return authenticationManagerBuilder.build();
     }
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http)  throws Exception {
         return http
@@ -49,17 +44,9 @@ public class SecurityConfig {
                                                 Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.UPDATE,
                                                 Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.DELETE,
                                                 Constants.APP_ROOT+Constants.TOOGLE_STATUS).hasAnyRole("ADMIN_GENERAL","SUPER_ADMIN")
-  
                               .requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.REGISTER).hasRole("SUPER_ADMIN")
                               .anyRequest().authenticated())
-                     
-                     
              .addFilterBefore(new JwtFilter(customUserDetailsService, jwtUtils), UsernamePasswordAuthenticationFilter.class)
              .build();
-               
     }
     }
-
-    
-
-

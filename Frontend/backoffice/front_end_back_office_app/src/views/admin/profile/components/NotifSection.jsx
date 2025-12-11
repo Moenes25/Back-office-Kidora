@@ -32,7 +32,7 @@ export default function NotificationSettings() {
   return (
     <div className="w-full p-6 bg-white shadow-md rounded-xl">
       {/* PAGE TITLE */}
-      <div className="flex items-center gap-2 mb-6">
+      <div className="flex items-center  mb-6 gap-2 py-4 ">
         <FaBell size={20} className="text-purple-600" />
         <h1 className="text-xl font-semibold text-gray-700">
           Notification Settings

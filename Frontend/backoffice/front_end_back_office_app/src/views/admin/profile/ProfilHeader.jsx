@@ -2,9 +2,49 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FiMail, FiStar, FiUsers, FiActivity } from "react-icons/fi";
 import { useAuth } from "context/AuthContext";
+import avatar4Img from "../../../assets/img/avatars/avatar4.png";
+
+/* ---------------------- SKELETON LOADER ---------------------- */
+const ProfileHeaderSkeleton = () => {
+  return (
+    <div className="relative flex flex-col overflow-hidden shadow-2xl rounded-2xl animate-pulse">
+      {/* Top gradient skeleton */}
+      <div className="relative bg-gray-300 h-36"></div>
+
+      {/* White section */}
+      <div className="relative flex flex-col gap-4 p-6 bg-white dark:bg-indigo-900">
+        
+        {/* Avatar skeleton */}
+        <div className="absolute bg-gray-300 rounded-full -top-14 left-6 h-28 w-28 md:h-32 md:w-32"></div>
+
+        {/* Name + Email */}
+        <div className="flex items-start justify-between w-full pr-4 mt-8 md:ml-32">
+
+          <div className="flex flex-col w-40 gap-2">
+            <div className="w-32 h-4 bg-gray-300 rounded"></div>
+            <div className="w-40 h-3 bg-gray-200 rounded"></div>
+          </div>
+
+          {/* Messages icon skeleton */}
+          <div className="h-10 bg-gray-200 w-14 rounded-xl"></div>
+        </div>
+
+        {/* Stats skeleton */}
+        <div className="grid w-full grid-cols-2 gap-4 mt-6 md:grid-cols-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="w-full h-20 bg-gray-200 rounded-xl"></div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ---------------------- MAIN COMPONENT ---------------------- */
 
 const ProfileHeader = () => {
-  const { user, token, updateUser } = useAuth(); 
+  const { user, token, updateUser } = useAuth();
+
   const [openMessages, setOpenMessages] = useState(false);
   const [newNom, setNewNom] = useState(user?.nom || "");
   const [newEmail, setNewEmail] = useState(user?.email || "");
@@ -14,21 +54,22 @@ const ProfileHeader = () => {
     form.append("email", user.email);
     form.append("nom", newNom);
 
-
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/update-profile`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
         body: form,
       });
+
       if (!res.ok) throw new Error("Failed to update profile");
+
       const data = await res.json();
-      updateUser(data); 
+      updateUser(data);
+
     } catch (err) {
       console.error(err);
     }
   };
-
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -51,6 +92,11 @@ const ProfileHeader = () => {
 
   const messageCount = 5;
 
+  /*  Skeleton */
+  if (!user) {
+    return <ProfileHeaderSkeleton />;
+  }
+
   return (
     <div className="relative flex flex-col overflow-hidden shadow-2xl rounded-2xl">
       {/* Top Gradient */}
@@ -66,17 +112,18 @@ const ProfileHeader = () => {
 
       {/* Bottom White Section */}
       <div className="relative flex flex-col gap-4 p-6 bg-white dark:bg-indigo-900">
-        {/* Avatar + Active */}
-        <motion.div className="absolute overflow-hidden border-4 border-white rounded-full shadow-lg -top-14 left-6 h-28 w-28 md:h-32 md:w-32">
+        
+        {/* Avatar */}
+        <motion.div className="absolute flex items-center justify-center bg-white border-4 border-white rounded-full shadow-lg -top-14 left-6 h-28 w-28 md:h-32 md:w-32">
           <img
-            src={user?.imageUrl || "../../../assets/img/avatars/avatar11.png"}
+            src={avatar4Img}
             alt="User"
-            className="object-cover w-full h-full"
+            className="object-cover w-24 h-24 bg-white rounded-full md:w-28 md:h-28"
           />
           <span className="absolute w-4 h-4 bg-green-500 border-2 border-white rounded-full shadow-md bottom-2 right-2"></span>
         </motion.div>
 
-        {/* Name + Email + Messages icon */}
+        {/* Name + Email + Messages */}
         <div className="flex items-start justify-between pr-4 mt-8 md:ml-32">
           <div className="flex flex-col">
             <motion.h2
@@ -99,7 +146,7 @@ const ProfileHeader = () => {
             </motion.div>
           </div>
 
-          {/* Messages Icon */}
+          {/* Messages */}
           <div>
             <button
               onClick={() => setOpenMessages(true)}

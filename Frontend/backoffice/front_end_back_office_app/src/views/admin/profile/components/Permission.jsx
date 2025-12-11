@@ -29,7 +29,7 @@ const roles = [
 /* MODULES */
 const modules = [
   { name: "Dashboard", icon: <FaFileAlt className="text-purple-500" /> },
-  { name: "Users", icon: <FaUserShield className="text-blue-500" /> },
+  { name: "Admins", icon: <FaUserShield className="text-blue-500" /> },
   { name: "Companies", icon: <FaBuilding className="text-green-500" /> },
   { name: "Settings", icon: <FaUserCog className="text-orange-500" /> },
 ];
@@ -52,7 +52,7 @@ export default function RolesPermissions() {
   return (
     <div className="w-full p-4 sm:p-6 bg-white shadow-md rounded-xl">
       {/* PAGE TITLE */}
-      <div className="flex items-center  mb-6">
+      <div className="flex items-center  mb-6 gap-2 py-4 ">
         <FaUserShield size={20} className="text-purple-600" />
         <h1 className="text-lg sm:text-xl font-semibold text-gray-700">
           Roles & Permissions
@@ -61,16 +61,16 @@ export default function RolesPermissions() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 ">
         {/* LEFT: ROLES LIST */}
-        <div className="col-span-1 space-y-4 overflow-x-auto lg:overflow-visible flex lg:block gap-4 lg:gap-0 scrollbar-none">
+        <div className="flex  justify-center col-span-1  overflow-x-auto lg:overflow-visible flex lg:block gap-4 lg:gap-0 scrollbar-none">
           {roles.map((role) => (
             <div
               key={role.name}
               onClick={() => setActiveRole(role.name)}
-              className={`cursor-pointer flex items-center gap-3   border-b-2 min-w-[130px]
+              className={`py-4 px-2 cursor-pointer flex items-center gap-3   border-b-2 
                 transition ${
                   activeRole === role.name
-                    ? " border-purple-700 shadow-md"
-                    : "border-gray-200 "
+                    ? "border-purple-500  shadow-lg"
+                    : " "
                 }`}
             >
               <div className="text-lg">{role.icon}</div>

@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaLock, FaMobileAlt, FaDesktop } from "react-icons/fa";
+import Test from "./Test";
 
 export default function SecuritySettings() {
   const [isPasswordPopup, setIsPasswordPopup] = useState(false);
@@ -15,7 +16,7 @@ export default function SecuritySettings() {
   return (
     <div className="w-full p-6 bg-white shadow-md rounded-xl">
       {/* PAGE TITLE */}
-      <div className="flex items-center gap-2 mb-6">
+      <div className="flex items-center  mb-6 gap-2 py-4 ">
         <FaLock size={20} className="text-purple-600" />
         <h1 className="text-xl font-semibold text-gray-700">
           Security Settings
@@ -40,7 +41,7 @@ export default function SecuritySettings() {
               </div>
               <button
                 onClick={() => setIsPasswordPopup(true)}
-                className="px-4 py-2 text-white bg-purple-600 rounded-lg shadow hover:bg-purple-700 transition"
+                className="px-4 py-2 text-white transition bg-purple-600 rounded-lg shadow hover:bg-purple-700"
               >
                 Edit
               </button>
@@ -145,6 +146,7 @@ export default function SecuritySettings() {
           </motion.div>
         )}
       </AnimatePresence>
+      <Test />
     </div>
   );
 }

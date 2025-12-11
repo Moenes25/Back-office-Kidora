@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaUser, FaEnvelope, FaPhone, FaUserShield, FaCamera, FaCalendar } from "react-icons/fa";
+import { RiUserSettingsFill } from "react-icons/ri";
 import api from "services/api";
 import { useAuth } from "context/AuthContext";
 
@@ -57,7 +58,7 @@ export default function ProfileInfo() {
           updatedAt: data.updatedAt || "",
         });
 
-        setProfileImage(data.imageUrl || "/default-avatar.png");
+        setProfileImage(data.imageUrl || "/default-avatar.png"); // <-- صورة بديلة
       } catch (err) {
         console.error("Failed to fetch user:", err);
       }
@@ -98,6 +99,8 @@ export default function ProfileInfo() {
         setProfileImage(URL.createObjectURL(previewImage));
       } else if (updatedUser.imageUrl) {
         setProfileImage(updatedUser.imageUrl || "/default-avatar.png");
+      } else {
+        setProfileImage("/default-avatar.png");
       }
 
       setPreviewImage(null);
@@ -127,12 +130,22 @@ export default function ProfileInfo() {
       animate={{ opacity: 1, y: 0 }}
       className="w-full p-6 bg-white border border-purple-200 shadow-xl rounded-2xl"
     >
+      {/* PAGE TITLE */}
+      <div className="flex items-center gap-2 py-4 mb-6">
+        <RiUserSettingsFill size={20} className="text-purple-600" />
+        <h1 className="text-xl font-semibold text-gray-700">Security Settings</h1>
+      </div>
+
       {/* Top Area */}
       <div className="flex items-start justify-between gap-4 md:flex-row">
         <div className="flex items-center gap-6">
           <div className="relative w-20 h-20">
             <img
-              src={previewImage ? URL.createObjectURL(previewImage) : profileImage}
+              src={
+                previewImage
+                  ? URL.createObjectURL(previewImage)
+                  : profileImage || "/avatars/avatar11.png" 
+              }
               alt="profile"
               className="object-cover w-20 h-20 border-2 border-purple-300 shadow-inner rounded-xl"
             />

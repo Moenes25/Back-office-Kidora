@@ -6,6 +6,7 @@ import {
   FiUserPlus,
   FiMoreVertical,
 } from "react-icons/fi";
+import { FaUsersCog } from "react-icons/fa";
 import avatar from "assets/img/avatars/avatar4.png";
 import api from "services/api";
 import DeleteAdminModal from "./modals/DeleteAdminModal";
@@ -125,9 +126,12 @@ const AdminList = () => {
   return (
     <div>
       {/* Header */}
-      <div className="flex flex-col flex-wrap items-center justify-between gap-4 mb-4">
-        <div className="flex items-center justify-between w-full mb-4">
-          <h3 className="text-2xl font-semibold text-gray-700">Admins List</h3>
+      <div className="flex flex-col flex-wrap items-center justify-between gap-6 mb-4">
+        <div className="flex items-center justify-between w-full ">
+          <div className="flex items-center gap-2 py-4 mb-6 ">
+            <FaUsersCog size={22} className="text-purple-600"/>
+        <h3 className="text-xl font-semibold text-gray-700">Admins </h3>
+        </div>
           <p className="text-sm text-gray-500">Total: {admins.length}</p>
         </div>
         <div className="flex items-center justify-between w-full px-2">

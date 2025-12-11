@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 
+
 const ProfileTabs = ({ activeTab, setActiveTab }) => {
   const tabs = [
     { id: "profile", label: "Profil" },
@@ -26,6 +27,7 @@ const ProfileTabs = ({ activeTab, setActiveTab }) => {
 
   return (
     <div className="relative mt-6 border-b border-gray-200">
+      
       <div
         ref={containerRef}
         role="tablist"
