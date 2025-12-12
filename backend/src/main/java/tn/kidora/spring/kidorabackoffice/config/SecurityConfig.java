@@ -107,6 +107,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/verify-otp").permitAll()
                         .requestMatchers("/api/auth/reset-password").permitAll()
                         .requestMatchers("/api/auth/update-profile/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
+
 
                         // Only SUPER_ADMIN can access 
                         .requestMatchers("/api/auth/all").hasRole("SUPER_ADMIN")

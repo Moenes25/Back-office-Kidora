@@ -73,11 +73,13 @@ const ProfileHeader = () => {
   const getImageUrl = () => {
     if (!user.imageUrl) return avatar4Img;
 
-    // If user.imageUrl is already a full URL, use it directly
-    if (user.imageUrl.startsWith("http")) return user.imageUrl;
+    // if it's an absolute URL
+    if (user.imageUrl.startsWith("http")) {
+      return user.imageUrl;
+    }
 
-    // Otherwise, build full URL
-    return `${process.env.REACT_APP_API_URL.replace("/api", "")}/uploads/${user.imageUrl}`;
+    // if it's a relative path
+    return `${process.env.REACT_APP_API_URL}/auth/uploads/${user.imageUrl}`;
   };
 
   return (
@@ -93,7 +95,7 @@ const ProfileHeader = () => {
         <span className="absolute w-16 h-16 rounded-full animate-pulse-slow bottom-4 right-8 bg-white/20"></span>
       </motion.div>
 
-      {/* Bottom White Section */}
+      {/* Bottom Section */}
       <div className="relative flex flex-col gap-4 p-6 bg-white dark:bg-indigo-900">
         {/* Avatar */}
         <motion.div className="absolute flex items-center justify-center bg-white border-4 border-white rounded-full shadow-lg -top-14 left-6 h-28 w-28 md:h-32 md:w-32">
@@ -105,7 +107,7 @@ const ProfileHeader = () => {
           <span className="absolute w-4 h-4 bg-green-500 border-2 border-white rounded-full shadow-md bottom-2 right-2"></span>
         </motion.div>
 
-        {/* Name + Email + Messages */}
+        {/* Name + Email */}
         <div className="flex items-start justify-between pr-4 mt-8 md:ml-32">
           <div className="flex flex-col">
             <motion.h2

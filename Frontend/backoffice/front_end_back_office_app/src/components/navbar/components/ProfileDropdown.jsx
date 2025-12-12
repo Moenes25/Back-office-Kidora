@@ -4,36 +4,24 @@ import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "context/AuthContext";
 import { FaUser, FaEnvelope, FaCog, FaSignOutAlt } from "react-icons/fa";
-import avatar4Img from "../../../assets/img/avatars/avatar4.png";
+import avatarFallback from "../../../assets/img/avatars/avatar4.png";
 
 const ProfileDropdown = () => {
   const { logout, user, token, updateUser } = useAuth();
   const [open, setOpen] = useState(false);
 
-  const handleUpdate = async () => {
-    const form = new FormData();
-    form.append("email", user.email);
-    form.append("nom", user.nom);
-    form.append("role", user.role);
+  const getImageUrl = () => {
+    if (!user?.imageUrl) return avatarFallback;
 
-    try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/update-profile`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` },
-        body: form,
-      });
+    if (user.imageUrl.startsWith("http")) return user.imageUrl;
 
-      if (!res.ok) throw new Error("Failed to update profile");
-      const data = await res.json();
-      updateUser(data);
-    } catch (err) {
-      console.error(err);
-    }
+    // if relative path
+    return `${process.env.REACT_APP_API_URL.replace("/api", "")}/uploads/${user.imageUrl}`;
   };
 
   useEffect(() => {
     const fetchUser = async () => {
-      if (!user?.id) return;
+      if (!user?.id || !token) return;
       try {
         const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/${user.id}`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -51,15 +39,13 @@ const ProfileDropdown = () => {
 
   return (
     <div className="relative inline-flex items-center justify-center w-12 h-12">
-      
-      {/* Dropdown Button — fixed (only one image now) */}
+      {/* Dropdown Button */}
       <button
         onClick={() => setOpen(!open)}
         className="w-12 h-12 overflow-hidden transition-all border-2 rounded-full shadow-md focus:outline-none hover:shadow-lg"
       >
         <motion.img
-          // src={user?.imageUrl || avatarFallback}
-          src={avatar4Img}
+          src={getImageUrl()}
           alt={user?.nom || "User Avatar"}
           className="object-cover w-full h-full"
           whileHover={{ scale: 1.08 }}
@@ -77,7 +63,6 @@ const ProfileDropdown = () => {
             transition={{ duration: 0.2, ease: "easeOut" }}
             className="absolute right-0 z-50 w-64 mt-3 overflow-hidden bg-white border shadow-xl top-10 rounded-2xl dark:bg-navy-700 border-gray-200/40 dark:border-white/20"
           >
-            
             {/* Header */}
             <div className="p-4 border-b border-gray-200 dark:border-white/10">
               <p className="text-sm font-bold text-gray-800 dark:text-white">
