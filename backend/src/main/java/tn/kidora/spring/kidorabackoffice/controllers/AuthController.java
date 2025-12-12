@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,45 +26,48 @@ import tn.kidora.spring.kidorabackoffice.repositories.UserRepository;
 import tn.kidora.spring.kidorabackoffice.services.AuthService;
 import tn.kidora.spring.kidorabackoffice.services.serviceImpl.OptService;
 import tn.kidora.spring.kidorabackoffice.utils.Constants;
+// File serving endpoint
 
 @RestController
-@RequestMapping(Constants.APP_ROOT+Constants.AUTH)
+@RequestMapping(Constants.APP_ROOT + Constants.AUTH)
 @AllArgsConstructor
 @Slf4j
 public class AuthController {
-    public  final OptService optService;
+
+    public final OptService optService;
     AuthService authService;
     UserRepository userRepository;
+
     @PostMapping(Constants.REGISTER)
     public ResponseEntity<String> register(@RequestBody RegisterDto dto) {
-        try{
+        try {
             User savedUser = authService.register(dto);
             return ResponseEntity.ok(savedUser.getPassword());
-        }catch (RuntimeException e){
+        } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Unexpected error: " + e.getMessage());
         }
 
     }
 
-
     @PostMapping(Constants.LOGIN)
     public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
-         try {
+        try {
             Map<String, Object> authData = authService.login(
-                loginDto.getEmail(), 
-                loginDto.getPassword()
+                    loginDto.getEmail(),
+                    loginDto.getPassword()
             );
             return ResponseEntity.ok(authData);
-         } catch(RuntimeException e){
+        } catch (RuntimeException e) {
             log.error("Erreur connexion: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
 
-         }
         }
-   @GetMapping(Constants.ALL)
+    }
+
+    @GetMapping(Constants.ALL)
     public List<User> getAllUsersExceptSuperAdmin() {
         return authService.getAllUsersExceptSuperAdmin();
     }
@@ -78,9 +80,11 @@ public class AuthController {
             @RequestParam(value = "tel", required = false) String tel,
             @RequestParam(required = false) String newPassword,
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
-            ) {
-        return authService.updateAdminProfile(email,newEmail, nom, tel, newPassword,imageFile);
+    ) {
+        return authService.updateAdminProfile(email, newEmail, nom, tel, newPassword, imageFile);
     }
+
+   
     @DeleteMapping(Constants.DELETE_USER)
     public ResponseEntity<String> deleteUserById(@PathVariable("id") String id) {
         authService.deleteUserById(id);
@@ -101,23 +105,25 @@ public class AuthController {
     @PostMapping("/verify-otp")
     public ResponseEntity<String> verifyOtp(@RequestParam String email, @RequestParam String otp) {
         boolean valid = optService.verifyOtp(email, otp);
-        return valid ? ResponseEntity.ok("OTP vérifié") :
-                ResponseEntity.status(HttpStatus.BAD_REQUEST).body("OTP invalide ou expiré");
+        return valid ? ResponseEntity.ok("OTP vérifié")
+                : ResponseEntity.status(HttpStatus.BAD_REQUEST).body("OTP invalide ou expiré");
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestParam String email, @RequestParam String newPassword) {
         User user = userRepository.findByEmail(email);
-        if (user == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Utilisateur introuvable");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Utilisateur introuvable");
+        }
         System.out.println("Mot de passe avant encodage : " + newPassword);
         user.setPassword(new BCryptPasswordEncoder().encode(newPassword));
         userRepository.save(user);
 
         return ResponseEntity.ok("Mot de passe réinitialisé avec succès !");
     }
+
     @GetMapping(Constants.ID)
-    public User getUserById( @PathVariable String id) {
+    public User getUserById(@PathVariable String id) {
         return authService.getUserById(id);
     }
 }
-

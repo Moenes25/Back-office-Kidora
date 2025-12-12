@@ -53,9 +53,12 @@ const ProfileHeader = () => {
 
     const fetchEtablissementsCount = async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/etablissement/all`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(
+          `${process.env.REACT_APP_API_URL}/etablissement/all`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         const data = await res.json();
         setEtablissementsCount(data.length);
       } catch (err) {
@@ -90,10 +93,9 @@ const ProfileHeader = () => {
         {/* Avatar */}
         <motion.div className="absolute flex items-center justify-center bg-white border-4 border-white rounded-full shadow-lg -top-14 left-6 h-28 w-28 md:h-32 md:w-32">
           <img
-            // src={user.imageUrl ? `${process.env.REACT_APP_API_URL}/uploads/${user.imageUrl}` : avatarDefault}
-            src={avatar4Img}
+            src={`http://localhost:8086/uploads/${user.imageUrl}`}
             alt="User"
-            className="object-cover w-24 h-24 rounded-full md:w-28 md:h-28"
+            className="object-cover w-24 h-24 rounded-full md:h-28 md:w-28"
           />
           <span className="absolute w-4 h-4 bg-green-500 border-2 border-white rounded-full shadow-md bottom-2 right-2"></span>
         </motion.div>
@@ -141,9 +143,24 @@ const ProfileHeader = () => {
         {/* Stats Cards */}
         <div className="grid grid-cols-2 gap-4 mt-6 md:grid-cols-4">
           {[
-            { label: "Admins", value: adminsCount, icon: <FiUsers />, gradient: "from-purple-500 to-purple-300" },
-            { label: "Etablissements", value: etablissementsCount, icon: <FiActivity />, gradient: "from-blue-400 to-blue-200" },
-            { label: "Activity Score", value: "92%", icon: <FiStar />, gradient: "from-yellow-400 to-yellow-200" },
+            {
+              label: "Admins",
+              value: adminsCount,
+              icon: <FiUsers />,
+              gradient: "from-purple-500 to-purple-300",
+            },
+            {
+              label: "Etablissements",
+              value: etablissementsCount,
+              icon: <FiActivity />,
+              gradient: "from-blue-400 to-blue-200",
+            },
+            {
+              label: "Activity Score",
+              value: "92%",
+              icon: <FiStar />,
+              gradient: "from-yellow-400 to-yellow-200",
+            },
           ].map((card, idx) => (
             <motion.div
               key={idx}
@@ -151,12 +168,18 @@ const ProfileHeader = () => {
               whileHover={{ scale: 1.03, y: -3 }}
             >
               <div className="flex items-center gap-3 p-3 bg-white rounded-xl">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${card.gradient} text-white`}>
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${card.gradient} text-white`}
+                >
                   {card.icon}
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs font-medium text-gray-500">{card.label}</span>
-                  <span className="text-lg font-bold text-gray-800">{card.value}</span>
+                  <span className="text-xs font-medium text-gray-500">
+                    {card.label}
+                  </span>
+                  <span className="text-lg font-bold text-gray-800">
+                    {card.value}
+                  </span>
                 </div>
               </div>
             </motion.div>
@@ -168,7 +191,9 @@ const ProfileHeader = () => {
       {openMessages && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="p-5 bg-white shadow-xl w-96 rounded-2xl">
-            <h3 className="mb-3 text-lg font-semibold text-gray-700">Messages</h3>
+            <h3 className="mb-3 text-lg font-semibold text-gray-700">
+              Messages
+            </h3>
             <p className="mb-4 text-sm text-gray-600">vide</p>
             <button
               onClick={() => setOpenMessages(false)}
