@@ -38,6 +38,8 @@ public class Constants {
 
     public static final String UPDATE_PROFILE = "/update-profile";
     public static final String DELETE_USER = "/delete-user/{id}";
+    public static final String ROLES = "/roles";
+
 
 
 

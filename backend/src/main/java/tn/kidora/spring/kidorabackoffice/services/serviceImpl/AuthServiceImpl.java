@@ -134,7 +134,6 @@ public class AuthServiceImpl implements  AuthService{
                 Path filePath = Paths.get(uploadDir + fileName);
                 Files.write(filePath, imageFile.getBytes());
                 String fileUrl = "http://localhost:8080/uploads/" + fileName;
-
                 // Enregistrer dans la base
                 user.setImageUrl(fileUrl);
 
@@ -145,6 +144,7 @@ public class AuthServiceImpl implements  AuthService{
         userRepository.save(user);
         return user;
     }
+
 
     @Override
     public void deleteUserById(String id) {
