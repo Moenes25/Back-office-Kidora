@@ -1,9 +1,23 @@
 package tn.kidora.spring.kidorabackoffice.controllers;
 
+
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -83,8 +97,18 @@ public class AuthController {
     ) {
         return authService.updateAdminProfile(email, newEmail, nom, tel, newPassword, imageFile);
     }
+    @GetMapping("/uploads/{filename:.+}")
+    public ResponseEntity<Resource> getFile(@PathVariable String filename) throws IOException {
+        Path file = Paths.get(System.getProperty("user.dir") + "/uploads/").resolve(filename).normalize();
+        Resource resource = new UrlResource(file.toUri());
+        if (!resource.exists() || !resource.isReadable()) {
+            return ResponseEntity.notFound().build();
+        }
+        String contentType = Files.probeContentType(file);
+        if (contentType == null) contentType = "application/octet-stream";
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType)).body(resource);
+    }
 
-   
     @DeleteMapping(Constants.DELETE_USER)
     public ResponseEntity<String> deleteUserById(@PathVariable("id") String id) {
         authService.deleteUserById(id);
@@ -125,5 +149,12 @@ public class AuthController {
     @GetMapping(Constants.ID)
     public User getUserById(@PathVariable String id) {
         return authService.getUserById(id);
+    }
+
+    @GetMapping(Constants.ROLES)
+    public List<String> getAllRoles() {
+        return Arrays.stream(Role.values())
+                .map(Enum::name)
+                .collect(Collectors.toList());
     }
 }
