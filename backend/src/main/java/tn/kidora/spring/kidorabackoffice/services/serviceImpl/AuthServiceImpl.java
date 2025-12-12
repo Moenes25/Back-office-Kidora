@@ -2,6 +2,7 @@ package tn.kidora.spring.kidorabackoffice.services.serviceImpl;
 
 import lombok.AllArgsConstructor;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -92,7 +93,7 @@ public class AuthServiceImpl implements  AuthService{
 
 
     @Override
-    public User updateAdminProfile(String email, String nom, String tel, MultipartFile imageFile) {
+    public User updateAdminProfile(String email,  String newEmail,String nom, String tel,String newPassword,MultipartFile imageFile) {
         User user = userRepository.findByEmail(email);
        // System.out.println("Email reçu : '" + email + "'");
         if (user == null) {
@@ -104,9 +105,41 @@ public class AuthServiceImpl implements  AuthService{
         if (tel != null && !tel.isEmpty()) {
             user.setTel(tel);
         }
+        if (newEmail != null && !newEmail.isEmpty() && !newEmail.equals(email)) {
+            // Vérifier si le nouvel email n'est pas déjà utilisé
+            if (userRepository.findByEmail(newEmail) != null) {
+                throw new RuntimeException("L'adresse e-mail est déjà utilisée !");
+            }
+            user.setEmail(newEmail);
+        }
+        if (newPassword != null && !newPassword.isEmpty()) {
+            //  Assure-toi d’utiliser ton encodeur BCryptPasswordEncoder
+            String encodedPassword = passwordEncoder.encode(newPassword);
+            user.setPassword(encodedPassword);
+        }
         if (imageFile != null && !imageFile.isEmpty()) {
-            user.setImageUrl(imageFile.getOriginalFilename());
+            try {
+                // Dossier de stockage (ex: src/main/resources/static/uploads)
+                String uploadDir = "src/main/resources/static/uploads/";
 
+                // Crée le dossier s’il n’existe pas
+                File directory = new File(uploadDir);
+                if (!directory.exists()) {
+                    directory.mkdirs();
+                }
+                // Nom du fichier
+                String fileName = System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
+                // Enregistrer le fichier sur le serveur
+                Path filePath = Paths.get(uploadDir + fileName);
+                Files.write(filePath, imageFile.getBytes());
+                String fileUrl = "http://localhost:8080/uploads/" + fileName;
+
+                // Enregistrer dans la base
+                user.setImageUrl(fileUrl);
+
+            } catch (IOException e) {
+                throw new RuntimeException("Erreur lors de l'enregistrement de l'image", e);
+            }
         }
         userRepository.save(user);
         return user;
