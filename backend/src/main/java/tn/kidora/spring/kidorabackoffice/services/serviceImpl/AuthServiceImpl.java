@@ -1,9 +1,22 @@
 package tn.kidora.spring.kidorabackoffice.services.serviceImpl;
 
+import lombok.AllArgsConstructor;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,12 +24,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import lombok.AllArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 import tn.kidora.spring.kidorabackoffice.config.JwtUtils;
 import tn.kidora.spring.kidorabackoffice.dto.RegisterDto;
 import tn.kidora.spring.kidorabackoffice.entities.Role;
+import tn.kidora.spring.kidorabackoffice.entities.Status;
 import tn.kidora.spring.kidorabackoffice.entities.User;
 import tn.kidora.spring.kidorabackoffice.repositories.UserRepository;
 import tn.kidora.spring.kidorabackoffice.services.AuthService;
@@ -61,7 +74,6 @@ public class AuthServiceImpl implements  AuthService{
                 authData.put("token", token);
                 authData.put("type", "Bearer");
                 // authData.put("user", user);
-                authData.put("id", user.getId());
                 return authData;
             
             }
@@ -81,7 +93,7 @@ public class AuthServiceImpl implements  AuthService{
 
 
     @Override
-    public User updateAdminProfile(String email, String nom, String tel, MultipartFile imageFile) {
+    public User updateAdminProfile(String email,  String newEmail,String nom, String tel,String newPassword,MultipartFile imageFile) {
         User user = userRepository.findByEmail(email);
        // System.out.println("Email reçu : '" + email + "'");
         if (user == null) {
@@ -93,9 +105,41 @@ public class AuthServiceImpl implements  AuthService{
         if (tel != null && !tel.isEmpty()) {
             user.setTel(tel);
         }
+        if (newEmail != null && !newEmail.isEmpty() && !newEmail.equals(email)) {
+            // Vérifier si le nouvel email n'est pas déjà utilisé
+            if (userRepository.findByEmail(newEmail) != null) {
+                throw new RuntimeException("L'adresse e-mail est déjà utilisée !");
+            }
+            user.setEmail(newEmail);
+        }
+        if (newPassword != null && !newPassword.isEmpty()) {
+            //  Assure-toi d’utiliser ton encodeur BCryptPasswordEncoder
+            String encodedPassword = passwordEncoder.encode(newPassword);
+            user.setPassword(encodedPassword);
+        }
         if (imageFile != null && !imageFile.isEmpty()) {
-            user.setImageUrl(imageFile.getOriginalFilename());
+            try {
+                // Dossier de stockage (ex: src/main/resources/static/uploads)
+                String uploadDir = "src/main/resources/static/uploads/";
 
+                // Crée le dossier s’il n’existe pas
+                File directory = new File(uploadDir);
+                if (!directory.exists()) {
+                    directory.mkdirs();
+                }
+                // Nom du fichier
+                String fileName = System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
+                // Enregistrer le fichier sur le serveur
+                Path filePath = Paths.get(uploadDir + fileName);
+                Files.write(filePath, imageFile.getBytes());
+                String fileUrl = "http://localhost:8080/uploads/" + fileName;
+
+                // Enregistrer dans la base
+                user.setImageUrl(fileUrl);
+
+            } catch (IOException e) {
+                throw new RuntimeException("Erreur lors de l'enregistrement de l'image", e);
+            }
         }
         userRepository.save(user);
         return user;

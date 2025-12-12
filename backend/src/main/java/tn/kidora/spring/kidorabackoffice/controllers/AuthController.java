@@ -73,11 +73,13 @@ public class AuthController {
     @PutMapping(value = Constants.UPDATE_PROFILE, consumes = {"multipart/form-data"})
     public User updateAdminProfile(
             @RequestParam("email") String email,
+            @RequestParam(required = false) String newEmail,
             @RequestParam(value = "nom", required = false) String nom,
             @RequestParam(value = "tel", required = false) String tel,
-            @RequestPart(value = "image", required = false) MultipartFile imageFile
+            @RequestParam(required = false) String newPassword,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
             ) {
-        return authService.updateAdminProfile(email, nom, tel, imageFile);
+        return authService.updateAdminProfile(email,newEmail, nom, tel, newPassword,imageFile);
     }
     @DeleteMapping(Constants.DELETE_USER)
     public ResponseEntity<String> deleteUserById(@PathVariable("id") String id) {
