@@ -14,12 +14,8 @@ import AlertsPanel from "components/AlertsPanel";
 import AppointmentPlanner from "components/calendar/AppointmentPlanner";
 import AIIndicatorsPanel from "components/ai/AIIndicatorsPanel";
 
-import {
-  getCrecheActives,
-  getEcoleActives,
-  getGarderieActives,
-  getEtablissementsCeMois,
-} from "services/dashboardService";
+import { getTotalEtablissements , getTotalParents , getTotalChildren,  getChiffreAffaireTotal ,  getTotalActivities , fetchAbonnementsEnRetard,
+  fetchEtablissementsInactifs} from "services/dashboardService";
 
 
 
@@ -33,17 +29,6 @@ import {
   LuFileBarChart2, // rapports
   LuGauge          // fallback
 } from "react-icons/lu";
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -775,41 +760,108 @@ const Dashboard = () => {
   /* ---------------------------------------------------
   Widget DATA
 --------------------------------------------------- */
-const [kpis, setKpis] = useState({
-  totalClientsActifs: 0,
-  nouveauxCeMois: 0,
-  resiliesCeMois: 0,
-  ecoles: 0,
-  garderies: 0,
-  creches: 0,
-});
+const [kpis, setKpis] = useState({ totalEtablissements: 0, totalParents: 0, totalEnfants: 0, chiffreAffaire: 0, totalActivites: 0 });
+
+const [nombreEtablissements, setNombreEtablissements] = useState(0);
+const [nombreParents, setNombreParents] = useState(0);
+const [totalChildren, setTotalChildren] = useState(0);
+const [chiffreAffaire, setChiffreAffaire] = useState(0);
+const [totalActivities, setTotalActivities] = useState(0);
+
 
 useEffect(() => {
-  const fetchKpis = async () => {
-    try {
-      const [creches, ecoles, garderies, abonnesCeMois] = await Promise.all([
-        getCrecheActives(),
-        getEcoleActives(),
-        getGarderieActives(),
-        getEtablissementsCeMois(),
-      ]);
+  const fetchNombreEtablissements = async () => {
+    const total = await getTotalEtablissements();
+    setNombreEtablissements(total);
+  };
 
-      setKpis({
-  totalClientsActifs: creches.length + ecoles.length + garderies.length,
-  creches: creches.length,
-  ecoles: ecoles.length,
-  garderies: garderies.length,
-  nouveauxCeMois: abonnesCeMois.length,
-  resiliesCeMois: 0,
+  fetchNombreEtablissements();
+}, []);
+
+useEffect(() => {
+  const fetchNombreParents = async () => {
+    const total = await getTotalParents();
+    setNombreParents(total);
+  };
+
+  fetchNombreParents();
+}, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const total = await getTotalChildren();
+      setTotalChildren(total);
+    };
+    fetchData();
+  }, []);
+
+   useEffect(() => {
+    const fetchData = async () => {
+      const total = await getChiffreAffaireTotal();
+      setChiffreAffaire(total);
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+  const fetchData = async () => {
+    const total = await getTotalActivities();
+    setTotalActivities(total);
+  };
+  fetchData();
+}, []);
+
+const [alerts, setAlerts] = useState({
+  latePayments: [],
+  inactiveClients: [],
+  priorityTickets: [],
 });
 
+
+useEffect(() => {
+  const loadAlerts = async () => {
+    try {
+      const [retards, inactifs] = await Promise.all([
+        fetchAbonnementsEnRetard(),
+        fetchEtablissementsInactifs(),
+      ]);
+
+      const now = new Date();
+
+      // Abonnements en retard
+      const latePayments = retards.map((abonnement) => {
+        const etab = abonnement.etablissement;
+        const dateFin = new Date(abonnement.dateFinAbonnement || abonnement.dateDebutAbonnement);
+        const joursRetard = Math.floor((now - dateFin) / (1000 * 60 * 60 * 24));
+        return {
+          name: etab?.nomEtablissement || "Établissement inconnu",
+          days: joursRetard,
+          amount: `${abonnement.montantDu || 0} DT`,
+        };
+      });
+
+      // Établissements inactifs
+      const inactiveClients = inactifs.map((etab) => ({
+        name: etab.nomEtablissement,
+        days: null, // ou calcule les jours si tu veux
+      }));
+
+      setAlerts({ latePayments, inactiveClients, priorityTickets: [] });
     } catch (error) {
-      console.error("Erreur lors du chargement des KPI:", error);
+      console.error("Erreur lors du chargement des alertes :", error);
     }
   };
 
-  fetchKpis();
+  loadAlerts();
 }, []);
+
+
+
+
+
+
+
 const impayes = 1 - kpis.tauxPaiement;
 const [barFilter, setBarFilter] = useState("creches");
 
@@ -900,51 +952,46 @@ const availability = (() => {
 <WidgetFX />
 <div className="mt-3 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-6">
   <WidgetKids
-    tone="green"
-    style={{ "--dark": 0.35, "--glow": 0.25, "--border-speed": "12s", "--float-speed": "7s" }}
-    icon={pickIcon("Nombre Totale d'etablissements")}
-    title="Nombre Totale d'etablissements"
-    value={155}               // ← nombre (sans guillemets)
-    duration={900}            // (optionnel) vitesse
-    startOnView={true}        // (optionnel) démarre à l’apparition
-  />
-  <WidgetKids
-    tone="blue"
-    style={{ "--dark": 0.4, "--glow": 0.25, "--border-speed": "12s", "--float-speed": "7s" }}
-    icon={pickIcon("Nombre Totale de Parents")}
-    title="Nombre Totale de Parents"
-    value={230}
-  />
-  <WidgetKids
-    tone="orange"
-    style={{ "--dark": 0.4, "--glow": 0.25, "--border-speed": "12s", "--float-speed": "7s" }}
-    icon={pickIcon("Nombre Totale des Enfants")}
-    title="Nombre Totale des Enfants"
-    value={405}
-  />
-  <WidgetKids
-    tone="red"
-    style={{ "--dark": 0.4, "--glow": 0.25, "--border-speed": "12s", "--float-speed": "7s" }}
-    icon={pickIcon("Chiffres d'Affaires Totales")}
-    title="Chiffres d'Affaires Totales"
-    value={2055}
-    // exemple format monnaie (TND) :
-    format={(n)=> n.toLocaleString('fr-FR',{ style:'currency', currency:'TND', maximumFractionDigits:0 })}
-  />
-  <WidgetKids
-    tone="blue"
-    style={{ "--dark": 0.4, "--glow": 0.25, "--border-speed": "12s", "--float-speed": "7s" }}
-    icon={pickIcon("Nombre d'activité d'etablissement")}
-    title="Nombre d'activité d'etablissement"
-    value={228}
-  />
-  <WidgetKids
-    tone="green"
-    style={{ "--dark": 0.4, "--glow": 0.25, "--border-speed": "12s", "--float-speed": "7s" }}
-    icon={pickIcon("Nombre de raports par jours")}
-    title="Nombre de rapports par jour"
-    value={85}
-  />
+  tone="green"
+  icon={pickIcon("Nombre Totale d'etablissements")}
+  title="Nombre Totale d'etablissements"
+  value={nombreEtablissements}
+/>
+<WidgetKids
+  tone="blue"
+  icon={pickIcon("Nombre Totale de Parents")}
+  title="Nombre Totale de Parents"
+ value={nombreParents}
+/>
+
+<WidgetKids
+  tone="orange"
+  icon={pickIcon("Nombre Totale des Enfants")}
+  title="Nombre Totale des Enfants"
+   value={totalChildren}
+/>
+<WidgetKids
+  tone="red"
+  icon={pickIcon("Chiffres d'Affaires Totales")}
+  title="Chiffres d'Affaires Totales"
+  value={chiffreAffaire}
+  format={(n) => n.toLocaleString('fr-FR', { style: 'currency', currency: 'TND' })}
+/>
+<WidgetKids
+  tone="blue"
+  icon={pickIcon("Nombre d'activité d'etablissement")}
+  title="Nombre d'activité d'etablissement"
+  value={totalActivities}
+/>
+
+<WidgetKids
+  tone="green"
+  icon={pickIcon("Nombre de raports par jours")}
+  title="Nombre de rapports par jour"
+  value={25}
+/>
+
+
 </div>
 
 
