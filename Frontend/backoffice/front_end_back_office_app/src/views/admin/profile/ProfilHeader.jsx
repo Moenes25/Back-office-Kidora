@@ -7,32 +7,30 @@ import { useAuth } from "context/AuthContext";
 import avatar4Img from "../../../assets/img/avatars/avatar4.png";
 
 /* ---------------------- SKELETON LOADER ---------------------- */
-const ProfileHeaderSkeleton = () => {
-  return (
-    <div className="relative flex flex-col overflow-hidden shadow-2xl animate-pulse rounded-2xl">
-      <div className="relative bg-gray-300 h-36"></div>
-      <div className="relative flex flex-col gap-4 p-6 bg-white dark:bg-indigo-900">
-        <div className="absolute bg-gray-300 rounded-full -top-14 left-6 h-28 w-28 md:h-32 md:w-32"></div>
-        <div className="flex items-start justify-between w-full pr-4 mt-8 md:ml-32">
-          <div className="flex flex-col w-40 gap-2">
-            <div className="w-32 h-4 bg-gray-300 rounded"></div>
-            <div className="w-40 h-3 bg-gray-200 rounded"></div>
-          </div>
-          <div className="h-10 bg-gray-200 w-14 rounded-xl"></div>
+const ProfileHeaderSkeleton = () => (
+  <div className="relative flex flex-col overflow-hidden shadow-2xl animate-pulse rounded-2xl">
+    <div className="relative bg-gray-300 h-36"></div>
+    <div className="relative flex flex-col gap-4 p-6 bg-white dark:bg-indigo-900">
+      <div className="absolute bg-gray-300 rounded-full -top-14 left-6 h-28 w-28 md:h-32 md:w-32"></div>
+      <div className="flex items-start justify-between w-full pr-4 mt-8 md:ml-32">
+        <div className="flex flex-col w-40 gap-2">
+          <div className="w-32 h-4 bg-gray-300 rounded"></div>
+          <div className="w-40 h-3 bg-gray-200 rounded"></div>
         </div>
-        <div className="grid w-full grid-cols-2 gap-4 mt-6 md:grid-cols-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="w-full h-20 bg-gray-200 rounded-xl"></div>
-          ))}
-        </div>
+        <div className="h-10 bg-gray-200 w-14 rounded-xl"></div>
+      </div>
+      <div className="grid w-full grid-cols-2 gap-4 mt-6 md:grid-cols-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="w-full h-20 bg-gray-200 rounded-xl"></div>
+        ))}
       </div>
     </div>
-  );
-};
+  </div>
+);
 
 /* ---------------------- MAIN COMPONENT ---------------------- */
 const ProfileHeader = () => {
-  const { user, token, updateUser } = useAuth();
+  const { user, token } = useAuth();
   const [openMessages, setOpenMessages] = useState(false);
   const [adminsCount, setAdminsCount] = useState(0);
   const [etablissementsCount, setEtablissementsCount] = useState(0);
@@ -55,9 +53,7 @@ const ProfileHeader = () => {
       try {
         const res = await fetch(
           `${process.env.REACT_APP_API_URL}/etablissement/all`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         const data = await res.json();
         setEtablissementsCount(data.length);
@@ -71,9 +67,18 @@ const ProfileHeader = () => {
   }, [token]);
 
   /* ---------------------- Skeleton Loader ---------------------- */
-  if (!user) {
-    return <ProfileHeaderSkeleton />;
-  }
+  if (!user) return <ProfileHeaderSkeleton />;
+
+  /* ---------------------- Image URL Logic ---------------------- */
+  const getImageUrl = () => {
+    if (!user.imageUrl) return avatar4Img;
+
+    // If user.imageUrl is already a full URL, use it directly
+    if (user.imageUrl.startsWith("http")) return user.imageUrl;
+
+    // Otherwise, build full URL
+    return `${process.env.REACT_APP_API_URL.replace("/api", "")}/uploads/${user.imageUrl}`;
+  };
 
   return (
     <div className="relative flex flex-col overflow-hidden shadow-2xl rounded-2xl">
@@ -93,7 +98,7 @@ const ProfileHeader = () => {
         {/* Avatar */}
         <motion.div className="absolute flex items-center justify-center bg-white border-4 border-white rounded-full shadow-lg -top-14 left-6 h-28 w-28 md:h-32 md:w-32">
           <img
-            src={`http://localhost:8086/uploads/${user.imageUrl}`}
+            src={getImageUrl()}
             alt="User"
             className="object-cover w-24 h-24 rounded-full md:h-28 md:w-28"
           />
