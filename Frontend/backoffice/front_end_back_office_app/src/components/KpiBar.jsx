@@ -1,7 +1,9 @@
 // KpiBar.jsx
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { LuLineChart, LuPieChart, LuBarChart3 } from 'react-icons/lu';
+import { getCroissanceData, getRepartitionAnnuelle } from "services/dashboardService";
+
 
 // --- Constantes FR & données
 const MONTHS_FR = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'];
@@ -35,6 +37,10 @@ const DONUT_BY_YEAR = Object.fromEntries(
     year, f.map((k,i)=>Math.round(totals2024[i]*k))
   ]))
 );
+
+
+
+
 
 /* =========================================================
  * Effets visuels globaux (CSS-in-JS)
@@ -166,9 +172,10 @@ function ChartCard({ title, icon, right, children }) {
 /* ============================
  * 1) Courbe
  * ============================ */
-function TechLine({ height = 300 }) {
+function TechLine({ data, height = 300 }) {
+
   const series = useMemo(() =>
-    Object.entries(DATA_LINE).map(([name, data], idx) => ({
+    Object.entries(data).map(([name, dataArr], idx) => ({
       name,
       type: 'line',
       smooth: true,
@@ -186,15 +193,16 @@ function TechLine({ height = 300 }) {
           ],
         },
       },
-      data,
+      data: dataArr,
       emphasis: { focus: 'series' },
       // petit effet ripple ponctuel via markPoint + animation
       markPoint: {
         symbol: 'circle', symbolSize: 0,
         label: { show: true, formatter: '⬤', color: TYPE_COLORS[idx], fontSize: 10 },
-        data: [{ coord: ['Juin', data[5]] }],
+        data: [{ coord: ['Juin', dataArr[5] ?? 0] }],
+
       },
-    })), []
+    })), [data]
   );
 
   const option = useMemo(() => ({
@@ -237,9 +245,8 @@ function YearSelect({ value, onChange, years }) {
 /* ============================
  * 2) Donut avec % inside + centre propre
  * ============================ */
-function TechDonut({ year, height = 300 }) {
-  const totals = DONUT_BY_YEAR[year];
-  const totalAll = totals.reduce((a,b)=>a+b,0);
+function TechDonut({ data, year, height = 300 }) {
+   const totalAll = data.reduce((a, b) => a + b, 0)
 
   const option = useMemo(() => ({
     animationDuration: 900,
@@ -267,12 +274,16 @@ function TechDonut({ year, height = 300 }) {
         },
         labelLine: { show: false },
         emphasis: { scaleSize: 10, itemStyle: { shadowBlur: 18, shadowColor: 'rgba(0,0,0,.25)' } },
-        data: TYPE_LABELS.map((n,i)=>({ name:n, value:totals[i], itemStyle:{ color: TYPE_COLORS[i] }})),
+          data: TYPE_LABELS.map((label, i) => ({
+        name: label,
+        value: data[i],
+        itemStyle: { color: TYPE_COLORS[i] },
+      })),
       },
     ],
-  }), [totals, totalAll]);
+  }), [data, totalAll]);
 
-  return <ReactECharts option={option} style={{ height }} notMerge />;
+   return <ReactECharts option={option} style={{ height }} notMerge  />;
 }
 
 /* ============================
@@ -321,12 +332,59 @@ export default function KpiBar() {
   const [year, setYear] = useState('2024');
   const years = Object.keys(DONUT_BY_YEAR);
 
+  const [croissance, setCroissance] = useState({
+    Garderies: [],
+    Crèches: [],
+    Écoles: [],
+  });
+
+  const [repartition, setRepartition] = useState([0, 0, 0]);
+
+useEffect(() => {
+  async function fetchCharts() {
+    try {
+      const croissanceData = await getCroissanceData();
+      const repartitionData = await getRepartitionAnnuelle(year);
+
+      // ==========================
+      // CROISSANCE
+      // ==========================
+      setCroissance({
+        Garderies: croissanceData.find(d => d.type === "GARDERIE")?.valeurs ?? [],
+        Crèches:   croissanceData.find(d => d.type === "CRECHE")?.valeurs ?? [],
+        Écoles:    croissanceData.find(d => d.type === "ECOLE")?.valeurs ?? [],
+      });
+
+      // ==========================
+      // RÉPARTITION
+      // ==========================
+      const map = { GARDERIE: 0, CRECHE: 0, ECOLE: 0 };
+
+      repartitionData.forEach(item => {
+        map[item.type] = item.count;
+      });
+
+      setRepartition([
+        map.GARDERIE,
+        map.CRECHE,
+        map.ECOLE
+      ]);
+
+    } catch (err) {
+      console.error("Erreur lors de la récupération des données", err);
+    }
+  }
+
+  fetchCharts();
+}, [year]);
+
   return (
     <>
       <VisualFX />
       <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-3">
         <ChartCard title="Croissance des inscriptions" icon={<LuLineChart className="h-5 w-5" />}>
-          <TechLine height={300} />
+         <TechLine data={croissance} height={300} />
+
         </ChartCard>
 
         <ChartCard
@@ -334,7 +392,8 @@ export default function KpiBar() {
           icon={<LuPieChart className="h-5 w-5" />}
           right={<YearSelect value={year} onChange={setYear} years={years} />}
         >
-          <TechDonut year={year} height={300} />
+         <TechDonut data={repartition} year={year} height={300} />
+
         </ChartCard>
 
         <ChartCard title="Tickets par jour" icon={<LuBarChart3 className="h-5 w-5" />}>
