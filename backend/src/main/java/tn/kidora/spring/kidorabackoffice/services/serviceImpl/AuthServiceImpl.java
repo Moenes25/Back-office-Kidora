@@ -29,7 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import tn.kidora.spring.kidorabackoffice.config.JwtUtils;
 import tn.kidora.spring.kidorabackoffice.dto.RegisterDto;
 import tn.kidora.spring.kidorabackoffice.entities.Role;
-import tn.kidora.spring.kidorabackoffice.entities.Status;
+
 import tn.kidora.spring.kidorabackoffice.entities.User;
 import tn.kidora.spring.kidorabackoffice.repositories.UserRepository;
 import tn.kidora.spring.kidorabackoffice.services.AuthService;
@@ -120,7 +120,8 @@ public class AuthServiceImpl implements  AuthService{
         if (imageFile != null && !imageFile.isEmpty()) {
             try {
                 // Dossier de stockage (ex: src/main/resources/static/uploads)
-                String uploadDir = "src/main/resources/static/uploads/";
+                String uploadDir = System.getProperty("user.dir") + "/uploads/";
+
 
                 // Crée le dossier s’il n’existe pas
                 File directory = new File(uploadDir);
