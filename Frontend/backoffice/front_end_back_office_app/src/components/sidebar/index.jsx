@@ -3,6 +3,8 @@ import React from "react";
 import { HiX, HiChevronLeft, HiChevronRight } from "react-icons/hi";
 import Links from "./components/Links";
 import routes from "routes.js";
+import logoKidora from "assets/img/logo/logo.png";
+
 
 const Sidebar = ({ open, collapsed = false, onClose, onToggleCollapsed }) => {
   return (
@@ -66,7 +68,7 @@ const Sidebar = ({ open, collapsed = false, onClose, onToggleCollapsed }) => {
             className="pointer-events-none absolute inset-0 rounded-3xl bg-white/30 dark:bg-white/10 mix-blend-overlay"
           />
           <img
-            src="http://31.97.54.88:4200/assets/All_Logo.png"
+            src={logoKidora}
             alt="Kidora Logo"
              className={["relative mx-auto w-full object-contain drop-shadow",collapsed ? "h-12 max-w-[110px]" : "h-18 max-w-[240px]"].join(" ")}/>
         </div>
