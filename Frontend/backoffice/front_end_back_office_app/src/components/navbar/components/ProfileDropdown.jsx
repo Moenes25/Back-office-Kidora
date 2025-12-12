@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "context/AuthContext";
 import { FaUser, FaEnvelope, FaCog, FaSignOutAlt } from "react-icons/fa";
-import avatarFallback from "../../../assets/img/avatars/avatar4.png";
+import avatar4Img from "../../../assets/img/avatars/avatar4.png";
 
 const ProfileDropdown = () => {
   const { logout, user, token, updateUser } = useAuth();
@@ -58,7 +58,8 @@ const ProfileDropdown = () => {
         className="w-12 h-12 overflow-hidden transition-all border-2 rounded-full shadow-md focus:outline-none hover:shadow-lg"
       >
         <motion.img
-          src={user?.imageUrl || avatarFallback}
+          // src={user?.imageUrl || avatarFallback}
+          src={avatar4Img}
           alt={user?.nom || "User Avatar"}
           className="object-cover w-full h-full"
           whileHover={{ scale: 1.08 }}

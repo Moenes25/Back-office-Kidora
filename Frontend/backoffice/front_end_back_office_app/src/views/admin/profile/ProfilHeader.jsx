@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FiMail, FiStar, FiUsers, FiActivity } from "react-icons/fi";
@@ -7,29 +9,17 @@ import avatar4Img from "../../../assets/img/avatars/avatar4.png";
 /* ---------------------- SKELETON LOADER ---------------------- */
 const ProfileHeaderSkeleton = () => {
   return (
-    <div className="relative flex flex-col overflow-hidden shadow-2xl rounded-2xl animate-pulse">
-      {/* Top gradient skeleton */}
+    <div className="relative flex flex-col overflow-hidden shadow-2xl animate-pulse rounded-2xl">
       <div className="relative bg-gray-300 h-36"></div>
-
-      {/* White section */}
       <div className="relative flex flex-col gap-4 p-6 bg-white dark:bg-indigo-900">
-        
-        {/* Avatar skeleton */}
         <div className="absolute bg-gray-300 rounded-full -top-14 left-6 h-28 w-28 md:h-32 md:w-32"></div>
-
-        {/* Name + Email */}
         <div className="flex items-start justify-between w-full pr-4 mt-8 md:ml-32">
-
           <div className="flex flex-col w-40 gap-2">
             <div className="w-32 h-4 bg-gray-300 rounded"></div>
             <div className="w-40 h-3 bg-gray-200 rounded"></div>
           </div>
-
-          {/* Messages icon skeleton */}
           <div className="h-10 bg-gray-200 w-14 rounded-xl"></div>
         </div>
-
-        {/* Stats skeleton */}
         <div className="grid w-full grid-cols-2 gap-4 mt-6 md:grid-cols-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="w-full h-20 bg-gray-200 rounded-xl"></div>
@@ -41,58 +31,43 @@ const ProfileHeaderSkeleton = () => {
 };
 
 /* ---------------------- MAIN COMPONENT ---------------------- */
-
 const ProfileHeader = () => {
   const { user, token, updateUser } = useAuth();
-
   const [openMessages, setOpenMessages] = useState(false);
-  const [newNom, setNewNom] = useState(user?.nom || "");
-  const [newEmail, setNewEmail] = useState(user?.email || "");
+  const [adminsCount, setAdminsCount] = useState(0);
+  const [etablissementsCount, setEtablissementsCount] = useState(0);
 
-  const handleUpdate = async () => {
-    const form = new FormData();
-    form.append("email", user.email);
-    form.append("nom", newNom);
-
-    try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/update-profile`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` },
-        body: form,
-      });
-
-      if (!res.ok) throw new Error("Failed to update profile");
-
-      const data = await res.json();
-      updateUser(data);
-
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
+  /* ---------------------- Fetch Counts ---------------------- */
   useEffect(() => {
-    const fetchUser = async () => {
-      if (!user?.id) return;
-
+    const fetchAdminsCount = async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/${user.id}`, {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/all`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error("Failed to fetch user");
         const data = await res.json();
-        updateUser(data);
+        setAdminsCount(data.length);
       } catch (err) {
-        console.error(err);
+        console.error("Failed to fetch admins count:", err);
       }
     };
 
-    fetchUser();
-  }, [user?.id, token]);
+    const fetchEtablissementsCount = async () => {
+      try {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/etablissement/all`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setEtablissementsCount(data.length);
+      } catch (err) {
+        console.error("Failed to fetch etablissements count:", err);
+      }
+    };
 
-  const messageCount = 5;
+    fetchAdminsCount();
+    fetchEtablissementsCount();
+  }, [token]);
 
-  /*  Skeleton */
+  /* ---------------------- Skeleton Loader ---------------------- */
   if (!user) {
     return <ProfileHeaderSkeleton />;
   }
@@ -112,13 +87,13 @@ const ProfileHeader = () => {
 
       {/* Bottom White Section */}
       <div className="relative flex flex-col gap-4 p-6 bg-white dark:bg-indigo-900">
-        
         {/* Avatar */}
         <motion.div className="absolute flex items-center justify-center bg-white border-4 border-white rounded-full shadow-lg -top-14 left-6 h-28 w-28 md:h-32 md:w-32">
           <img
+            // src={user.imageUrl ? `${process.env.REACT_APP_API_URL}/uploads/${user.imageUrl}` : avatarDefault}
             src={avatar4Img}
             alt="User"
-            className="object-cover w-24 h-24 bg-white rounded-full md:w-28 md:h-28"
+            className="object-cover w-24 h-24 rounded-full md:w-28 md:h-28"
           />
           <span className="absolute w-4 h-4 bg-green-500 border-2 border-white rounded-full shadow-md bottom-2 right-2"></span>
         </motion.div>
@@ -132,7 +107,7 @@ const ProfileHeader = () => {
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              {user?.nom || "Guest"}
+              {user.nom || "Guest"}
             </motion.h2>
 
             <motion.div
@@ -142,7 +117,7 @@ const ProfileHeader = () => {
               transition={{ delay: 0.4, duration: 0.5 }}
             >
               <FiMail className="text-gray-400" />
-              <span>{user?.email || "guest@example.com"}</span>
+              <span>{user.email || "guest@example.com"}</span>
             </motion.div>
           </div>
 
@@ -155,9 +130,8 @@ const ProfileHeader = () => {
               }`}
             >
               <span className="absolute left-5 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
-                {messageCount}
+                5
               </span>
-
               <FiMail className="text-xl text-gray-700" />
               <p className="mt-1 text-[12px] text-gray-600">Messages</p>
             </button>
@@ -167,8 +141,8 @@ const ProfileHeader = () => {
         {/* Stats Cards */}
         <div className="grid grid-cols-2 gap-4 mt-6 md:grid-cols-4">
           {[
-            { label: "Admins", value: 12, icon: <FiUsers />, gradient: "from-purple-500 to-purple-300" },
-            { label: "Entreprises", value: 8, icon: <FiActivity />, gradient: "from-blue-400 to-blue-200" },
+            { label: "Admins", value: adminsCount, icon: <FiUsers />, gradient: "from-purple-500 to-purple-300" },
+            { label: "Etablissements", value: etablissementsCount, icon: <FiActivity />, gradient: "from-blue-400 to-blue-200" },
             { label: "Activity Score", value: "92%", icon: <FiStar />, gradient: "from-yellow-400 to-yellow-200" },
           ].map((card, idx) => (
             <motion.div
@@ -177,9 +151,7 @@ const ProfileHeader = () => {
               whileHover={{ scale: 1.03, y: -3 }}
             >
               <div className="flex items-center gap-3 p-3 bg-white rounded-xl">
-                <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${card.gradient} text-white`}
-                >
+                <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${card.gradient} text-white`}>
                   {card.icon}
                 </div>
                 <div className="flex flex-col">

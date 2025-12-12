@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaUser, FaEnvelope, FaPhone, FaUserShield, FaCamera, FaCalendar } from "react-icons/fa";
@@ -58,7 +59,7 @@ export default function ProfileInfo() {
           updatedAt: data.updatedAt || "",
         });
 
-        setProfileImage(data.imageUrl || "/default-avatar.png"); // <-- صورة بديلة
+        setProfileImage(data.imageUrl || "/default-avatar.png");
       } catch (err) {
         console.error("Failed to fetch user:", err);
       }
@@ -79,11 +80,13 @@ export default function ProfileInfo() {
   const handleSave = async () => {
     try {
       const formData = new FormData();
+
       formData.append("email", form.email);
       formData.append("nom", form.fullName);
       formData.append("tel", form.phone);
 
-      if (previewImage) formData.append("image", previewImage);
+   
+      if (previewImage) formData.append("imageFile", previewImage);
 
       const res = await api.put("/auth/update-profile", formData, {
         headers: {
@@ -93,14 +96,14 @@ export default function ProfileInfo() {
       });
 
       const updatedUser = res.data;
+
       updateUser(updatedUser);
 
+   
       if (previewImage) {
         setProfileImage(URL.createObjectURL(previewImage));
       } else if (updatedUser.imageUrl) {
-        setProfileImage(updatedUser.imageUrl || "/default-avatar.png");
-      } else {
-        setProfileImage("/default-avatar.png");
+        setProfileImage(updatedUser.imageUrl);
       }
 
       setPreviewImage(null);
@@ -130,13 +133,12 @@ export default function ProfileInfo() {
       animate={{ opacity: 1, y: 0 }}
       className="w-full p-6 bg-white border border-purple-200 shadow-xl rounded-2xl"
     >
-      {/* PAGE TITLE */}
       <div className="flex items-center gap-2 py-4 mb-6">
         <RiUserSettingsFill size={20} className="text-purple-600" />
         <h1 className="text-xl font-semibold text-gray-700">Security Settings</h1>
       </div>
 
-      {/* Top Area */}
+      {/* TOP AREA */}
       <div className="flex items-start justify-between gap-4 md:flex-row">
         <div className="flex items-center gap-6">
           <div className="relative w-20 h-20">
@@ -144,11 +146,12 @@ export default function ProfileInfo() {
               src={
                 previewImage
                   ? URL.createObjectURL(previewImage)
-                  : profileImage || "/avatars/avatar11.png" 
+                  : profileImage
               }
               alt="profile"
               className="object-cover w-20 h-20 border-2 border-purple-300 shadow-inner rounded-xl"
             />
+
             {isEditing && (
               <label className="absolute bottom-0 right-0 flex items-center justify-center w-6 h-6 text-white bg-purple-600 rounded-full shadow-md cursor-pointer hover:bg-purple-700">
                 <FaCamera size={14} />
@@ -186,11 +189,14 @@ export default function ProfileInfo() {
         )}
       </div>
 
-      {/* Editable Fields */}
+      {/* FIELDS */}
       <div className="grid grid-cols-1 gap-6 mt-6 md:grid-cols-2">
         {editableFields.map((field) => (
           <div key={field.name} className="p-5 bg-white border border-gray-200 shadow-sm rounded-xl">
-            <p className="flex items-center gap-2 mb-1 text-xs text-gray-500">{field.icon} {field.label}</p>
+            <p className="flex items-center gap-2 mb-1 text-xs text-gray-500">
+              {field.icon} {field.label}
+            </p>
+
             {isEditing && field.editable ? (
               <input
                 type="text"
@@ -205,7 +211,6 @@ export default function ProfileInfo() {
           </div>
         ))}
 
-        {/* Read-only Fields */}
         {readOnlyFields.map((field) => (
           <div key={field.name} className="p-5 border border-gray-200 shadow-sm bg-gray-50 rounded-xl">
             <p className="flex items-center gap-2 mb-1 text-xs text-gray-500">{field.icon} {field.label}</p>
