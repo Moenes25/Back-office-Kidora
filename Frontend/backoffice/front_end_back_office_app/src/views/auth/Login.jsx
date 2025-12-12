@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { MdMail } from "react-icons/md";
 import { FaLock, FaSignInAlt } from "react-icons/fa";
 import logoImg from "../../assets/img/auth/logo.png";
-import RobotImg from "../../assets/img/auth/Robot.png";
+import roketImg from "../../assets/img/auth/roket.png";
 
 export default function Login() {
   const { login, loading } = useAuth();
@@ -38,18 +38,18 @@ export default function Login() {
       <div className="absolute w-40 h-40 rounded-full shadow-lg animate-pulse-slow bottom-16 left-16 bg-white/10"></div>
       <div className="absolute w-48 h-48 rounded-full shadow-lg animate-pulse-slow right-16 top-16 bg-white/10"></div>
       {/* Rocket Kid Animation */}
-      <div className="absolute z-0 flex flex-col items-center animate-fly top-10 right-24">
+      <div className="absolute z-0 flex flex-col items-center animate-fly top-20 right-32">
         <img
-          src={RobotImg}
+          src={roketImg}
           alt="Kid Rocket"
           className="w-64 h-auto drop-shadow-xl"
         />
 
         {/* Speech Bubble */}
-        <div className="relative w-20 px-4 py-2 mt-4 font-bold text-white shadow-lg animate-talk rounded-2xl ">
+        {/* <div className="relative w-20 px-4 py-2 mt-4 font-bold text-white shadow-lg animate-talk rounded-2xl ">
           Welcome to Kidora Dashboard 
           <span className="absolute w-4 h-4 rotate-45 -top-2 left-6 bg-white/90"></span>
-        </div>
+        </div> */}
       </div>
 
       {/* Main container */}
