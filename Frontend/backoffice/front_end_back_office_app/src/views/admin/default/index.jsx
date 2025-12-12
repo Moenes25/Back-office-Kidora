@@ -14,8 +14,7 @@ import AlertsPanel from "components/AlertsPanel";
 import AppointmentPlanner from "components/calendar/AppointmentPlanner";
 import AIIndicatorsPanel from "components/ai/AIIndicatorsPanel";
 
-import { getTotalEtablissements , getTotalParents , getTotalChildren,  getChiffreAffaireTotal ,  getTotalActivities , fetchAbonnementsEnRetard,
-  fetchEtablissementsInactifs} from "services/dashboardService";
+import { getTotalEtablissements , getChiffreAffairesTotal,getAlertsData} from "services/dashboardService";
 
 
 
@@ -684,20 +683,7 @@ const nextExpirationByType = {
 };
 
 
-const alerts = {
-  latePayments: [
-    { name: "Crèche Les P’tits Anges", days: 18, amount: "380 DT" },
-    { name: "Crèche Arc-en-ciel",      days: 10, amount: "220 DT" },
-  ],
-  inactiveClients: [
-    { name: "Crèche BabyLand", days: 21 },
-    { name: "École Horizon",   days: 16 },
-  ],
-  priorityTickets: [
-    { id: "#T-9201", client: "Crèche MiniMonde", subject: "Facturation", age: "2h", prio: "Haute" },
-    { id: "#T-9188", client: "Garderie Nounours", subject: "Connexion", age: "5h", prio: "Haute" },
-  ],
-};
+
 // --- pagination table ---
 const PAGE_SIZE = 3;
 
@@ -760,13 +746,11 @@ const Dashboard = () => {
   /* ---------------------------------------------------
   Widget DATA
 --------------------------------------------------- */
-const [kpis, setKpis] = useState({ totalEtablissements: 0, totalParents: 0, totalEnfants: 0, chiffreAffaire: 0, totalActivites: 0 });
+const [kpis, setKpis] = useState({ totalEtablissements: 0, totalParents: 0, totalEnfants: 0,  totalActivites: 0 });
 
 const [nombreEtablissements, setNombreEtablissements] = useState(0);
-const [nombreParents, setNombreParents] = useState(0);
-const [totalChildren, setTotalChildren] = useState(0);
-const [chiffreAffaire, setChiffreAffaire] = useState(0);
-const [totalActivities, setTotalActivities] = useState(0);
+const [chiffreAffaires, setChiffreAffaires] = useState(0);
+
 
 
 useEffect(() => {
@@ -777,85 +761,41 @@ useEffect(() => {
 
   fetchNombreEtablissements();
 }, []);
-
-useEffect(() => {
-  const fetchNombreParents = async () => {
-    const total = await getTotalParents();
-    setNombreParents(total);
-  };
-
-  fetchNombreParents();
-}, []);
-
   useEffect(() => {
     const fetchData = async () => {
-      const total = await getTotalChildren();
-      setTotalChildren(total);
+      const total = await getChiffreAffairesTotal();
+      setChiffreAffaires(total);
     };
     fetchData();
   }, []);
 
-   useEffect(() => {
-    const fetchData = async () => {
-      const total = await getChiffreAffaireTotal();
-      setChiffreAffaire(total);
-    };
 
-    fetchData();
-  }, []);
 
-  useEffect(() => {
-  const fetchData = async () => {
-    const total = await getTotalActivities();
-    setTotalActivities(total);
-  };
-  fetchData();
-}, []);
+
+
+
+
+
 
 const [alerts, setAlerts] = useState({
-  latePayments: [],
-  inactiveClients: [],
-  priorityTickets: [],
-});
-
+     latePayments: [],
+    inactiveClients: [],
+     priorityTickets: [
+    { id: "#T-9201", client: "Crèche MiniMonde", subject: "Facturation", age: "2h", prio: "Haute" },
+    { id: "#T-9188", client: "Garderie Nounours", subject: "Connexion", age: "5h", prio: "Haute" },
+  ],
+  });
 
 useEffect(() => {
-  const loadAlerts = async () => {
-    try {
-      const [retards, inactifs] = await Promise.all([
-        fetchAbonnementsEnRetard(),
-        fetchEtablissementsInactifs(),
-      ]);
-
-      const now = new Date();
-
-      // Abonnements en retard
-      const latePayments = retards.map((abonnement) => {
-        const etab = abonnement.etablissement;
-        const dateFin = new Date(abonnement.dateFinAbonnement || abonnement.dateDebutAbonnement);
-        const joursRetard = Math.floor((now - dateFin) / (1000 * 60 * 60 * 24));
-        return {
-          name: etab?.nomEtablissement || "Établissement inconnu",
-          days: joursRetard,
-          amount: `${abonnement.montantDu || 0} DT`,
-        };
-      });
-
-      // Établissements inactifs
-      const inactiveClients = inactifs.map((etab) => ({
-        name: etab.nomEtablissement,
-        days: null, // ou calcule les jours si tu veux
-      }));
-
-      setAlerts({ latePayments, inactiveClients, priorityTickets: [] });
-    } catch (error) {
-      console.error("Erreur lors du chargement des alertes :", error);
-    }
-  };
-
-  loadAlerts();
+  async function fetchAlerts() {
+    const data = await getAlertsData();
+    setAlerts((prev) => ({
+      ...prev,            
+      ...data             
+    }));
+  }
+  fetchAlerts();
 }, []);
-
 
 
 
@@ -961,34 +901,34 @@ const availability = (() => {
   tone="blue"
   icon={pickIcon("Nombre Totale de Parents")}
   title="Nombre Totale de Parents"
- value={nombreParents}
+ value={55}
 />
 
 <WidgetKids
   tone="orange"
   icon={pickIcon("Nombre Totale des Enfants")}
   title="Nombre Totale des Enfants"
-   value={totalChildren}
+   value={55}
 />
 <WidgetKids
   tone="red"
   icon={pickIcon("Chiffres d'Affaires Totales")}
   title="Chiffres d'Affaires Totales"
-  value={chiffreAffaire}
+  value={chiffreAffaires}
   format={(n) => n.toLocaleString('fr-FR', { style: 'currency', currency: 'TND' })}
 />
 <WidgetKids
   tone="blue"
   icon={pickIcon("Nombre d'activité d'etablissement")}
   title="Nombre d'activité d'etablissement"
-  value={totalActivities}
+  value={55}
 />
 
 <WidgetKids
   tone="green"
   icon={pickIcon("Nombre de raports par jours")}
   title="Nombre de rapports par jour"
-  value={25}
+  value={55}
 />
 
 
