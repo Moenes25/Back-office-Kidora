@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaLock, FaMobileAlt, FaDesktop } from "react-icons/fa";
-import Test from "./Test";
+
 
 export default function SecuritySettings() {
   const [isPasswordPopup, setIsPasswordPopup] = useState(false);
@@ -146,7 +146,7 @@ export default function SecuritySettings() {
           </motion.div>
         )}
       </AnimatePresence>
-      <Test />
+
     </div>
   );
 }
