@@ -1,32 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import {
-  FaUserShield,
-  FaUserCog,
-  FaLock,
-  FaBuilding,
-  FaFileAlt,
-} from "react-icons/fa";
+import { FaUserShield, FaUserCog, FaLock, FaBuilding, FaFileAlt } from "react-icons/fa";
+import { useAuth } from "context/AuthContext";
 
-/* ROLES LIST */
-const roles = [
-  {
-    name: "Super Admin",
-    icon: <FaUserShield className="text-purple-500" />,
-  },
-  {
-    name: "Admin",
-    icon: <FaUserCog className="text-blue-500" />,
-  },
-  {
-    name: "Moderator",
-    icon: <FaLock className="text-green-500" />,
-  },
-];
-
-/* MODULES */
 const modules = [
   { name: "Dashboard", icon: <FaFileAlt className="text-purple-500" /> },
   { name: "Admins", icon: <FaUserShield className="text-blue-500" /> },
@@ -35,9 +13,33 @@ const modules = [
 ];
 
 export default function RolesPermissions() {
-  const [activeRole, setActiveRole] = useState("Super Admin");
-
+  const { token } = useAuth();
+  const [roles, setRoles] = useState([]);
+  const [activeRole, setActiveRole] = useState("");
   const [permissions, setPermissions] = useState({});
+
+  // Fetch roles from backend
+  useEffect(() => {
+    const fetchRoles = async () => {
+      if (!token) return;
+
+      try {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/roles`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch roles");
+
+        const data = await res.json(); // assuming backend returns array of roles
+        setRoles(data);
+        if (data.length > 0) setActiveRole(data[0].name || data[0]); // set first role as active
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchRoles();
+  }, [token]);
 
   const togglePerm = (role, module, perm) => {
     const id = `${role}-${module}-${perm}`;
@@ -52,30 +54,29 @@ export default function RolesPermissions() {
   return (
     <div className="w-full p-4 sm:p-6 bg-white shadow-md rounded-xl">
       {/* PAGE TITLE */}
-      <div className="flex items-center  mb-6 gap-2 py-4 ">
+      <div className="flex items-center mb-6 gap-2 py-4">
         <FaUserShield size={20} className="text-purple-600" />
         <h1 className="text-lg sm:text-xl font-semibold text-gray-700">
           Roles & Permissions
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 ">
+      <div className="grid grid-cols-1 lg:grid-cols-4">
         {/* LEFT: ROLES LIST */}
-        <div className="flex  justify-center col-span-1  overflow-x-auto lg:overflow-visible flex lg:block gap-4 lg:gap-0 scrollbar-none">
+        <div className="flex justify-center col-span-1 overflow-x-auto lg:overflow-visible flex lg:block gap-4 lg:gap-0 scrollbar-none">
           {roles.map((role) => (
             <div
-              key={role.name}
-              onClick={() => setActiveRole(role.name)}
-              className={`py-4 px-2 cursor-pointer flex items-center gap-3   border-b-2 
-                transition ${
-                  activeRole === role.name
-                    ? "border-purple-500  shadow-lg"
-                    : " "
-                }`}
+              key={role.name || role}
+              onClick={() => setActiveRole(role.name || role)}
+              className={`py-4 px-2 cursor-pointer flex items-center gap-3 border-b-2 transition ${
+                activeRole === (role.name || role) ? "border-purple-500 shadow-lg" : ""
+              }`}
             >
-              <div className="text-lg">{role.icon}</div>
-              <p className="font-semibold text-gray-700 text-sm sm:text-base">
-                {role.name}
+              <div className="text-lg">
+                {role.icon || <FaUserShield className="text-purple-500" />}
+              </div>
+              <p className="font-semibold text-gray-700 text-xs sm:text-base">
+                {role.name || role}
               </p>
             </div>
           ))}
@@ -103,9 +104,7 @@ export default function RolesPermissions() {
                       title={`${perm} ${module.name}`}
                       desc={`Allow role to ${perm.toLowerCase()} ${module.name} data.`}
                       checked={permissions[id] || false}
-                      onClick={() =>
-                        togglePerm(activeRole, module.name, perm)
-                      }
+                      onClick={() => togglePerm(activeRole, module.name, perm)}
                       variants={rowVariants}
                     />
                   );
@@ -126,26 +125,23 @@ function PermissionRow({ title, desc, checked, onClick, variants }) {
       variants={variants}
       initial="hidden"
       animate="visible"
-      className="flex items-center justify-between px-3 sm:px-4 py-3 
-      transition border border-gray-200 rounded-lg hover:bg-gray-50"
+      className="flex items-center justify-between px-3 sm:px-4 py-3 transition border border-gray-200 rounded-lg hover:bg-gray-50"
     >
       <div className="pr-4">
-        <p className="text-xs sm:text-sm font-semibold text-gray-700">
-          {title}
-        </p>
+        <p className="text-xs sm:text-sm font-semibold text-gray-700">{title}</p>
         <p className="text-[10px] sm:text-xs text-gray-500">{desc}</p>
       </div>
 
       <button
         onClick={onClick}
-        className={`relative inline-flex h-5 w-10 items-center rounded-full transition-all
-          ${checked ? "bg-purple-600" : "bg-gray-300"}
-        `}
+        className={`relative inline-flex h-5 w-10 items-center rounded-full transition-all ${
+          checked ? "bg-purple-600" : "bg-gray-300"
+        }`}
       >
         <span
-          className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform
-          ${checked ? "translate-x-5" : "translate-x-0.5"}
-        `}
+          className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+            checked ? "translate-x-5" : "translate-x-0.5"
+          }`}
         />
       </button>
     </motion.div>

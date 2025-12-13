@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import api from "services/api";
+import { useAuth } from "context/AuthContext";
 import {
   IoPersonAdd,
   IoPersonOutline,
@@ -16,31 +17,9 @@ import {
   IoCheckmarkCircleOutline,
 } from "react-icons/io5";
 
-// Role options for the select
-const roles = [
-  {
-    name: "Support Tech",
-    backendValue: "SUPPORT_TECH",
-    icon: <IoSettingsOutline className="text-blue-500" />,
-  },
-  {
-    name: "Commercial",
-    backendValue: "COMMERCIAL",
-    icon: <IoCheckmarkCircleOutline className="text-green-500" />,
-  },
-  {
-    name: "Comptable",
-    backendValue: "COMPTABLE",
-    icon: <IoCheckmarkCircleOutline className="text-green-500" />,
-  },
-  {
-    name: "Responsable Reglement",
-    backendValue: "RESPONSABLE_REG",
-    icon: <IoCheckmarkCircleOutline className="text-green-500" />,
-  },
-];
-
 const AddAdminModal = ({ open, onClose, onSuccess }) => {
+  const { token } = useAuth(); // أخذ التوكن من context
+  const [roles, setRoles] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [shake, setShake] = useState(false);
@@ -54,6 +33,33 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
     role: "",
   });
 
+  // ===========================
+  // جلب الـ roles من backend
+  // ===========================
+  useEffect(() => {
+    const fetchRoles = async () => {
+      if (!token) return;
+
+      try {
+        const res = await api.get("/auth/roles", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.status !== 200) throw new Error("Failed to fetch roles");
+
+        // يفترض أن الـ backend يرسل array من objects أو strings
+        setRoles(res.data);
+      } catch (err) {
+        console.error("Error fetching roles:", err);
+      }
+    };
+
+    fetchRoles();
+  }, [token]);
+
+  // ===========================
+  // Validate form
+  // ===========================
   const validate = () => {
     let err = {};
     if (!newAdmin.role) err.role = "Role is required";
@@ -66,6 +72,9 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
     return Object.keys(err).length === 0;
   };
 
+  // ===========================
+  // Handle Add Admin
+  // ===========================
   const handleAddAdmin = async () => {
     if (!validate()) {
       setShake(true);
@@ -74,9 +83,8 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
     }
 
     try {
-      const selectedRole = roles.find(
-        (r) => r.name === newAdmin.role
-      )?.backendValue;
+      const selectedRole =
+        roles.find((r) => r.name === newAdmin.role)?.backendValue || newAdmin.role;
 
       const payload = {
         nom: newAdmin.nom,
@@ -86,7 +94,9 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
         role: selectedRole,
       };
 
-      const res = await api.post("/auth/register", payload);
+      const res = await api.post("/auth/register", payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       onSuccess(res.data);
       onClose();
@@ -110,11 +120,7 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
 
   const getRoleIcon = (roleName) => {
     const roleObj = roles.find((r) => r.name === roleName);
-    return roleObj ? (
-      roleObj.icon
-    ) : (
-      <IoShieldCheckmarkOutline className="text-purple-500" />
-    );
+    return roleObj?.icon || <IoShieldCheckmarkOutline className="text-purple-500" />;
   };
 
   return (
@@ -145,28 +151,22 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
         <div className={`flex flex-col gap-4 ${shake ? "animate-shake" : ""}`}>
           {/* Role */}
           <motion.div className="relative">
-            <span className="absolute text-lg left-3 top-4">
-              {getRoleIcon(newAdmin.role)}
-            </span>
+            <span className="absolute text-lg left-3 top-4">{getRoleIcon(newAdmin.role)}</span>
             <select
               value={newAdmin.role}
-              onChange={(e) =>
-                setNewAdmin({ ...newAdmin, role: e.target.value })
-              }
+              onChange={(e) => setNewAdmin({ ...newAdmin, role: e.target.value })}
               className={`w-full appearance-none rounded-xl border bg-gradient-to-r from-purple-50 to-blue-50 p-3 pl-10 focus:ring-2 focus:ring-purple-400 ${
                 errors.role ? "border-red-400" : "border-gray-300"
               }`}
             >
               <option value="">Select Role</option>
               {roles.map((role, idx) => (
-                <option key={idx} value={role.name}>
-                  {role.name}
+                <option key={idx} value={role.name || role}>
+                  {role.name || role}
                 </option>
               ))}
             </select>
-            {errors.role && (
-              <p className="mt-1 text-sm text-red-500">{errors.role}</p>
-            )}
+            {errors.role && <p className="mt-1 text-sm text-red-500">{errors.role}</p>}
           </motion.div>
 
           {/* Name + Phone */}
@@ -212,9 +212,7 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
                 errors.email ? "border-red-400" : "border-gray-300"
               }`}
             />
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-500">{errors.email}</p>
-            )}
+            {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
           </motion.div>
 
           {/* Password + Confirm */}
@@ -273,9 +271,7 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
                 )}
               </button>
               {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.confirmPassword}
-                </p>
+                <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>
               )}
             </motion.div>
           </div>

@@ -153,7 +153,7 @@ export default function ProfileInfo() {
             />
 
             {isEditing && (
-              <label className="absolute bottom-0 right-0 flex items-center justify-center w-6 h-6 text-white bg-purple-600 rounded-full shadow-md cursor-pointer hover:bg-purple-700">
+              <label className="absolute flex items-center justify-center w-6 h-6 text-white bg-purple-600 rounded-full shadow-md cursor-pointer top-1/2 right-1/2 hover:bg-purple-700  transform translate-x-1/2 -translate-y-1/2">
                 <FaCamera size={14} />
                 <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
               </label>
