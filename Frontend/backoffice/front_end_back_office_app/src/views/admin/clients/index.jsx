@@ -13,6 +13,9 @@ import { HiOutlineRefresh } from "react-icons/hi";
 import { RiPauseCircleLine, RiDeleteBinLine } from "react-icons/ri";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
+import api from "services/api"; 
+import { getEntreprisesStats , getAllEtablissements, saveEtablissement, updateEtablissement, deleteEtablissement , getUserFromToken } from "services/entreprisesService";
+
 
 /* ----------------------------------------------------------------
    Données démo (complètes)
@@ -493,7 +496,34 @@ function SupportPagination({ page, pageCount, total, onPage }) {
    Composant principal
 ----------------------------------------------------------------- */
 const ClientsPage = () => {
-  const [data, setData] = useState(MOCK);
+  const [data, setData] = useState([]);
+useEffect(() => {
+  getAllEtablissements().then(raw => {
+    const mapped = raw.map(etab => ({
+      id: etab.idEtablissment,
+      name: etab.nomEtablissement,
+      city: etab.region,
+      address: etab.adresse_complet || "",
+      phone: etab.telephone || "",
+      email: etab.email || "",
+      url_localisation: etab.url_localisation || "",
+      type:
+        etab.type === "CRECHE" ? "creches" :
+        etab.type === "GARDERIE" ? "garderies" :
+        etab.type === "ECOLE" ? "ecoles" : "autre",
+      status: etab.isActive ? "Actif" : "Suspendu", // ou adapte selon logique métier
+      password: "", // pas renvoyé par le backend en général
+      subscriptionDate: "", // tu peux le remplir plus tard si tu veux
+      plan: "", // optionnel
+      enfants: etab.nombreEnfants ?? 0,
+      parents: etab.nombreParents ?? 0,
+      educateurs: etab.nombreEducateurs ?? 0,
+      history: [],
+    }));
+    setData(mapped);
+  });
+}, []);
+
 
   // UI
   const [search, setSearch] = useState("");
@@ -533,34 +563,86 @@ const ClientsPage = () => {
    enfants: 0,     
     history: [],
   };
+
+
+
+
+
+
+
+
+
+  
   const [newClient, setNewClient] = useState(emptyClient);
   const resetNew = () => { setNewClient(emptyClient); setShowPwd(false); };
 
-  const saveClient = (e) => {
-    e?.preventDefault?.();
-    if (!newClient.name.trim() || !newClient.city.trim()) return;
 
-    const emailOk = !newClient.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newClient.email);
-    const urlOk = !newClient.url_localisation || /^https?:\/\/.+/.test(newClient.url_localisation);
-    if (!emailOk) { alert("Email invalide"); return; }
-    if (!urlOk) { alert("URL de localisation invalide"); return; }
 
-    if (editId) {
-      setData((prev) => prev.map((r) => (r.id === editId ? { ...r, ...newClient, id: editId } : r)));
-    } else {
-      const prefix = newClient.type === "creches" ? "C" : newClient.type === "garderies" ? "G" : "E";
-      const rand = String(Math.floor(Math.random() * 900) + 100).padStart(3, "0");
-      const added = {
-        ...newClient,
-        id: `${prefix}-${rand}`,
-        history: [{ at: `${new Date().toISOString().slice(0, 10)} 09:00`, text: "Client créé depuis le back-office" }],
-      };
-      setData((prev) => [added, ...prev]);
-    }
-    setShowAdd(false);
-    setEditId(null);
-    resetNew();
+const [backendStats, setBackendStats] = useState({
+  total: 0,
+  actifs: 0,
+  essais: 0,
+  retards: 0,
+});
+
+useEffect(() => {
+  getEntreprisesStats().then(setBackendStats);
+}, []);
+
+
+async function toBackendPayload(client) {
+  const user = getUserFromToken(); 
+  const email = user?.sub;
+
+  let userId;
+    const res = await api.get("/api/auth/all");
+    const allUsers = res.data || [];
+    const currentUser = allUsers.find(u => u.email === email);
+    if (!currentUser) throw new Error("Utilisateur non trouvé");
+    userId = currentUser.id;
+  
+
+  return {
+    nomEtablissement: client.name,
+    adresse_complet: client.address,
+    region: client.city,
+    telephone: client.phone,
+    url_localisation: client.url_localisation,
+    type: client.type?.toUpperCase(),
+    email: client.email,
+    isActive: client.status === "Actif",
+    userId: userId,
   };
+}
+
+
+
+
+
+
+const saveClient = async (e) => {
+  e.preventDefault();
+ const payload = await toBackendPayload(newClient);
+
+console.log("🧪 Payload envoyé :", payload);
+
+  try {
+    if (editId) {
+      const updated = await updateEtablissement(editId, payload);
+      setData(prev => prev.map(r => r.id === editId ? { ...r, ...newClient } : r));
+    } else {
+      const added = await saveEtablissement(payload);
+      setData(prev => [{ ...newClient, id: added.idEtablissment }, ...prev]);
+    }
+
+    setShowAdd(false);
+    resetNew();
+    setEditId(null);
+  } catch (err) {
+    alert("Une erreur est survenue lors de l'enregistrement.");
+  }
+};
+
   const [openFilters, setOpenFilters] = useState(false);
 
 // (facultatif) export CSV des clients filtrés
@@ -725,28 +807,28 @@ const visibleCount = filtered.length;
 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
   <KPI
     title="Clients (total)"
-    value={stats.total}
+    value={backendStats.total}
     startOnView={false}
     icon={<FiUsers className="text-2xl" />}
     gradient="linear-gradient(135deg,#6366f1,#06b6d4)"
   />
   <KPI
     title="Actifs"
-    value={stats.actifs}
+    value={backendStats.actifs}
     startOnView={false}
     icon={<FiCheckCircle className="text-2xl" />}
     gradient="linear-gradient(135deg,#10b981,#22d3ee)"
   />
   <KPI
     title="En essai"
-    value={stats.essais}
+    value={backendStats.essais}
     startOnView={false}
     icon={<FiCalendar className="text-2xl" />}
     gradient="linear-gradient(135deg,#a78bfa,#06b6d4)"
   />
   <KPI
     title="En retard de paiement"
-    value={stats.retards}
+   value={backendStats.retards}
     startOnView={false}
     icon={<FiAlertTriangle className="text-2xl" />}
     gradient="linear-gradient(135deg,#f59e0b,#ef4444)"

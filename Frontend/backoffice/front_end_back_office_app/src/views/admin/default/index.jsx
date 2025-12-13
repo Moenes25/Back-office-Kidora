@@ -14,7 +14,7 @@ import AlertsPanel from "components/AlertsPanel";
 import AppointmentPlanner from "components/calendar/AppointmentPlanner";
 import AIIndicatorsPanel from "components/ai/AIIndicatorsPanel";
 
-import { getTotalEtablissements , getChiffreAffairesTotal,getAlertsData} from "services/dashboardService";
+import { getTotalEtablissements , getChiffreAffairesTotal,getAlertsData ,  getNextExpirationsByType , getTopEtablissements}  from "services/dashboardService";
 
 
 
@@ -798,8 +798,29 @@ useEffect(() => {
 }, []);
 
 
+const [expirations, setExpirations] = useState({
+  creches: null,
+  garderies: null,
+  ecoles: null,
+});
+
+useEffect(() => {
+  async function fetchExpirations() {
+    const data = await getNextExpirationsByType();
+    setExpirations(data);
+  }
+  fetchExpirations();
+}, []);
 
 
+const [etablissements, setEtablissements] = useState([]);
+useEffect(() => {
+  async function fetchTop() {
+    const data = await getTopEtablissements();
+    setEtablissements(data);
+  }
+  fetchTop();
+}, []);
 
 
 const impayes = 1 - kpis.tauxPaiement;
@@ -810,41 +831,54 @@ const [cardFilter, setCardFilter]   = useState("creches");   // pour la CARTE
 const [tableFilter, setTableFilter] = useState("creches");   // pour la TABLE
 
 // ⚠️ Définir nextExp AVANT de l'utiliser
-const nextExp = nextExpirationByType[cardFilter]; // données de la carte selon cardFilter
+const nextExp = expirations[cardFilter] ?? {
+  nom: "Aucune expiration trouvée",
+  licence: "-",
+  date: "-",
+  restant: "J-∞",
+};
+
 
 // Sévérité d’alarme à partir de "J-5", "J-12", etc.
 const alarm = React.useMemo(() => {
-  const rest = String(nextExp?.restant ?? "");      // ex: "J-5"
-  const n = parseInt(rest.replace(/[^\d]/g, ""), 10); // -> 5
-  if (!Number.isFinite(n)) return "ok";
-  return n <= 3 ? "critical" : n <= 10 ? "warn" : "ok";
+  const days = nextExp?.daysLeft;
+  if (typeof days === "number") {
+    if (days < 0) return "critical"; // 🔴 Expiré = critique
+    if (days <= 3) return "critical"; // 🔴 3 jours ou moins
+    if (days <= 10) return "warn";    // 🟠 entre 4 et 10 jours
+  }
+  return "ok";                        // ✅ tout va bien
 }, [nextExp]);
+
+
 
 // libellés par type (déclaré DANS Dashboard)
 const typeLabel = { creches: "crèches", garderies: "garderies", ecoles: "écoles" };
 
 // 🔢 Compteurs pour le BOUTON de la TABLE (total de lignes par type)
 const countsTable = {
-  creches: topCreches.length,
-  garderies: topGarderies.length,
-  ecoles: topEcoles.length,
+  creches: etablissements.filter(e => e.type === "creches").length,
+  garderies: etablissements.filter(e => e.type === "garderies").length,
+  ecoles: etablissements.filter(e => e.type === "ecoles").length,
 };
+
+
 
 // 🔢 Compteurs pour le BOUTON de la CARTE (ici: 1 élément par type)
 const countsCard = {
-  creches: nextExpirationByType.creches ? 1 : 0,
-  garderies: nextExpirationByType.garderies ? 1 : 0,
-  ecoles: nextExpirationByType.ecoles ? 1 : 0,
+  creches: expirations.creches ? 1 : 0,
+  garderies: expirations.garderies ? 1 : 0,
+  ecoles: expirations.ecoles ? 1 : 0,
 };
 
+
 // données dynamiques
-const tableRows =
-  tableFilter === "creches"   ? topCreches   :
-  tableFilter === "garderies" ? topGarderies :
-  tableFilter === "ecoles"    ? topEcoles    : [];
-
-
-
+const tableRows = React.useMemo(() => {
+  return etablissements
+    .filter(e => e.type === tableFilter)
+    .sort((a, b) => b.revenuValeur - a.revenuValeur) // top par montant payé
+    .slice(0, 10); // top 10
+}, [etablissements, tableFilter]);
 
 const [page, setPage] = useState(1);
 
@@ -1061,7 +1095,7 @@ const availability = (() => {
   >
     {/* petite sirène si critique */}
     {alarm === "critical" && (
-      <span className="inline-grid h-6 w-6 place-items-center rounded-md bg-rose-100 text-rose-600 ring-1 ring-rose-200">
+      <span className="inline-grid h-6 w-6 place-items-center rounded-md bg-rose-100 text-rose-600 ">
         🔔
       </span>
     )}
@@ -1074,27 +1108,32 @@ const availability = (() => {
       <svg width="16" height="16" viewBox="0 0 24 24" className="opacity-70"><path fill="currentColor" d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm8 1.5V8h4.5L14 3.5Z"/></svg>
       {nextExp.licence}
     </span>
+<span className="inline-flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-1 font-semibold text-rose-700 ring-1 ring-rose-200">
+  <svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M7 2v2H5a2 2 0 0 0-2 2v2h18V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7Zm14 8H3v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V10Zm-4 3h-4v4h4v-4Z"/></svg>
+  {nextExp.daysLeft < 0 ? "expiré le" : "expire le"} <span className="font-black ml-1">{nextExp.date}</span>
+</span>
 
-    <span className="inline-flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-1 font-semibold text-rose-700 ring-1 ring-rose-200">
-      <svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M7 2v2H5a2 2 0 0 0-2 2v2h18V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7Zm14 8H3v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V10Zm-4 3h-4v4h4v-4Z"/></svg>
-      expire le <span className="font-black ml-1">{nextExp.date}</span>
-    </span>
   </div>
 
   {/* Badge alarme + message */}
-  <div
-    className={[
-      "mt-3 rounded-2xl px-3 py-2 text-sm font-semibold flex items-center gap-2",
-      alarm === "critical"
-        ? "border border-rose-300 bg-rose-50/80 text-rose-700"
-        : alarm === "warn"
-        ? "border border-amber-300 bg-amber-50/80 text-amber-800"
-        : "border border-emerald-200 bg-emerald-50/80 text-emerald-700",
-    ].join(" ")}
-  >
-    <span className="inline-block h-2 w-2 rounded-full bg-current opacity-70" />
-    {alarm !== "ok" ? "⏰" : "✅"} {nextExp.restant} restant
-  </div>
+ <div
+  className={[ 
+    "mt-3 rounded-2xl px-3 py-2 text-sm font-semibold flex items-center gap-2",
+    alarm === "critical"
+      ? "border border-rose-300 bg-rose-50/80 text-rose-700"
+      : alarm === "warn"
+      ? "border border-amber-300 bg-amber-50/80 text-amber-800"
+      : "border border-emerald-200 bg-emerald-50/80 text-emerald-700",
+  ].join(" ")}
+>
+  <span className="inline-block h-2 w-2 rounded-full bg-current opacity-70" />
+  {nextExp.daysLeft < 0 ? "❌" : alarm === "critical" || alarm === "warn" ? "⏰" : "✅"}
+ {nextExp.daysLeft < 0
+  ? `expiré depuis ${Math.abs(nextExp.daysLeft)} jours`
+  : `${nextExp.restant} restant`}
+
+</div>
+
 
   {/* Barre de progression / activité – couleur selon alarme */}
   <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-black/10">
