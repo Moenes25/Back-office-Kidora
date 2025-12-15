@@ -16,6 +16,7 @@ public interface AuthService {
      User updateAdminProfile(String email, String newEmail,String nom, String tel, String newPassword,MultipartFile imageFile);
      void deleteUserById(String id);
     User getUserById(String id);
+    User updateAdminProfileById(String id, String newEmail, String nom, String tel, String newPassword, MultipartFile imageFile);
 
 
 }
