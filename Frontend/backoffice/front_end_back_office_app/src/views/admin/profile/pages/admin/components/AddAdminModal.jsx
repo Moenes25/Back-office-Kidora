@@ -18,7 +18,7 @@ import {
 } from "react-icons/io5";
 
 const AddAdminModal = ({ open, onClose, onSuccess }) => {
-  const { token } = useAuth(); // أخذ التوكن من context
+  const { token } = useAuth(); 
   const [roles, setRoles] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -34,7 +34,7 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
   });
 
   // ===========================
-  // جلب الـ roles من backend
+  // Fetch roles from backend
   // ===========================
   useEffect(() => {
     const fetchRoles = async () => {
@@ -47,7 +47,7 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
 
         if (res.status !== 200) throw new Error("Failed to fetch roles");
 
-        // يفترض أن الـ backend يرسل array من objects أو strings
+        
         setRoles(res.data);
       } catch (err) {
         console.error("Error fetching roles:", err);

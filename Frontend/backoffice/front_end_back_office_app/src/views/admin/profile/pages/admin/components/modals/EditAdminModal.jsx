@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaLock } from "react-icons/fa";
 import { IoEyeOffOutline, IoEyeOutline } from "react-icons/io5";
 import { MdMail } from "react-icons/md";
@@ -7,28 +7,34 @@ import api from "services/api";
 const EditAdminModal = ({ admin, onClose, onEditSuccess }) => {
   const [email, setEmail] = useState(admin.email);
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState(admin.role); // current role
+  const [rolesList, setRolesList] = useState([]); // all roles from backend
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Fetch roles from backend
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const res = await api.get("/auth/roles"); 
+        setRolesList(res.data); 
+      } catch (err) {
+        console.error("Failed to fetch roles:", err);
+      }
+    };
+    fetchRoles();
+  }, []);
 
   const handleSave = async () => {
     try {
       setLoading(true);
 
       const formData = new FormData();
-
-      if (email && email !== admin.email) {
-        formData.append("newEmail", email);
-      }
-
-      if (password) {
-        formData.append("newPassword", password);
-      }
+      if (email && email !== admin.email) formData.append("newEmail", email);
+      if (password) formData.append("newPassword", password);
+      if (role && role !== admin.role) formData.append("newRole", role); 
 
       const res = await api.put(`/auth/update/${admin.id}`, formData);
-      console.log("Admin object:", admin);
-      console.log("Updating admin with ID:", admin.id);
-
-
       onEditSuccess(res.data);
       onClose();
     } catch (err) {
@@ -52,14 +58,12 @@ const EditAdminModal = ({ admin, onClose, onEditSuccess }) => {
             size={20}
             className="absolute text-gray-600 -translate-y-1/2 left-4 top-1/2"
           />
-
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full py-4 pl-12 pr-4 text-gray-700 bg-transparent border border-gray-300 outline-none peer rounded-xl"
           />
-
           <label className="absolute px-1 text-gray-500 transition-all duration-200 -translate-y-1/2 bg-white left-12 top-1/2 peer-valid:top-0 peer-valid:text-xs peer-focus:top-0 peer-focus:text-xs">
             Email
           </label>
@@ -68,7 +72,6 @@ const EditAdminModal = ({ admin, onClose, onEditSuccess }) => {
         {/* Password */}
         <div className="relative w-full">
           <FaLock className="absolute text-gray-600 -translate-y-1/2 left-4 top-1/2" />
-
           <input
             type={showPassword ? "text" : "password"}
             value={password}
@@ -76,18 +79,29 @@ const EditAdminModal = ({ admin, onClose, onEditSuccess }) => {
             placeholder="New password"
             className="w-full py-4 pl-12 pr-10 text-gray-700 bg-transparent border border-gray-300 outline-none rounded-xl"
           />
-
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute text-gray-500 right-4 top-5"
           >
-            {showPassword ? (
-              <IoEyeOffOutline className="text-red-500" />
-            ) : (
-              <IoEyeOutline />
-            )}
+            {showPassword ? <IoEyeOffOutline className="text-red-500" /> : <IoEyeOutline />}
           </button>
+        </div>
+
+        {/* Role Dropdown */}
+        <div className="relative w-full">
+          <label className="block mb-1 text-gray-500">Role</label>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className="w-full py-3 pl-3 pr-10 text-gray-700 bg-transparent border border-gray-300 rounded-xl"
+          >
+            {rolesList.map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Actions */}
