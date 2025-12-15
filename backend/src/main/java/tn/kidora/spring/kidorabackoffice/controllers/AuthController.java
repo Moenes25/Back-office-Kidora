@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -106,12 +108,19 @@ public class AuthController {
     public User updateAdminProfileById(
             @PathVariable String id,
             @RequestParam(required = false) String newEmail,
-            @RequestParam(required = false) String nom,
-            @RequestParam(required = false) String tel,
             @RequestParam(required = false) String newPassword,
-            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile) {
+            @RequestParam(required = false) String roleName)
 
-        return authService.updateAdminProfileById(id, newEmail, nom, tel, newPassword, imageFile);
+    {
+        Role newRole = null;
+        try {
+            newRole = Role.valueOf(roleName.toUpperCase());
+        } catch (Exception e) {
+            // Si roleName est null ou invalide, newRole reste null et le rôle n'est pas modifié
+            newRole = null;
+        }
+
+        return authService.updateAdminProfileById(id, newEmail, newPassword,newRole);
     }
 
 
@@ -160,4 +169,26 @@ public class AuthController {
                 .map(Enum::name)
                 .collect(Collectors.toList());
     }
+    @PutMapping(Constants.SUPERADMIN_UPDATE_PASSWORD)
+    public ResponseEntity<?> updateSuperAdminPassword(
+            @RequestParam String oldPassword,
+            @RequestParam String newPassword,
+            Authentication authentication) {
+        String email = authentication.getName();
+        boolean isSuperAdmin = authentication.getAuthorities().stream()
+                .anyMatch(role -> role.getAuthority().equals("ROLE_SUPER_ADMIN"));
+        if (!isSuperAdmin) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Accès refusé : seul le Super Admin peut effectuer cette action !");
+        }
+        try {
+            authService.updateSuperAdminPassword(email, oldPassword, newPassword);
+            return ResponseEntity.ok("Mot de passe mis à jour avec succès !");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
+
 }
