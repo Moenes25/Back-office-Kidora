@@ -4,8 +4,8 @@ import api from "services/api";
 const DeleteAdminModal = ({ admin, onClose, onDeleteSuccess }) => {
   const handleDelete = async () => {
     try {
-      await api.delete(`/auth/delete-user/${admin.idUser}`);
-      onDeleteSuccess(admin.idUser);
+      await api.delete(`/auth/delete-user/${admin.id}`);
+      onDeleteSuccess(admin.id);
       onClose();
     } catch (err) {
       console.error("Delete failed:", err);
