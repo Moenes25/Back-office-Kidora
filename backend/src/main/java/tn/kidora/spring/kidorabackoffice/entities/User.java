@@ -36,7 +36,7 @@ public class User {
     @Field("updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
     
-
+    private String region;
 
     private String imageUrl;
     // Champs OTP

@@ -60,6 +60,7 @@ public class AuthServiceImpl implements  AuthService{
         user.setTel((dto.getTel()));
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(dto.getRole());
+        user.setRegion(dto.getRegion());
         return userRepository.save(user);}
 
     public Map<String,Object> login(String email, String password) {
@@ -191,6 +192,12 @@ public class AuthServiceImpl implements  AuthService{
         userRepository.save(user);
 
         return user;
+    }
+
+    @Override
+    public List<User> getAllUsersByRegion(String region) {
+        List<User> users = userRepository.findByRegion(region);
+        return users;
     }
 
 

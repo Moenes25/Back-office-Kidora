@@ -17,6 +17,7 @@ public class AbonnementMapper {
         abonnement.setMontantDu(dto.getMontantDu());
         abonnement.setMontantPaye(dto.getMontantPaye());
         abonnement.setStatut(dto.getStatut());
+        abonnement.setFormule(dto.getFormule());
        
         return abonnement;
     
@@ -30,6 +31,7 @@ public class AbonnementMapper {
         abonnementResponseDTO.setMontantDu(abonnement.getMontantDu());
         abonnementResponseDTO.setMontantPaye(abonnement.getMontantPaye());
         abonnementResponseDTO.setStatut(abonnement.getStatut());
+        abonnementResponseDTO.setFormule(abonnement.getFormule());
         if (abonnement.getEtablissement() != null) {
             Etab_Dto etabDto = new Etab_Dto();
             etabDto.setIdEtablissment(abonnement.getEtablissement().getIdEtablissment());
