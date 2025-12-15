@@ -119,22 +119,16 @@ public class AuthServiceImpl implements  AuthService{
         }
         if (imageFile != null && !imageFile.isEmpty()) {
             try {
-                // Dossier de stockage (ex: src/main/resources/static/uploads)
                 String uploadDir = System.getProperty("user.dir") + "/uploads/";
 
-
-                // Crée le dossier s’il n’existe pas
                 File directory = new File(uploadDir);
                 if (!directory.exists()) {
                     directory.mkdirs();
                 }
-                // Nom du fichier
                 String fileName = System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
-                // Enregistrer le fichier sur le serveur
                 Path filePath = Paths.get(uploadDir + fileName);
                 Files.write(filePath, imageFile.getBytes());
                 String fileUrl = "http://localhost:8080/uploads/" + fileName;
-                // Enregistrer dans la base
                 user.setImageUrl(fileUrl);
 
             } catch (IOException e) {
@@ -156,6 +150,48 @@ public class AuthServiceImpl implements  AuthService{
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable avec l'ID : " + id));
     }
+
+    @Override
+    public User updateAdminProfileById(String id, String newEmail, String nom, String tel, String newPassword, MultipartFile imageFile) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable !"));
+
+        if (nom != null && !nom.isEmpty()) {
+            user.setNom(nom);
+        }
+        if (tel != null && !tel.isEmpty()) {
+            user.setTel(tel);
+        }
+        if (newEmail != null && !newEmail.isEmpty() && !newEmail.equals(user.getEmail())) {
+            if (userRepository.findByEmail(newEmail) != null) {
+                throw new RuntimeException("L'adresse e-mail est déjà utilisée !");
+            }
+            user.setEmail(newEmail);
+        }
+        if (newPassword != null && !newPassword.isEmpty()) {
+            String encodedPassword = passwordEncoder.encode(newPassword);
+            user.setPassword(encodedPassword);
+        }
+        if (imageFile != null && !imageFile.isEmpty()) {
+            try {
+                String uploadDir = System.getProperty("user.dir") + "/uploads/";
+                File directory = new File(uploadDir);
+                if (!directory.exists()) {
+                    directory.mkdirs();
+                }
+                String fileName = System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
+                Path filePath = Paths.get(uploadDir + fileName);
+                Files.write(filePath, imageFile.getBytes());
+                String fileUrl = "http://localhost:8080/uploads/" + fileName;
+                user.setImageUrl(fileUrl);
+            } catch (IOException e) {
+                throw new RuntimeException("Erreur lors de l'enregistrement de l'image", e);
+            }
+        }
+        userRepository.save(user);
+        return user;
+    }
+
 
 
 }

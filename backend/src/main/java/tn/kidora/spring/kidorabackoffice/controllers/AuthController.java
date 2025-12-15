@@ -98,6 +98,18 @@ public class AuthController {
         if (contentType == null) contentType = "application/octet-stream";
         return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType)).body(resource);
     }
+    @PutMapping(value = Constants.UPDATE + Constants.ID, consumes = {"multipart/form-data"})
+    public User updateAdminProfileById(
+            @PathVariable String id,
+            @RequestParam(required = false) String newEmail,
+            @RequestParam(required = false) String nom,
+            @RequestParam(required = false) String tel,
+            @RequestParam(required = false) String newPassword,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile) {
+
+        return authService.updateAdminProfileById(id, newEmail, nom, tel, newPassword, imageFile);
+    }
+
 
     @DeleteMapping(Constants.DELETE_USER)
     public ResponseEntity<String> deleteUserById(@PathVariable("id") String id) {
