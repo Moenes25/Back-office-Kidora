@@ -1,14 +1,15 @@
 import React from "react";
-import RolePermissionPage from "./Permission";
+import RolesPermissions from "./components/Permission";
+
 
 const Settings = () => {
   return (
     <div className="">
-      <div className=" mx-auto space-y-8">
+      <div className="mx-auto space-y-8 ">
 
         {/* Roles & Permissions */}
         
-          <RolePermissionPage />
+          <RolesPermissions />
         
 
         {/* General Preferences */}

@@ -1,16 +1,19 @@
 import { useState, useEffect} from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import ProfileInfo from "./components/ProfilInfo";
-import Settings from "./components/Settings";
-import Security from "./components/Security";
-import NotificationSettings from "./components/NotifSection";
+import ProfileInfo from "./pages/ProfilInfo";
+
+import NotificationSettings from "./pages/NotifSetting";
 import ProfileHeader from "./ProfilHeader";
 import ProfileTabs from "./ProfilTabs";
 import AdminCarousel from "./components/AdminCarousel";
+
+
+import ActivityFeedSection from "./pages/Activity";
+import SuperAdminSettings from "./pages/admin/AdminSetting";
 import Notifications from "./components/Notification";
-import ActivityFeedSection from "./components/Activity";
-import SuperAdminSettings from "./components/AdminSetting";
+import SecuritySettings from "./pages/security/Security";
+import Settings from "./pages/setting/Settings";
 
 
 
@@ -47,7 +50,7 @@ const ProfilePage = () => {
       case "settings":
         return <Settings />;
       case "security":
-        return <Security />;
+        return <SecuritySettings />;
       case "activity":
         return <ActivityFeedSection />;
       case "admin":
