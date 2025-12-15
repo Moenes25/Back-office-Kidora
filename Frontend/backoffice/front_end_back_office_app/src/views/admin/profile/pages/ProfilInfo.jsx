@@ -33,7 +33,7 @@ export default function ProfileInfo() {
   const [profileImage, setProfileImage] = useState("/default-avatar.png");
   const [previewImage, setPreviewImage] = useState(null);
 
-  // ✅ تنسيق التاريخ
+
   const formatDate = (dateStr) => {
     if (!dateStr) return "N/A";
     const date = new Date(dateStr);
@@ -46,9 +46,7 @@ export default function ProfileInfo() {
     });
   };
 
-  // ==================================================
-  // ✅ 1) تحميل البيانات مباشرة من AuthContext
-  // ==================================================
+
   useEffect(() => {
     if (!user) return;
 
@@ -67,27 +65,34 @@ export default function ProfileInfo() {
     setProfileImage(user.imageUrl || "/default-avatar.png");
   }, [user]);
 
-  // ==================================================
-  // ✅ 2) تحديث البيانات من API فقط إذا كان token موجود
-  // ==================================================
+
   useEffect(() => {
-    if (!token || !user?.id) return;
+  if (!token || !user?.id) return;
 
-    const fetchUser = async () => {
-      try {
-        const res = await api.get(`/auth/${user.id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+  const fetchUser = async () => {
+    try {
+      const res = await api.get(`/auth/${user.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-        // تحديث AuthContext
-        updateUser(res.data);
-      } catch (err) {
-        console.error("Failed to refresh user:", err);
+      // only update if data has changed
+      const newUserData = res.data;
+      if (
+        newUserData.nom !== user.nom ||
+        newUserData.email !== user.email ||
+        newUserData.tel !== user.tel ||
+        newUserData.imageUrl !== user.imageUrl
+      ) {
+        updateUser(newUserData);
       }
-    };
+    } catch (err) {
+      console.error("Failed to refresh user:", err);
+    }
+  };
 
-    fetchUser();
-  }, [token, user?.id, updateUser]);
+  fetchUser();
+}, [token, user?.id, user, updateUser]);
+
 
   // ==================================================
   // Handlers
@@ -118,7 +123,6 @@ export default function ProfileInfo() {
         },
       });
 
-      // تحديث البيانات في الـ context
       updateUser(res.data);
 
       if (previewImage) {

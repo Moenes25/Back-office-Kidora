@@ -100,20 +100,24 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS with custom configuration
                 .authorizeHttpRequests(auth
-                
                         // Public endpoints
                         -> auth.requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/auth/forgot-password").permitAll()
                         .requestMatchers("/api/auth/verify-otp").permitAll()
                         .requestMatchers("/api/auth/reset-password").permitAll()
-                        .requestMatchers("/api/auth/update-profile/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers("/api/auth/update-profile/**").permitAll()
 
 
+                        
                         // Only SUPER_ADMIN can access 
                         .requestMatchers("/api/auth/all").hasRole("SUPER_ADMIN")
                         .requestMatchers("/api/auth/delete-user/**").hasRole("SUPER_ADMIN")
                         .requestMatchers("/api/auth/roles").hasRole("SUPER_ADMIN")
+                        .requestMatchers("/api/auth/update/**").hasRole("SUPER_ADMIN")
+                        
+
+
 
                         // ETABLISSEMENT management endpoints
                         .requestMatchers(Constants.APP_ROOT + Constants.ETABLISSEMENT + Constants.ALL)
