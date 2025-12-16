@@ -20,6 +20,7 @@ public class EtablissementRequestDTO {
     Integer nombreEducateurs;
     Integer nombreParents;
     Integer nombreEnfants;
+    
 
     String userId;
 }

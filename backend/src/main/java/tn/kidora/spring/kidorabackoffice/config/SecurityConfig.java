@@ -43,12 +43,14 @@ public class SecurityConfig {
                auth.requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.LOGIN,
                Constants.APP_ROOT+Constants.ETABLISSEMENT+"/create-test-etablissement",
                 Constants.APP_ROOT+Constants.ABONNEMENT+"/create-test-abonnement",
-                 Constants.APP_ROOT+Constants.EVENEMENT+"/create-test-evenement"
+                Constants.APP_ROOT+Constants.EVENEMENT+"/create-test-evenement",
+                Constants.APP_ROOT + Constants.ABONNEMENT+"/repartition-annuelle"
                ).permitAll()
                                .requestMatchers(Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.SAVE,
                                                 Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.UPDATE,
                                                 Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.DELETE,
-                                                Constants.APP_ROOT+Constants.TOOGLE_STATUS).hasAnyRole("ADMIN_GENERAL","SUPER_ADMIN")
+                                                Constants.APP_ROOT+Constants.TOOGLE_STATUS
+                                                ).hasAnyRole("ADMIN_GENERAL","SUPER_ADMIN")
   
                               .requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.REGISTER).hasRole("SUPER_ADMIN")
                               .anyRequest().authenticated())

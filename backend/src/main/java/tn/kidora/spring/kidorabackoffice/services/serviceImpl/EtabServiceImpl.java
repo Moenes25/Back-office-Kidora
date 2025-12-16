@@ -5,7 +5,9 @@ import lombok.AllArgsConstructor;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.ZoneId;
+import java.time.chrono.ChronoPeriod;
 import java.time.format.TextStyle;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import tn.kidora.spring.kidorabackoffice.dto.DonneesCroissanceDTo;
 import tn.kidora.spring.kidorabackoffice.dto.Etab_Dto;
+import tn.kidora.spring.kidorabackoffice.dto.EtablissementInactifDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementUpdateDTO;
 import tn.kidora.spring.kidorabackoffice.entities.Abonnement;
@@ -23,6 +26,7 @@ import tn.kidora.spring.kidorabackoffice.entities.Abonnement;
 import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.Type_Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.User;
+import tn.kidora.spring.kidorabackoffice.repositories.AbonnementRepository;
 import tn.kidora.spring.kidorabackoffice.repositories.Etablissement_Repository;
 import tn.kidora.spring.kidorabackoffice.repositories.UserRepository;
 import tn.kidora.spring.kidorabackoffice.services.EtabService;
@@ -33,6 +37,7 @@ public class EtabServiceImpl implements EtabService {
     private final Etablissement_Repository etablissementRepository;
     private final EtablissementMapper etablissementMapper;
     private final UserRepository userRepository;
+    private final  AbonnementRepository abonnementRepository ;
     @Override
     public ResponseEntity<Etab_Dto>  addEtablissement(EtablissementRequestDTO dto) {
         if(etablissementRepository.existsByEmail(dto.getEmail())){
@@ -141,7 +146,14 @@ public class EtabServiceImpl implements EtabService {
         Etablissement etab = etablissementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Etablissement non trouvé avec id : " + id));
 
-        etab.setIsActive(!etab.getIsActive());
+        boolean ancienEtat = etab.getIsActive() != null ? etab.getIsActive() : true;
+        etab.setIsActive(!ancienEtat);
+        if(!ancienEtat){
+            etab.setDateDesactivation(null);
+        }
+        else{
+            etab.setDateDesactivation(new Date());
+        }
         Etablissement updated = etablissementRepository.save(etab);
         return ResponseEntity.status(HttpStatus.OK).body(etablissementMapper.EntityToEtab_Dto(updated));
     }
@@ -168,33 +180,102 @@ public class EtabServiceImpl implements EtabService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
         }
     }
-//l’API pour fournir les données de croissance des inscriptions par catégorie et par mois.
+// l’API pour fournir les données de croissance des inscriptions par catégorie et par mois.
     @Override
     public List<DonneesCroissanceDTo> obtenirCroissanceMensuelle() {
-       List<Etablissement> etablissements=etablissementRepository.findAll();
-        Map<Integer,Map<Type_Etablissement,Long>> mapMensuelle= new HashMap<>();
-         for(Etablissement etab:etablissements){
-             for(Abonnement ab:etab.getAbonnements()){
-                 if(ab.getDateDebutAbonnement()!=null){
-                     int mois = ab.getDateDebutAbonnement().getMonthValue();
-                 mapMensuelle.putIfAbsent(mois, new HashMap<>());
-                 Map<Type_Etablissement,Long> mapType = mapMensuelle.get(mois);
-                     mapType.put(etab.getType(), mapType.getOrDefault(etab.getType(), 0L) + 1);
-
-                 }
-             }
-         }
-        List<DonneesCroissanceDTo> resultats = new ArrayList<>();
-        for (int m = 1; m <= 12; m++) {
-            Map<Type_Etablissement, Long> mapType = mapMensuelle.getOrDefault(m, new HashMap<>());
-            String nomMois = Month.of(m).getDisplayName(TextStyle.FULL, Locale.FRANCE);
-            resultats.add(new DonneesCroissanceDTo(
-                    nomMois,
-                    mapType.getOrDefault(Type_Etablissement.GARDERIE, 0L).intValue(),
-                    mapType.getOrDefault(Type_Etablissement.CRECHE, 0L).intValue(),
-                    mapType.getOrDefault(Type_Etablissement.ECOLE, 0L).intValue()
-            ));
-        }
-        return resultats;
+    List<DonneesCroissanceDTo> resultats = new ArrayList<>();
+    for (int m = 1; m <= 12; m++) {
+        String nomMois = Month.of(m)
+            .getDisplayName(TextStyle.FULL, Locale.FRANCE)
+            .toLowerCase();
+        resultats.add(new DonneesCroissanceDTo(nomMois, 0, 0, 0));
     }
-}
+    
+    List<Abonnement> tousAbonnements = abonnementRepository.findAll();
+    System.out.println("Nombre total d'abonnements: " + tousAbonnements.size());
+
+    for (Abonnement abonnement : tousAbonnements) {
+        if (abonnement.getDateDebutAbonnement() == null) {
+            continue;
+        }
+        
+        int mois = abonnement.getDateDebutAbonnement().getMonthValue();
+    
+        Etablissement etablissement = abonnement.getEtablissement();
+        if (etablissement == null) {
+            System.out.println("Abonnement " + abonnement.getIdAbonnement() + " sans établissement");
+            continue;
+        }
+        
+        Type_Etablissement type = etablissement.getType();
+        
+        DonneesCroissanceDTo dto = resultats.get(mois - 1); // -1 car liste commence à 0
+        
+        switch (type) {
+            case GARDERIE:
+                dto.setNombreGarderies(dto.getNombreGarderies() + 1);
+                break;
+            case CRECHE:
+                dto.setNombreCreches(dto.getNombreCreches() + 1);
+                break;
+            case ECOLE:
+                dto.setNombreEcoles(dto.getNombreEcoles() + 1);
+                break;
+        }
+  
+        System.out.println("Abonnement " + abonnement.getIdAbonnement() + ": Mois=" + mois + ", Type=" + type);
+    }
+
+    for (DonneesCroissanceDTo dto : resultats) {
+        if (dto.getNombreGarderies() > 0 || dto.getNombreCreches() > 0 || dto.getNombreEcoles() > 0) {
+                System.out.println("Mois " + dto.getMois() + ": Garderie=" + dto.getNombreGarderies() + ", Crèche=" + dto.getNombreCreches() + ", École=" + dto.getNombreEcoles());
+        }
+    }
+    System.out.println("Fin calcul - " + resultats.size() + " mois générés");
+    return resultats;
+    }
+    
+
+    @Override
+    public ResponseEntity<List<EtablissementInactifDTO>> getEtablissementsInactifs() {
+        List<Etablissement> etablissements = etablissementRepository.findByIsActiveFalse();
+        List<EtablissementInactifDTO> dtos =  etablissements.stream().map(etab -> {
+            EtablissementInactifDTO dto = new EtablissementInactifDTO();
+            dto.setId(etab.getIdEtablissment());
+            dto.setNomEtablissement(etab.getNomEtablissement());
+            dto.setJoursInactivite(calculateJoursInactivite(etab));
+            return dto;
+        }).toList();
+
+        if (dtos.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Collections.emptyList());
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(dtos);
+        
+        }    
+        
+       
+    
+
+     public Long calculateJoursInactivite(Etablissement etab){
+        if (etab.getDateDesactivation() == null) {
+            return 0L;
+        }
+
+        try {
+            LocalDate dateDesactivation = etab.getDateDesactivation()
+                                           .toInstant()
+                                           .atZone(ZoneId.systemDefault())
+                                           .toLocalDate();
+            LocalDate aujourdhui  = LocalDate.now();
+
+            return  ChronoUnit.DAYS.between(dateDesactivation, aujourdhui);
+                
+
+        } catch (Exception e) {
+             
+            return 0L;
+        }
+     }
+    }
+

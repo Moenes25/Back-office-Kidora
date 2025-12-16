@@ -13,5 +13,6 @@ public class AbonnementResponseDTO {
     private Double montantPaye;
     private Double montantDu;
     private StatutPaiement statut;
+    private String formule;
     private Etab_Dto etablissement;
 }
