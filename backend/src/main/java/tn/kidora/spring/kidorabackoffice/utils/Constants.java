@@ -41,6 +41,9 @@ public class Constants {
     public static final String ROLES = "/roles";
     public static final String SUPERADMIN_UPDATE_PASSWORD = "/superadmin/update-password";
     public static final String UserByREGION = "/byRegion";
+    public static final String ACTIVITY = "/activity";
+    public static final String ALLACTIVITY = "/all";
+
 
 
 

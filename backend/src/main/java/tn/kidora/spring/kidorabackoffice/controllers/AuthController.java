@@ -164,10 +164,8 @@ public class AuthController {
     }
 
     @GetMapping(Constants.ROLES)
-    public List<String> getAllRoles() {
-        return Arrays.stream(Role.values())
-                .map(Enum::name)
-                .collect(Collectors.toList());
+    public List<Role> getAllRoles() {
+        return Arrays.asList(Role.values());
     }
     @PutMapping(Constants.SUPERADMIN_UPDATE_PASSWORD)
     public ResponseEntity<?> updateSuperAdminPassword(

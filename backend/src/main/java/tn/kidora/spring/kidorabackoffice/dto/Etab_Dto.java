@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import tn.kidora.spring.kidorabackoffice.entities.Type_Etablissement;
 
+import java.time.LocalDateTime;
+
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
 public class Etab_Dto {
@@ -23,4 +25,5 @@ public class Etab_Dto {
     Integer nombreEducateurs;
     Integer nombreParents;
     Integer nombreEnfants;
+     LocalDateTime createdAt;
 }
