@@ -18,7 +18,7 @@ import {
 } from "react-icons/io5";
 
 const AddAdminModal = ({ open, onClose, onSuccess }) => {
-  const { token } = useAuth(); 
+  const { token } = useAuth();
   const [roles, setRoles] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -31,6 +31,7 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
     password: "",
     confirmPassword: "",
     role: "",
+    region: "",
   });
 
   // ===========================
@@ -47,7 +48,6 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
 
         if (res.status !== 200) throw new Error("Failed to fetch roles");
 
-        
         setRoles(res.data);
       } catch (err) {
         console.error("Error fetching roles:", err);
@@ -67,6 +67,7 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
     if (!newAdmin.password) err.password = "Password is required";
     if (newAdmin.password !== newAdmin.confirmPassword)
       err.confirmPassword = "Passwords do not match";
+    if (!newAdmin.region) err.region = "Region is required";
 
     setErrors(err);
     return Object.keys(err).length === 0;
@@ -84,7 +85,8 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
 
     try {
       const selectedRole =
-        roles.find((r) => r.name === newAdmin.role)?.backendValue || newAdmin.role;
+        roles.find((r) => r.name === newAdmin.role)?.backendValue ||
+        newAdmin.role;
 
       const payload = {
         nom: newAdmin.nom,
@@ -92,6 +94,7 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
         tel: newAdmin.tel,
         password: newAdmin.password,
         role: selectedRole,
+        region: newAdmin.region,
       };
 
       const res = await api.post("/auth/register", payload, {
@@ -108,6 +111,7 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
         password: "",
         confirmPassword: "",
         role: "",
+        region: "",
       });
     } catch (error) {
       console.error("Error adding admin:", error);
@@ -120,8 +124,37 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
 
   const getRoleIcon = (roleName) => {
     const roleObj = roles.find((r) => r.name === roleName);
-    return roleObj?.icon || <IoShieldCheckmarkOutline className="text-purple-500" />;
+    return (
+      roleObj?.icon || <IoShieldCheckmarkOutline className="text-purple-500" />
+    );
   };
+
+  const tunisianRegions = [
+    "Tunis",
+    "Ariana",
+    "Ben Arous",
+    "Manouba",
+    "Nabeul",
+    "Zaghouan",
+    "Bizerte",
+    "Beja",
+    "Jendouba",
+    "Kef",
+    "Siliana",
+    "Sousse",
+    "Monastir",
+    "Mahdia",
+    "Sfax",
+    "Kairouan",
+    "Kasserine",
+    "Sidi Bouzid",
+    "Gabes",
+    "Mednine",
+    "Tataouine",
+    "Gafsa",
+    "Tozeur",
+    "Kebili",
+  ];
 
   return (
     <motion.div
@@ -151,10 +184,14 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
         <div className={`flex flex-col gap-4 ${shake ? "animate-shake" : ""}`}>
           {/* Role */}
           <motion.div className="relative">
-            <span className="absolute text-lg left-3 top-4">{getRoleIcon(newAdmin.role)}</span>
+            <span className="absolute text-lg left-3 top-4">
+              {getRoleIcon(newAdmin.role)}
+            </span>
             <select
               value={newAdmin.role}
-              onChange={(e) => setNewAdmin({ ...newAdmin, role: e.target.value })}
+              onChange={(e) =>
+                setNewAdmin({ ...newAdmin, role: e.target.value })
+              }
               className={`w-full appearance-none rounded-xl border bg-gradient-to-r from-purple-50 to-blue-50 p-3 pl-10 focus:ring-2 focus:ring-purple-400 ${
                 errors.role ? "border-red-400" : "border-gray-300"
               }`}
@@ -166,8 +203,31 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
                 </option>
               ))}
             </select>
-            {errors.role && <p className="mt-1 text-sm text-red-500">{errors.role}</p>}
+            {errors.role && (
+              <p className="mt-1 text-sm text-red-500">{errors.role}</p>
+            )}
           </motion.div>
+
+          {/* Region */}
+          <div>
+            <select
+              value={newAdmin.region}
+              onChange={(e) =>
+                setNewAdmin({ ...newAdmin, region: e.target.value })
+              }
+              className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-purple-400"
+            >
+              <option value="">Select Region</option>
+              {tunisianRegions.map((region) => (
+                <option key={region} value={region}>
+                  {region}
+                </option>
+              ))}
+            </select>
+            {errors.region && (
+              <p className="mt-1 text-sm text-red-500">{errors.region}</p>
+            )}
+          </div>
 
           {/* Name + Phone */}
           <div className="flex flex-col gap-4 md:flex-row">
@@ -212,7 +272,9 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
                 errors.email ? "border-red-400" : "border-gray-300"
               }`}
             />
-            {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+            )}
           </motion.div>
 
           {/* Password + Confirm */}
@@ -271,7 +333,9 @@ const AddAdminModal = ({ open, onClose, onSuccess }) => {
                 )}
               </button>
               {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.confirmPassword}
+                </p>
               )}
             </motion.div>
           </div>

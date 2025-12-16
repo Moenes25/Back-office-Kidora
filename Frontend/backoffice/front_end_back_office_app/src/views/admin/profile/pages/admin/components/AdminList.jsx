@@ -181,7 +181,10 @@ const AdminList = () => {
                     ></span>
                   </div>
                   <div className="flex flex-col">
-                    <h4 className="font-semibold text-gray-800">{admin.nom}</h4>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-semibold text-gray-800">{admin.nom}</h4>
+                      <p className="px-1 text-sm bg-gray-300 rounded-full">{admin.region} </p>
+                    </div>
                     <span className="text-sm text-gray-500">{admin.role}</span>
                   </div>
                 </div>
