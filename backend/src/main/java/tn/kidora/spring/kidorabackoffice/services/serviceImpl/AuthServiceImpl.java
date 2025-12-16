@@ -33,11 +33,10 @@ import tn.kidora.spring.kidorabackoffice.entities.Role;
 import tn.kidora.spring.kidorabackoffice.entities.User;
 import tn.kidora.spring.kidorabackoffice.repositories.UserRepository;
 import tn.kidora.spring.kidorabackoffice.services.AuthService;
-
 @AllArgsConstructor
 @Service
-public class AuthServiceImpl implements AuthService {
-
+public class AuthServiceImpl implements  AuthService{
+    
     public final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
@@ -45,14 +44,14 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public User register(RegisterDto dto) {
-        if (userRepository.existsByEmail(dto.getEmail())) {
+        if(userRepository.existsByEmail(dto.getEmail())){
             throw new RuntimeException("Email is already registred!");
         }
         Role role = dto.getRole();
         if (role == null) {
             throw new RuntimeException("Role must be provided by the super admin");
         }
-        if (role == Role.SUPER_ADMIN) {
+        if(role == Role.SUPER_ADMIN){
             throw new RuntimeException("Cannot create a super admin via this endpoint");
         }
         User user = new User();
@@ -62,27 +61,26 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(dto.getRole());
         user.setRegion(dto.getRegion());
-        return userRepository.save(user);
-    }
+        return userRepository.save(user);}
 
-    public Map<String, Object> login(String email, String password) {
-        try {
+    public Map<String,Object> login(String email, String password) {
+        try{
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(email, password)
+                new  UsernamePasswordAuthenticationToken(email, password)
             );
             if (authentication.isAuthenticated()) {
-                String token = jwtUtils.generateToken(email);
+                
                 User user = userRepository.findByEmail(email);
-                Map<String, Object> authData = new HashMap<>();
+                String token = jwtUtils.generateToken(user.getId(),email,user.getRole().toString());
+                Map<String,Object> authData  = new HashMap<>();
                 authData.put("token", token);
                 authData.put("type", "Bearer");
                 // authData.put("user", user);
-                authData.put("id", user.getId());
                 return authData;
-
+            
             }
             throw new RuntimeException("Authentification échouée");
-        } catch (AuthenticationException e) {
+        } catch(AuthenticationException e){
             throw new RuntimeException("Email ou mot de passe incorrect");
         }
     }
@@ -90,15 +88,16 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public List<User> getAllUsersExceptSuperAdmin() {
         return userRepository.findAll()
-                .stream().filter(user -> user.getRole() != Role.SUPER_ADMIN)
+                .stream().filter(user->user.getRole() !=Role.SUPER_ADMIN)
                 .collect(Collectors.toList());
 
     }
 
+
     @Override
-    public User updateAdminProfile(String email, String newEmail, String nom, String tel, String newPassword, MultipartFile imageFile) {
+    public User updateAdminProfile(String email,  String newEmail,String nom, String tel,String newPassword,MultipartFile imageFile) {
         User user = userRepository.findByEmail(email);
-        // System.out.println("Email reçu : '" + email + "'");
+       // System.out.println("Email reçu : '" + email + "'");
         if (user == null) {
             throw new RuntimeException("Utilisateur introuvable !");
         }
@@ -131,7 +130,7 @@ public class AuthServiceImpl implements AuthService {
                 String fileName = System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
                 Path filePath = Paths.get(uploadDir + fileName);
                 Files.write(filePath, imageFile.getBytes());
-                String fileUrl = "http://localhost:8086/uploads/" + fileName;
+                String fileUrl = "http://localhost:8080/uploads/" + fileName;
                 user.setImageUrl(fileUrl);
 
             } catch (IOException e) {
@@ -141,6 +140,7 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
         return user;
     }
+
 
     @Override
     public void deleteUserById(String id) {
@@ -154,7 +154,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public User updateAdminProfileById(String id, String newEmail, String newPassword, Role newRole) {
+    public User updateAdminProfileById(String id, String newEmail, String newPassword,Role newRole) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable !"));
 
@@ -201,4 +201,6 @@ public class AuthServiceImpl implements AuthService {
         return users;
     }
 
+
 }
+
