@@ -20,7 +20,7 @@ public interface Etablissement_Repository extends MongoRepository<Etablissement,
     List<Etablissement> findByRegion(String region);
     boolean existsByEmail(String email);
     List<Etablissement> findByIsActiveTrue();
-
+    List<Etablissement> findByIsActiveFalse();
     // @Query("SELECT DISTINCT e FROM Etablissement e JOIN e.abonnements a "+
     //        "WHERE YEAR(a.dateDebutAbonnement) = YEAR(CURRENT_DATE)"+
     //        "AND MONTH(a.dateDebutAbonnement) = MONTH(CURRENT_DATE)"

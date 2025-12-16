@@ -11,10 +11,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import tn.kidora.spring.kidorabackoffice.utils.Constants;
 
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import tn.kidora.spring.kidorabackoffice.services.serviceImpl.CustomUserDetailsService;
-import tn.kidora.spring.kidorabackoffice.utils.Constants;
+import tn.kidora.spring.kidorabackoffice.config.JwtFilter;
 @Configuration
 @EnableWebSecurity
 @AllArgsConstructor
@@ -43,12 +45,14 @@ public class SecurityConfig {
                auth.requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.LOGIN,
                Constants.APP_ROOT+Constants.ETABLISSEMENT+"/create-test-etablissement",
                 Constants.APP_ROOT+Constants.ABONNEMENT+"/create-test-abonnement",
-                 Constants.APP_ROOT+Constants.EVENEMENT+"/create-test-evenement"
+                Constants.APP_ROOT+Constants.EVENEMENT+"/create-test-evenement",
+                Constants.APP_ROOT + Constants.ABONNEMENT+"/repartition-annuelle"
                ).permitAll()
                                .requestMatchers(Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.SAVE,
                                                 Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.UPDATE,
                                                 Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.DELETE,
-                                                Constants.APP_ROOT+Constants.TOOGLE_STATUS).hasAnyRole("ADMIN_GENERAL","SUPER_ADMIN")
+                                                Constants.APP_ROOT+Constants.TOOGLE_STATUS
+                                                ).hasAnyRole("ADMIN_GENERAL","SUPER_ADMIN")
   
                               .requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.REGISTER).hasRole("SUPER_ADMIN")
                               .anyRequest().authenticated())
@@ -61,5 +65,4 @@ public class SecurityConfig {
     }
 
     
-
 

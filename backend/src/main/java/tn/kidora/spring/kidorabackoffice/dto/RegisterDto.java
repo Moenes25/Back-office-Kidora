@@ -14,5 +14,6 @@ public class RegisterDto {
     String tel ;
     String password ;
     Role role;
+    String region;
 
 }

@@ -1,9 +1,22 @@
 package tn.kidora.spring.kidorabackoffice.services.serviceImpl;
 
+import lombok.AllArgsConstructor;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,12 +24,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import lombok.AllArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 import tn.kidora.spring.kidorabackoffice.config.JwtUtils;
 import tn.kidora.spring.kidorabackoffice.dto.RegisterDto;
 import tn.kidora.spring.kidorabackoffice.entities.Role;
+
 import tn.kidora.spring.kidorabackoffice.entities.User;
 import tn.kidora.spring.kidorabackoffice.repositories.UserRepository;
 import tn.kidora.spring.kidorabackoffice.services.AuthService;
@@ -47,6 +60,7 @@ public class AuthServiceImpl implements  AuthService{
         user.setTel((dto.getTel()));
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(dto.getRole());
+        user.setRegion(dto.getRegion());
         return userRepository.save(user);}
 
     public Map<String,Object> login(String email, String password) {
@@ -61,7 +75,6 @@ public class AuthServiceImpl implements  AuthService{
                 authData.put("token", token);
                 authData.put("type", "Bearer");
                 // authData.put("user", user);
-                authData.put("id", user.getId());
                 return authData;
             
             }
@@ -81,7 +94,7 @@ public class AuthServiceImpl implements  AuthService{
 
 
     @Override
-    public User updateAdminProfile(String email, String nom, String tel, MultipartFile imageFile) {
+    public User updateAdminProfile(String email,  String newEmail,String nom, String tel,String newPassword,MultipartFile imageFile) {
         User user = userRepository.findByEmail(email);
        // System.out.println("Email reçu : '" + email + "'");
         if (user == null) {
@@ -93,13 +106,40 @@ public class AuthServiceImpl implements  AuthService{
         if (tel != null && !tel.isEmpty()) {
             user.setTel(tel);
         }
+        if (newEmail != null && !newEmail.isEmpty() && !newEmail.equals(email)) {
+            // Vérifier si le nouvel email n'est pas déjà utilisé
+            if (userRepository.findByEmail(newEmail) != null) {
+                throw new RuntimeException("L'adresse e-mail est déjà utilisée !");
+            }
+            user.setEmail(newEmail);
+        }
+        if (newPassword != null && !newPassword.isEmpty()) {
+            //  Assure-toi d’utiliser ton encodeur BCryptPasswordEncoder
+            String encodedPassword = passwordEncoder.encode(newPassword);
+            user.setPassword(encodedPassword);
+        }
         if (imageFile != null && !imageFile.isEmpty()) {
-            user.setImageUrl(imageFile.getOriginalFilename());
+            try {
+                String uploadDir = System.getProperty("user.dir") + "/uploads/";
 
+                File directory = new File(uploadDir);
+                if (!directory.exists()) {
+                    directory.mkdirs();
+                }
+                String fileName = System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
+                Path filePath = Paths.get(uploadDir + fileName);
+                Files.write(filePath, imageFile.getBytes());
+                String fileUrl = "http://localhost:8080/uploads/" + fileName;
+                user.setImageUrl(fileUrl);
+
+            } catch (IOException e) {
+                throw new RuntimeException("Erreur lors de l'enregistrement de l'image", e);
+            }
         }
         userRepository.save(user);
         return user;
     }
+
 
     @Override
     public void deleteUserById(String id) {
@@ -110,6 +150,54 @@ public class AuthServiceImpl implements  AuthService{
     public User getUserById(String id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable avec l'ID : " + id));
+    }
+
+    @Override
+    public User updateAdminProfileById(String id, String newEmail, String newPassword,Role newRole) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable !"));
+
+        if (newEmail != null && !newEmail.isEmpty() && !newEmail.equals(user.getEmail())) {
+            if (userRepository.findByEmail(newEmail) != null) {
+                throw new RuntimeException("L'adresse e-mail est déjà utilisée !");
+            }
+            user.setEmail(newEmail);
+        }
+        if (newPassword != null && !newPassword.isEmpty()) {
+            String encodedPassword = passwordEncoder.encode(newPassword);
+            user.setPassword(encodedPassword);
+        }
+        // Mettre à jour le rôle si fourni
+        if (newRole != null) {
+            user.setRole(newRole);
+        }
+        userRepository.save(user);
+        return user;
+    }
+
+    @Override
+    public User updateSuperAdminPassword(String email, String oldPassword, String newPassword) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new RuntimeException("Utilisateur introuvable !");
+        }
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new RuntimeException("Ancien mot de passe incorrect !");
+        }
+
+        // Encoder et mettre à jour le nouveau mot de passe
+        String encodedNewPassword = passwordEncoder.encode(newPassword);
+        user.setPassword(encodedNewPassword);
+
+        userRepository.save(user);
+
+        return user;
+    }
+
+    @Override
+    public List<User> getAllUsersByRegion(String region) {
+        List<User> users = userRepository.findByRegion(region);
+        return users;
     }
 
 
