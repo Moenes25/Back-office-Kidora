@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import tn.kidora.spring.kidorabackoffice.dto.AbonnementResponseDTO;
 import tn.kidora.spring.kidorabackoffice.dto.DonneesCroissanceDTo;
 import tn.kidora.spring.kidorabackoffice.dto.Etab_Dto;
+import tn.kidora.spring.kidorabackoffice.dto.EtablissementInactifDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementUpdateDTO;
 import tn.kidora.spring.kidorabackoffice.services.AbonnementService;
@@ -149,7 +150,11 @@ public class EtabController {
                  .collect(Collectors.toList());
         return ResponseEntity.status(HttpStatus.OK).body(etablissementsDTOs);
     }
-
+    
+    @GetMapping(Constants.INACTIVE_NBR_JRS)
+    public ResponseEntity<List<EtablissementInactifDTO>> getEtablissementsInactifs() {
+        return etabService.getEtablissementsInactifs();
+    }
    
 
 }
