@@ -303,17 +303,12 @@ const pageRows = filtered.slice(start, start + PAGE_SIZE);
         </div>
     <button
          onClick={()=>setShowAI(true)}
-         className="inline-flex items-center gap-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-extrabold text-indigo-700 shadow hover:bg-indigo-100"
+         className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-sky-600 px-4 py-2 text-sm font-extrabold text-white shadow-[0_16px_40px_rgba(37,99,235,.35)] hover:brightness-110"
          title="Création / correction assistée"
        >
          🤖 Gérer par IA
        </button>
-        <button
-          onClick={()=>setShowAdd(true)}
-          className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-sky-600 px-4 py-2 text-sm font-extrabold text-white shadow-[0_16px_40px_rgba(37,99,235,.35)] hover:brightness-110"
-        >
-          <FiPlus /> Créer un ticket
-        </button>
+      
                {/* ---  bouton IA --- */}
    
       </div>

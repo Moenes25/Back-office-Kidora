@@ -143,12 +143,126 @@ export async function getRepartitionAnnuelle(annee = 2024) {
 }
 
 
-export async function getAllAbonnements() {
+
+
+
+export async function getNextExpirationsByType() {
   try {
     const res = await api.get("/abonnement/all");
-    return res.data;
+    const abonnements = res.data;
+
+    const now = new Date();
+
+    // Filtrer les abonnements valides avec fin de date et établissement associé
+    const valides = abonnements.filter(abn =>
+      abn?.dateFinAbonnement &&
+      abn?.etablissement &&
+      abn.etablissement?.type &&
+      abn.etablissement?.nomEtablissement
+    );
+
+    // Grouper les abonnements par type d’établissement
+    const groupes = { creches: [], garderies: [], ecoles: [] };
+
+    for (const abn of valides) {
+      const dateFin = new Date(abn.dateFinAbonnement);
+      const type = abn.etablissement.type.toLowerCase(); // "CRECHE" -> "creche"
+    const daysLeft = Math.ceil((dateFin - now) / (1000 * 60 * 60 * 24));
+
+// Formater J-X (restant) ou J+X (passé)
+let restant = "";
+if (daysLeft > 0) {
+  restant = `J-${daysLeft}`;
+} else if (daysLeft === 0) {
+  restant = "J-0"; // aujourd’hui
+} else {
+  restant = `J+${Math.abs(daysLeft)}`; // abonnement expiré
+}
+
+const data = {
+  nom: abn.etablissement.nomEtablissement,
+  licence: abn.statut === "PAYEE" ? "Licence Active" :
+           abn.statut === "RETARD" ? "En retard" :
+           abn.statut === "ESSAYE" ? "En essai" : "Inconnue",
+  date: dateFin.toLocaleDateString("fr-FR"),
+  restant,
+  daysLeft,
+};
+
+
+      if (type === "creche") groupes.creches.push(data);
+      else if (type === "garderie") groupes.garderies.push(data);
+      else if (type === "ecole") groupes.ecoles.push(data);
+    }
+
+    // Trier par expiration la plus proche
+    return {
+      creches: groupes.creches.sort((a, b) => a.daysLeft - b.daysLeft)[0] || null,
+      garderies: groupes.garderies.sort((a, b) => a.daysLeft - b.daysLeft)[0] || null,
+      ecoles: groupes.ecoles.sort((a, b) => a.daysLeft - b.daysLeft)[0] || null,
+    };
+
   } catch (err) {
-    console.error("Erreur lors du chargement des abonnements :", err);
+    console.error("❌ Erreur chargement expirations :", err);
+    return { creches: null, garderies: null, ecoles: null };
+  }
+}
+
+
+export async function getTopEtablissements() {
+  try {
+    const resEtab = await api.get("/etablissement/all");
+    const resAbn = await api.get("/abonnement/all");
+
+    const etablissements = resEtab.data || [];
+    const abonnements = resAbn.data || [];
+
+    // Mapper les abonnements par id d’établissement
+    const abnMap = {};
+    for (const abn of abonnements) {
+      const etabId = abn.etablissement?.idEtablissment;
+      if (!etabId) continue;
+
+      // On garde le dernier abonnement (par dateFinAbonnement)
+      if (!abnMap[etabId] || new Date(abn.dateFinAbonnement) > new Date(abnMap[etabId].dateFinAbonnement)) {
+        abnMap[etabId] = abn;
+      }
+    }
+
+    // Créer les lignes dynamiques
+    const fullData = etablissements
+      .filter(e => e.type) // garde ceux avec un type
+      .map(e => {
+        const abn = abnMap[e.idEtablissment];
+        const revenu = abn?.montantPaye ?? 0;
+        const statut = abn?.statut ?? "INCONNU";
+
+        // Traduction statut
+        let licence = "Inconnue";
+        if (statut === "PAYEE") licence = "Active";
+        else if (statut === "RETARD") licence = "En alerte";
+        else if (statut === "EXPIREE") licence = "Expirée";
+        else if (statut === "ESSAYE") licence = "En essai";
+
+        return {
+          nom: e.nomEtablissement,
+          ville: e.region,
+          enfants: e.nombreEnfants ?? 0,
+          revenue: `${revenu.toLocaleString("fr-TN")} DT`,
+          revenuValeur: revenu,
+          licence,
+         type:
+         e.type === "CRECHE" ? "creches" :
+         e.type === "GARDERIE" ? "garderies" :
+         e.type === "ECOLE" ? "ecoles" :
+         "inconnu",
+
+        };
+      });
+
+    return fullData;
+  } catch (err) {
+    console.error("❌ Erreur récupération top établissements :", err);
     return [];
   }
 }

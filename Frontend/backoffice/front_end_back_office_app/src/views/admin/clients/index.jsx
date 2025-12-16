@@ -13,6 +13,9 @@ import { HiOutlineRefresh } from "react-icons/hi";
 import { RiPauseCircleLine, RiDeleteBinLine } from "react-icons/ri";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
+import api from "services/api"; 
+import { getEntreprisesStats , getAllEtablissements, saveEtablissement, updateEtablissement, deleteEtablissement , getUserFromToken , saveAbonnement} from "services/entreprisesService";
+
 
 /* ----------------------------------------------------------------
    Données démo (complètes)
@@ -488,12 +491,71 @@ function SupportPagination({ page, pageCount, total, onPage }) {
     </div>
   );
 }
+function determinePrice(plan) {
+  // Adapte les tarifs à ta logique
+  switch (plan) {
+    case "Essai 14 jours": return 0;
+    case "Standard / Mensuel": return 100;
+    case "Premium / Mensuel": return 200;
+    case "Standard / Annuel": return 1000;
+    case "Premium / Annuel": return 2000;
+    case "Établissement / Annuel": return 3000;
+    default: return 0;
+  }
+}
+
+function determineInitialStatus(status) {
+  if (status === "En période d’essai") return "ESSAYE";
+  if (status === "En retard de paiement") return "RETARD";
+  if (status === "Actif") return "PAYEE";
+  return "EN_ATTENTE"; // fallback
+}
+
+function calculateEndDate(plan) {
+  const start = new Date();
+  switch (plan) {
+    case "Essai 14 jours":
+      return new Date(start.setDate(start.getDate() + 14)).toISOString().slice(0, 10);
+    case "Standard / Mensuel":
+    case "Premium / Mensuel":
+      return new Date(start.setMonth(start.getMonth() + 1)).toISOString().slice(0, 10);
+    default:
+      return new Date(start.setFullYear(start.getFullYear() + 1)).toISOString().slice(0, 10);
+  }
+}
 
 /* ----------------------------------------------------------------
    Composant principal
 ----------------------------------------------------------------- */
 const ClientsPage = () => {
-  const [data, setData] = useState(MOCK);
+  const [data, setData] = useState([]);
+useEffect(() => {
+  getAllEtablissements().then(raw => {
+    const mapped = raw.map(etab => ({
+      id: etab.idEtablissment,
+      name: etab.nomEtablissement,
+      city: etab.region,
+      address: etab.adresse_complet || "",
+      phone: etab.telephone || "",
+      email: etab.email || "",
+      url_localisation: etab.url_localisation || "",
+      type:
+        etab.type === "CRECHE" ? "creches" :
+        etab.type === "GARDERIE" ? "garderies" :
+        etab.type === "ECOLE" ? "ecoles" : "autre",
+      status: etab.isActive ? "Actif" : "Suspendu", // ou adapte selon logique métier
+      password: "", // pas renvoyé par le backend en général
+      subscriptionDate: "", // tu peux le remplir plus tard si tu veux
+      plan: "", // optionnel
+      enfants: etab.nombreEnfants ?? 0,
+      parents: etab.nombreParents ?? 0,
+      educateurs: etab.nombreEducateurs ?? 0,
+      history: [],
+    }));
+    setData(mapped);
+  });
+}, []);
+
 
   // UI
   const [search, setSearch] = useState("");
@@ -533,34 +595,126 @@ const ClientsPage = () => {
    enfants: 0,     
     history: [],
   };
+
+
+
+
+
+
+
+
+
+  
   const [newClient, setNewClient] = useState(emptyClient);
   const resetNew = () => { setNewClient(emptyClient); setShowPwd(false); };
 
-  const saveClient = (e) => {
-    e?.preventDefault?.();
-    if (!newClient.name.trim() || !newClient.city.trim()) return;
 
-    const emailOk = !newClient.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newClient.email);
-    const urlOk = !newClient.url_localisation || /^https?:\/\/.+/.test(newClient.url_localisation);
-    if (!emailOk) { alert("Email invalide"); return; }
-    if (!urlOk) { alert("URL de localisation invalide"); return; }
 
-    if (editId) {
-      setData((prev) => prev.map((r) => (r.id === editId ? { ...r, ...newClient, id: editId } : r)));
-    } else {
-      const prefix = newClient.type === "creches" ? "C" : newClient.type === "garderies" ? "G" : "E";
-      const rand = String(Math.floor(Math.random() * 900) + 100).padStart(3, "0");
-      const added = {
-        ...newClient,
-        id: `${prefix}-${rand}`,
-        history: [{ at: `${new Date().toISOString().slice(0, 10)} 09:00`, text: "Client créé depuis le back-office" }],
-      };
-      setData((prev) => [added, ...prev]);
-    }
-    setShowAdd(false);
-    setEditId(null);
-    resetNew();
+const [backendStats, setBackendStats] = useState({
+  total: 0,
+  actifs: 0,
+  essais: 0,
+  retards: 0,
+});
+
+useEffect(() => {
+  getEntreprisesStats().then(setBackendStats);
+}, []);
+
+
+
+
+async function toBackendPayload(client) {
+  const user = getUserFromToken();
+  const userId = user?.id;
+  if (!userId) throw new Error("ID utilisateur introuvable dans le token");
+
+  const typeMap = {
+    creches: "CRECHE",
+    garderies: "GARDERIE",
+    ecoles: "ECOLE",
   };
+
+  const backendType = typeMap[client.type] || "CRECHE"; // valeur par défaut
+
+  if (!client.name || !client.address || !client.city || !client.phone || !client.email) {
+    throw new Error("Un ou plusieurs champs obligatoires sont manquants.");
+  }
+
+  return {
+    nomEtablissement: client.name,
+    adresse_complet: client.address.trim(),
+    region: client.city.trim(),
+    telephone: client.phone.trim(),
+    url_localisation: client.url_localisation?.trim() || "",
+    type: backendType, // ✅ valeur fixée
+    email: client.email.trim().toLowerCase(),
+    isActive: client.status === "Actif",
+    userId,
+    userNom: user?.username || "",
+    userEmail: user?.sub || "",
+    nombreEducateurs: client.educateurs ?? 0,
+    nombreParents: client.parents ?? 0,
+    nombreEnfants: client.enfants ?? 0,
+  };
+}
+
+
+
+
+
+
+
+
+const saveClient = async (e) => {
+  e.preventDefault();
+  const payload = await toBackendPayload(newClient);
+
+  try {
+    let added;
+    if (editId) {
+      await updateEtablissement(editId, payload);
+      setData((prev) => prev.map((r) => (r.id === editId ? { ...r, ...newClient } : r)));
+    } else {
+      // 1. Créer l’établissement
+      added = await saveEtablissement(payload);
+
+      // 2. Créer l’abonnement lié
+      const abnPayload = {
+        etablissementId: added.idEtablissment,
+        dateDebutAbonnement: newClient.subscriptionDate || new Date().toISOString().slice(0, 10),
+        dateFinAbonnement: calculateEndDate(newClient.plan),
+        montantPaye: 0,
+        montantDu: determinePrice(newClient.plan),
+        formule: newClient.plan,
+        statut: determineInitialStatus(newClient.status),
+      };
+
+      console.log("Abonnement payload envoyé :", abnPayload);
+       await saveAbonnement(abnPayload);
+
+
+      // 3. Ajouter dans l'état local
+      setData((prev) => [{ ...newClient, id: added.idEtablissment }, ...prev]);
+    }
+
+    setShowAdd(false);
+    resetNew();
+    setEditId(null);
+  } catch (err) {
+    const message = err.response?.data?.message || err.message;
+    console.error("Backend Error:", message);
+
+    Swal.fire({
+      icon: "error",
+      title: "Erreur",
+      text: message || "Une erreur est survenue lors de l'enregistrement.",
+    });
+  }
+};
+
+
+
   const [openFilters, setOpenFilters] = useState(false);
 
 // (facultatif) export CSV des clients filtrés
@@ -691,22 +845,44 @@ const visibleCount = filtered.length;
     setShowAdd(true);
   };
 
-  const deleteClient = async (row) => {
-    const res = await Swal.fire({
-      title: "Supprimer ?",
-      text: `Confirmer la suppression de ${row.name} (${row.id})`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Oui, supprimer",
-      cancelButtonText: "Annuler",
-      confirmButtonColor: "#e11d48",
-    });
-    if (res.isConfirmed) {
-      setData((prev) => prev.filter((r) => r.id !== row.id));
-      if (selected?.id === row.id) setSelected(null);
-      await Swal.fire({ title: "Supprimé", text: "Le client a été supprimé.", icon: "success", timer: 1400, showConfirmButton: false });
+const deleteClient = async (row) => {
+  const res = await Swal.fire({
+    title: "Supprimer ?",
+    text: `Confirmer la suppression de ${row.name} (${row.id})`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Oui, supprimer",
+    cancelButtonText: "Annuler",
+    confirmButtonColor: "#e11d48",
+  });
+
+  if (res.isConfirmed) {
+    try {
+      const ok = await deleteEtablissement(row.id); // ✅ appel API réel
+      if (ok) {
+        setData((prev) => prev.filter((r) => r.id !== row.id));
+        if (selected?.id === row.id) setSelected(null);
+
+        await Swal.fire({
+          title: "Supprimé",
+          text: "Le client a été supprimé.",
+          icon: "success",
+          timer: 1400,
+          showConfirmButton: false,
+        });
+      } else {
+        throw new Error("Suppression échouée côté serveur.");
+      }
+    } catch (err) {
+      console.error("Erreur suppression :", err);
+      Swal.fire({
+        title: "Erreur",
+        text: err.message || "Une erreur est survenue pendant la suppression.",
+        icon: "error",
+      });
     }
-  };
+  }
+};
 
   // helper: tri via clic sur en-tête
   const toggleSort = (key) => {
@@ -725,28 +901,28 @@ const visibleCount = filtered.length;
 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
   <KPI
     title="Clients (total)"
-    value={stats.total}
+    value={backendStats.total}
     startOnView={false}
     icon={<FiUsers className="text-2xl" />}
     gradient="linear-gradient(135deg,#6366f1,#06b6d4)"
   />
   <KPI
     title="Actifs"
-    value={stats.actifs}
+    value={backendStats.actifs}
     startOnView={false}
     icon={<FiCheckCircle className="text-2xl" />}
     gradient="linear-gradient(135deg,#10b981,#22d3ee)"
   />
   <KPI
     title="En essai"
-    value={stats.essais}
+    value={backendStats.essais}
     startOnView={false}
     icon={<FiCalendar className="text-2xl" />}
     gradient="linear-gradient(135deg,#a78bfa,#06b6d4)"
   />
   <KPI
     title="En retard de paiement"
-    value={stats.retards}
+   value={backendStats.retards}
     startOnView={false}
     icon={<FiAlertTriangle className="text-2xl" />}
     gradient="linear-gradient(135deg,#f59e0b,#ef4444)"
@@ -1156,9 +1332,9 @@ const visibleCount = filtered.length;
                   onChange={(e) => setNewClient((v) => ({ ...v, type: e.target.value }))}
                   className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm shadow-sm outline-none"
                 >
-                  <option value="creches">Crèche</option>
-                  <option value="garderies">Garderie</option>
-                  <option value="ecoles">École</option>
+                 <option value="creches">Crèche</option>
+                 <option value="garderies">Garderie</option>
+                <option value="ecoles">École</option>
                 </select>
               </label>
               <label className="text-sm md:col-span-2">
