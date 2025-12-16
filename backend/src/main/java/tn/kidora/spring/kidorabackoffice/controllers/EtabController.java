@@ -3,9 +3,12 @@ package tn.kidora.spring.kidorabackoffice.controllers;
 import lombok.AllArgsConstructor;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.User  ;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +17,9 @@ import org.springframework.web.bind.annotation.*;
 import tn.kidora.spring.kidorabackoffice.dto.AbonnementResponseDTO;
 import tn.kidora.spring.kidorabackoffice.dto.DonneesCroissanceDTo;
 import tn.kidora.spring.kidorabackoffice.dto.Etab_Dto;
-import tn.kidora.spring.kidorabackoffice.dto.EtablissementInactifDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementUpdateDTO;
+import tn.kidora.spring.kidorabackoffice.repositories.Etablissement_Repository;
 import tn.kidora.spring.kidorabackoffice.services.AbonnementService;
 import tn.kidora.spring.kidorabackoffice.services.EtabService;
 import tn.kidora.spring.kidorabackoffice.utils.Constants;
@@ -30,6 +33,7 @@ import tn.kidora.spring.kidorabackoffice.entities.Type_Etablissement;
 public class EtabController {
     private final EtabService etabService;
     private final AbonnementService abonnementService;
+    Etablissement_Repository etablissementRepository ;
     @PostMapping(Constants.SAVE)
     public ResponseEntity <Etab_Dto> addEtablissement(@RequestBody EtablissementRequestDTO dto) {
         // Etablissement saved= etabService.addEtablissement(dto);
@@ -150,11 +154,27 @@ public class EtabController {
                  .collect(Collectors.toList());
         return ResponseEntity.status(HttpStatus.OK).body(etablissementsDTOs);
     }
-    
-    @GetMapping(Constants.INACTIVE_NBR_JRS)
-    public ResponseEntity<List<EtablissementInactifDTO>> getEtablissementsInactifs() {
-        return etabService.getEtablissementsInactifs();
-    }
-   
+
+   /* @GetMapping("/etablissements/activities")
+    public List<Map<String, Object>> getEtablissementActivities() {
+        List<Etablissement> etablissements = etablissementRepository.findAll();
+
+        return etablissements.stream().map(etab -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("nomEtablissement", etab.getNomEtablissement());
+            map.put("adminNom", etab.getUser() != null
+                    ? etab.getUser().getNom()
+                    : "Inconnu");
+            map.put("adminImage", etab.getUser() != null
+                    ? etab.getUser().getImageUrl()
+                    : null);
+            map.put("dateAjout", etab.getCreatedAt());
+            return map;
+        }).collect(Collectors.toList());
+    }*/
+
+
+
+
 
 }
