@@ -14,7 +14,7 @@ import { RiPauseCircleLine, RiDeleteBinLine } from "react-icons/ri";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 import api from "services/api"; 
-import { getEntreprisesStats , getAllEtablissements, saveEtablissement, updateEtablissement, deleteEtablissement , getUserFromToken , saveAbonnement} from "services/entreprisesService";
+import { getEntreprisesStats , getAllEtablissements, saveEtablissement, updateEtablissement, deleteEtablissement , getUserFromToken , saveAbonnement , updateAbonnement} from "services/entreprisesService";
 
 
 /* ----------------------------------------------------------------
@@ -794,10 +794,69 @@ const visibleCount = filtered.length;
   const drawerUI = selected ? STATUS_UI[selected.status] || {} : {};
 
   /* ----------------------- Actions ----------------------- */
-  const updateStatus = (id, newStatus) => {
-    setData((rows) => rows.map((r) => (r.id === id ? { ...r, status: newStatus } : r)));
-    setSelected((s) => (s && s.id === id ? { ...s, status: newStatus } : s));
-  };
+const updateStatus = async (etabId, newStatus) => {
+  try {
+    const statutMap = {
+      "Actif": "PAYEE",
+      "En période d’essai": "ESSAYE",
+      "En retard de paiement": "RETARD",
+      "Suspendu": "SUSPENDU",
+      "Résilié": "RESILE",
+    };
+
+    const mappedStatut = statutMap[newStatus];
+    if (!mappedStatut) throw new Error("Statut non reconnu");
+
+    // 1. Récupérer les abonnements de l’établissement
+    const res = await api.get(`/abonnement/byetablissement/${etabId}`);
+    const abonnements = res.data;
+
+    if (!abonnements || abonnements.length === 0) {
+      throw new Error("Aucun abonnement trouvé pour cet établissement");
+    }
+
+    // 2. Prendre le plus récent (par dateFinAbonnement)
+    const latest = abonnements.sort((a, b) => new Date(b.dateFinAbonnement) - new Date(a.dateFinAbonnement))[0];
+
+    // 3. Construire le payload
+    const client = data.find(c => c.id === etabId);
+    if (!client) throw new Error("Client non trouvé");
+
+    const abonnementPayload = {
+      etablissementId: etabId,
+      dateDebutAbonnement: client.subscriptionDate || new Date().toISOString().slice(0, 10),
+      dateFinAbonnement: calculateEndDate(client.plan),
+      montantPaye: 0,
+      montantDu: determinePrice(client.plan),
+      statut: mappedStatut,
+      formule: client.plan,
+    };
+
+    // 4. Appel à update avec le vrai ID d’abonnement
+    await updateAbonnement(latest.idAbonnement, abonnementPayload);
+
+    // 5. Mise à jour UI
+    setData((rows) => rows.map((r) => (r.id === etabId ? { ...r, status: newStatus } : r)));
+    setSelected((s) => (s && s.id === etabId ? { ...s, status: newStatus } : s));
+
+    Swal.fire({
+      icon: "success",
+      title: "Statut mis à jour",
+      text: `Nouveau statut : ${newStatus}`,
+      timer: 1400,
+      showConfirmButton: false,
+    });
+
+  } catch (err) {
+    console.error("Erreur updateStatus:", err);
+    Swal.fire({
+      icon: "error",
+      title: "Erreur",
+      text: err.response?.data?.message || err.message || "Une erreur est survenue.",
+    });
+  }
+};
+
 
   const printSelected = () => {
     if (!selected) return;
