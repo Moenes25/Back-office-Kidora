@@ -16,8 +16,8 @@ const EditAdminModal = ({ admin, onClose, onEditSuccess }) => {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const res = await api.get("/auth/roles"); 
-        setRolesList(res.data); 
+        const res = await api.get("/auth/roles");
+        setRolesList(res.data);
       } catch (err) {
         console.error("Failed to fetch roles:", err);
       }
@@ -32,7 +32,7 @@ const EditAdminModal = ({ admin, onClose, onEditSuccess }) => {
       const formData = new FormData();
       if (email && email !== admin.email) formData.append("newEmail", email);
       if (password) formData.append("newPassword", password);
-      if (role && role !== admin.role) formData.append("newRole", role); 
+      if (role && role !== admin.role) formData.append("role", role);
 
       const res = await api.put(`/auth/update/${admin.id}`, formData);
       onEditSuccess(res.data);
@@ -84,7 +84,11 @@ const EditAdminModal = ({ admin, onClose, onEditSuccess }) => {
             onClick={() => setShowPassword(!showPassword)}
             className="absolute text-gray-500 right-4 top-5"
           >
-            {showPassword ? <IoEyeOffOutline className="text-red-500" /> : <IoEyeOutline />}
+            {showPassword ? (
+              <IoEyeOffOutline className="text-red-500" />
+            ) : (
+              <IoEyeOutline />
+            )}
           </button>
         </div>
 
