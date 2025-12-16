@@ -2,6 +2,13 @@
 import React from "react";
 
 import { FiCalendar, FiClock, FiLayers, FiCheckCircle } from "react-icons/fi";
+import {
+  getEventCountForWeek,
+  getEventCountToday,
+  getEventCountByType,
+  getTotalHeuresPlanifiees,
+} from "services/CalendarService";
+
 
 
 /* ----------------------------- utils dates ----------------------------- */
@@ -565,6 +572,40 @@ const [events, setEvents] = React.useState(() => [
    });
  };
 
+
+
+
+ const [kpis, setKpis] = React.useState({
+  weekCount: 0,
+  todayCount: 0,
+  countByType: 0,
+  plannedHours: 0,
+});
+
+React.useEffect(() => {
+  async function fetchKPIs() {
+    try {
+      const [weekCount, todayCount, countByType, plannedHours] = await Promise.all([
+        getEventCountForWeek(filterType),
+        getEventCountToday(filterType),
+        getEventCountByType(filterType),
+        getTotalHeuresPlanifiees(filterType),
+      ]);
+      setKpis({
+        weekCount,
+        todayCount,
+        countByType,
+        plannedHours,
+      });
+    } catch (err) {
+      console.error("❌ Erreur chargement des KPI :", err);
+    }
+  }
+
+  fetchKPIs();
+}, [filterType]);
+
+
  // petit état local qui transporte le pré-remplissage vers Modal
  const [seedForModal, setSeedForModal] = React.useState(null);
 
@@ -657,11 +698,14 @@ const countsThisWeek = React.useMemo(() => {
       <KPIStyles />
 
 <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-  <KPI title="Évènements (semaine)" value={visibleWeekEvents.length} icon={<FiCalendar className="text-2xl" />} gradient="linear-gradient(135deg,#6366f1,#06b6d4)"   // ↓ force un nouveau montage si semaine/onglet changent
-  key={`kpi-week-${weekStartISO}-${filterType}-count`} />
-  <KPI title="Aujourd’hui"           value={todayCount}              icon={<FiClock className="text-2xl" />}    gradient="linear-gradient(135deg,#f59e0b,#ef4444)"   key={`kpi-week-${weekStartISO}-${filterType}-today`} />
-  <KPI title={typeLabel}             value={countForType}            icon={<FiLayers className="text-2xl" />}   gradient="linear-gradient(135deg,#10b981,#22d3ee)" key={`kpi-week-${weekStartISO}-${filterType}-type`} />
-  <KPI title="Heures planifiées"     value={totalHours}              icon={<FiCheckCircle className="text-2xl" />} gradient="linear-gradient(135deg,#64748b,#94a3b8)"  key={`kpi-week-${weekStartISO}-${filterType}-hours`} />
+ <KPI title="Évènements (semaine)" value={kpis.weekCount} icon={<FiCalendar className="text-2xl" />} gradient="linear-gradient(135deg,#6366f1,#06b6d4)" />
+
+<KPI title="Aujourd’hui" value={kpis.todayCount} icon={<FiClock className="text-2xl" />} gradient="linear-gradient(135deg,#f59e0b,#ef4444)" />
+
+<KPI title={typeLabel} value={kpis.countByType} icon={<FiLayers className="text-2xl" />} gradient="linear-gradient(135deg,#10b981,#22d3ee)" />
+
+<KPI title="Heures planifiées" value={kpis.plannedHours} icon={<FiCheckCircle className="text-2xl" />} gradient="linear-gradient(135deg,#64748b,#94a3b8)" />
+
 </div>
 
 

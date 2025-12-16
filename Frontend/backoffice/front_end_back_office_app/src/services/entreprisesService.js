@@ -66,6 +66,19 @@ export async function saveEtablissement(payload) {
   }
 }
 
+// services/entreprisesService.js
+
+export async function saveAbonnement(payload) {
+  try {
+    const res = await api.post("/abonnement/save", payload);
+    return res.data;
+  } catch (err) {
+    console.error("Erreur ajout abonnement :", err);
+    throw err;
+  }
+}
+
+
 // ✏️ Modifier un établissement
 export async function updateEtablissement(id, payload) {
   try {
@@ -88,17 +101,18 @@ export async function deleteEtablissement(id) {
   }
 }
 
-
+// utils/token.js
 export function getUserFromToken() {
   const token = localStorage.getItem("token");
+
   if (!token) return null;
 
   try {
-    const payload = token.split(".")[1];
-    const decoded = JSON.parse(atob(payload));
-    return decoded; // contient souvent id, sub, email, role...
-  } catch (err) {
-    console.error("Erreur décodage token :", err);
+    const base64Payload = token.split('.')[1];
+    const decoded = JSON.parse(atob(base64Payload));
+    return decoded; // contient { id, username, role, sub, exp, ... }
+  } catch (e) {
+    console.error("Token parsing error:", e);
     return null;
   }
 }

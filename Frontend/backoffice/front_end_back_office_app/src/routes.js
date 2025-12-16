@@ -73,13 +73,13 @@ const routes = [
 
 
   /* 2.5 Gestion interne de l’équipe Kidora (Admins & Staff) */
-  {
+ /* {
     name: "Équipe Kidora",
     layout: "/admin",
     path: "equipe",
     icon: <MdGroups className="w-6 h-6" />,
     component: <TeamPage />,
-  },
+  },*/
 
   /* 2.6 Support & Tickets */
   {

@@ -14,7 +14,7 @@ import { RiPauseCircleLine, RiDeleteBinLine } from "react-icons/ri";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 import api from "services/api"; 
-import { getEntreprisesStats , getAllEtablissements, saveEtablissement, updateEtablissement, deleteEtablissement , getUserFromToken } from "services/entreprisesService";
+import { getEntreprisesStats , getAllEtablissements, saveEtablissement, updateEtablissement, deleteEtablissement , getUserFromToken , saveAbonnement} from "services/entreprisesService";
 
 
 /* ----------------------------------------------------------------
@@ -491,6 +491,38 @@ function SupportPagination({ page, pageCount, total, onPage }) {
     </div>
   );
 }
+function determinePrice(plan) {
+  // Adapte les tarifs à ta logique
+  switch (plan) {
+    case "Essai 14 jours": return 0;
+    case "Standard / Mensuel": return 100;
+    case "Premium / Mensuel": return 200;
+    case "Standard / Annuel": return 1000;
+    case "Premium / Annuel": return 2000;
+    case "Établissement / Annuel": return 3000;
+    default: return 0;
+  }
+}
+
+function determineInitialStatus(status) {
+  if (status === "En période d’essai") return "ESSAYE";
+  if (status === "En retard de paiement") return "RETARD";
+  if (status === "Actif") return "PAYEE";
+  return "EN_ATTENTE"; // fallback
+}
+
+function calculateEndDate(plan) {
+  const start = new Date();
+  switch (plan) {
+    case "Essai 14 jours":
+      return new Date(start.setDate(start.getDate() + 14)).toISOString().slice(0, 10);
+    case "Standard / Mensuel":
+    case "Premium / Mensuel":
+      return new Date(start.setMonth(start.getMonth() + 1)).toISOString().slice(0, 10);
+    default:
+      return new Date(start.setFullYear(start.getFullYear() + 1)).toISOString().slice(0, 10);
+  }
+}
 
 /* ----------------------------------------------------------------
    Composant principal
@@ -590,28 +622,40 @@ useEffect(() => {
 }, []);
 
 
-async function toBackendPayload(client) {
-  const user = getUserFromToken(); 
-  const email = user?.sub;
 
-  let userId;
-    const res = await api.get("/api/auth/all");
-    const allUsers = res.data || [];
-    const currentUser = allUsers.find(u => u.email === email);
-    if (!currentUser) throw new Error("Utilisateur non trouvé");
-    userId = currentUser.id;
-  
+
+async function toBackendPayload(client) {
+  const user = getUserFromToken();
+  const userId = user?.id;
+  if (!userId) throw new Error("ID utilisateur introuvable dans le token");
+
+  const typeMap = {
+    creches: "CRECHE",
+    garderies: "GARDERIE",
+    ecoles: "ECOLE",
+  };
+
+  const backendType = typeMap[client.type] || "CRECHE"; // valeur par défaut
+
+  if (!client.name || !client.address || !client.city || !client.phone || !client.email) {
+    throw new Error("Un ou plusieurs champs obligatoires sont manquants.");
+  }
 
   return {
     nomEtablissement: client.name,
-    adresse_complet: client.address,
-    region: client.city,
-    telephone: client.phone,
-    url_localisation: client.url_localisation,
-    type: client.type?.toUpperCase(),
-    email: client.email,
+    adresse_complet: client.address.trim(),
+    region: client.city.trim(),
+    telephone: client.phone.trim(),
+    url_localisation: client.url_localisation?.trim() || "",
+    type: backendType, // ✅ valeur fixée
+    email: client.email.trim().toLowerCase(),
     isActive: client.status === "Actif",
-    userId: userId,
+    userId,
+    userNom: user?.username || "",
+    userEmail: user?.sub || "",
+    nombreEducateurs: client.educateurs ?? 0,
+    nombreParents: client.parents ?? 0,
+    nombreEnfants: client.enfants ?? 0,
   };
 }
 
@@ -620,28 +664,56 @@ async function toBackendPayload(client) {
 
 
 
+
+
 const saveClient = async (e) => {
   e.preventDefault();
- const payload = await toBackendPayload(newClient);
-
-console.log("🧪 Payload envoyé :", payload);
+  const payload = await toBackendPayload(newClient);
 
   try {
+    let added;
     if (editId) {
-      const updated = await updateEtablissement(editId, payload);
-      setData(prev => prev.map(r => r.id === editId ? { ...r, ...newClient } : r));
+      await updateEtablissement(editId, payload);
+      setData((prev) => prev.map((r) => (r.id === editId ? { ...r, ...newClient } : r)));
     } else {
-      const added = await saveEtablissement(payload);
-      setData(prev => [{ ...newClient, id: added.idEtablissment }, ...prev]);
+      // 1. Créer l’établissement
+      added = await saveEtablissement(payload);
+
+      // 2. Créer l’abonnement lié
+      const abnPayload = {
+        etablissementId: added.idEtablissment,
+        dateDebutAbonnement: newClient.subscriptionDate || new Date().toISOString().slice(0, 10),
+        dateFinAbonnement: calculateEndDate(newClient.plan),
+        montantPaye: 0,
+        montantDu: determinePrice(newClient.plan),
+        formule: newClient.plan,
+        statut: determineInitialStatus(newClient.status),
+      };
+
+      console.log("Abonnement payload envoyé :", abnPayload);
+       await saveAbonnement(abnPayload);
+
+
+      // 3. Ajouter dans l'état local
+      setData((prev) => [{ ...newClient, id: added.idEtablissment }, ...prev]);
     }
 
     setShowAdd(false);
     resetNew();
     setEditId(null);
   } catch (err) {
-    alert("Une erreur est survenue lors de l'enregistrement.");
+    const message = err.response?.data?.message || err.message;
+    console.error("Backend Error:", message);
+
+    Swal.fire({
+      icon: "error",
+      title: "Erreur",
+      text: message || "Une erreur est survenue lors de l'enregistrement.",
+    });
   }
 };
+
+
 
   const [openFilters, setOpenFilters] = useState(false);
 
@@ -773,22 +845,44 @@ const visibleCount = filtered.length;
     setShowAdd(true);
   };
 
-  const deleteClient = async (row) => {
-    const res = await Swal.fire({
-      title: "Supprimer ?",
-      text: `Confirmer la suppression de ${row.name} (${row.id})`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Oui, supprimer",
-      cancelButtonText: "Annuler",
-      confirmButtonColor: "#e11d48",
-    });
-    if (res.isConfirmed) {
-      setData((prev) => prev.filter((r) => r.id !== row.id));
-      if (selected?.id === row.id) setSelected(null);
-      await Swal.fire({ title: "Supprimé", text: "Le client a été supprimé.", icon: "success", timer: 1400, showConfirmButton: false });
+const deleteClient = async (row) => {
+  const res = await Swal.fire({
+    title: "Supprimer ?",
+    text: `Confirmer la suppression de ${row.name} (${row.id})`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Oui, supprimer",
+    cancelButtonText: "Annuler",
+    confirmButtonColor: "#e11d48",
+  });
+
+  if (res.isConfirmed) {
+    try {
+      const ok = await deleteEtablissement(row.id); // ✅ appel API réel
+      if (ok) {
+        setData((prev) => prev.filter((r) => r.id !== row.id));
+        if (selected?.id === row.id) setSelected(null);
+
+        await Swal.fire({
+          title: "Supprimé",
+          text: "Le client a été supprimé.",
+          icon: "success",
+          timer: 1400,
+          showConfirmButton: false,
+        });
+      } else {
+        throw new Error("Suppression échouée côté serveur.");
+      }
+    } catch (err) {
+      console.error("Erreur suppression :", err);
+      Swal.fire({
+        title: "Erreur",
+        text: err.message || "Une erreur est survenue pendant la suppression.",
+        icon: "error",
+      });
     }
-  };
+  }
+};
 
   // helper: tri via clic sur en-tête
   const toggleSort = (key) => {
@@ -1238,9 +1332,9 @@ const visibleCount = filtered.length;
                   onChange={(e) => setNewClient((v) => ({ ...v, type: e.target.value }))}
                   className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm shadow-sm outline-none"
                 >
-                  <option value="creches">Crèche</option>
-                  <option value="garderies">Garderie</option>
-                  <option value="ecoles">École</option>
+                 <option value="creches">Crèche</option>
+                 <option value="garderies">Garderie</option>
+                <option value="ecoles">École</option>
                 </select>
               </label>
               <label className="text-sm md:col-span-2">
