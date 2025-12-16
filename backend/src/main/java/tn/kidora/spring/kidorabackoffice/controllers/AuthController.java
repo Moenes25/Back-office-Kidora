@@ -188,7 +188,10 @@ public class AuthController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
+    @GetMapping(Constants.UserByREGION)
+    public List<User> getAllUsersByRegion(@RequestParam String region) {
+        return authService.getAllUsersByRegion(region);
+    }
 
 
 }

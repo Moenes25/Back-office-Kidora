@@ -18,6 +18,8 @@ public interface AuthService {
     User getUserById(String id);
     User updateAdminProfileById(String id, String newEmail, String newPassword,Role newRole);
     User updateSuperAdminPassword(String email, String oldPassword, String newPassword);
+    List<User> getAllUsersByRegion(String region);
+
 
 
 }

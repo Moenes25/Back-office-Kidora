@@ -24,6 +24,7 @@ public class Abonnement {
     private Double montantDu;
 
     private StatutPaiement statut;
+    private String formule ;
 
    @DocumentReference
    private Etablissement etablissement;
