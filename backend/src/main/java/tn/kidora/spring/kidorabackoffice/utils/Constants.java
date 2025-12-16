@@ -38,7 +38,14 @@ public class Constants {
 
     public static final String UPDATE_PROFILE = "/update-profile";
     public static final String DELETE_USER = "/delete-user/{id}";
+
     public static final String INACTIVE_NBR_JRS = "/inactivate-nbr-jrs";
+
+    public static final String ROLES = "/roles";
+    public static final String SUPERADMIN_UPDATE_PASSWORD = "/superadmin/update-password";
+    public static final String UserByREGION = "/byRegion";
+
+
 
 
 

@@ -13,7 +13,13 @@ public interface AuthService {
     User register(RegisterDto dto);
     Map<String,Object> login(String email, String password);
     List<User> getAllUsersExceptSuperAdmin();
-     User updateAdminProfile(String email, String nom, String tel, MultipartFile imageFile);
+     User updateAdminProfile(String email, String newEmail,String nom, String tel, String newPassword,MultipartFile imageFile);
      void deleteUserById(String id);
+    User getUserById(String id);
+    User updateAdminProfileById(String id, String newEmail, String newPassword,Role newRole);
+    User updateSuperAdminPassword(String email, String oldPassword, String newPassword);
+    List<User> getAllUsersByRegion(String region);
+
+
 
 }
