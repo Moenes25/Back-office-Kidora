@@ -116,6 +116,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/roles").hasRole("SUPER_ADMIN")
                         .requestMatchers("/api/auth/update/**").hasRole("SUPER_ADMIN")
 
+                        // ACTIVITY
+                        .requestMatchers(Constants.APP_ROOT + Constants.ACTIVITY + Constants.ALLACTIVITY)
+                        .hasAnyRole("SUPER_ADMIN")
+
                         // ETABLISSEMENT management endpoints
                         .requestMatchers(Constants.APP_ROOT + Constants.ETABLISSEMENT + Constants.ALL)
                         .hasRole("SUPER_ADMIN")
