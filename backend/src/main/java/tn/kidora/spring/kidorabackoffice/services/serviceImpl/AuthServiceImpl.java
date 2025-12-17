@@ -125,7 +125,7 @@ public class AuthServiceImpl implements  AuthService{
                 String fileName = System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
                 Path filePath = Paths.get(uploadDir + fileName);
                 Files.write(filePath, imageFile.getBytes());
-                String fileUrl = "http://localhost:8080/uploads/" + fileName;
+                String fileUrl = "http://localhost:8086/uploads/" + fileName;
                 user.setImageUrl(fileUrl);
 
             } catch (IOException e) {
