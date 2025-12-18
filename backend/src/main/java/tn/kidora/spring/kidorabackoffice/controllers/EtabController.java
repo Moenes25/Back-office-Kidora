@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import tn.kidora.spring.kidorabackoffice.dto.AbonnementResponseDTO;
 import tn.kidora.spring.kidorabackoffice.dto.DonneesCroissanceDTo;
 import tn.kidora.spring.kidorabackoffice.dto.Etab_Dto;
+import tn.kidora.spring.kidorabackoffice.dto.EtablissementInactifDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementUpdateDTO;
 import tn.kidora.spring.kidorabackoffice.repositories.Etablissement_Repository;
@@ -155,26 +156,12 @@ public class EtabController {
         return ResponseEntity.status(HttpStatus.OK).body(etablissementsDTOs);
     }
 
-   /* @GetMapping("/etablissements/activities")
-    public List<Map<String, Object>> getEtablissementActivities() {
-        List<Etablissement> etablissements = etablissementRepository.findAll();
-
-        return etablissements.stream().map(etab -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("nomEtablissement", etab.getNomEtablissement());
-            map.put("adminNom", etab.getUser() != null
-                    ? etab.getUser().getNom()
-                    : "Inconnu");
-            map.put("adminImage", etab.getUser() != null
-                    ? etab.getUser().getImageUrl()
-                    : null);
-            map.put("dateAjout", etab.getCreatedAt());
-            return map;
-        }).collect(Collectors.toList());
-    }*/
-
-
-
+    
+    @GetMapping(Constants.INACTIVE_NBR_JRS)
+    public ResponseEntity<List<EtablissementInactifDTO>> getEtablissementsInactifs() {
+        return etabService.getEtablissementsInactifs();
+    }
+   
 
 
 }

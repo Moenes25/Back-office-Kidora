@@ -3,6 +3,7 @@ package tn.kidora.spring.kidorabackoffice.entities;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
@@ -32,10 +33,11 @@ public class Etablissement {
     private Type_Etablissement type;
     private String email;
     private Boolean isActive;
+    private Date dateDesactivation = null;
     @DocumentReference
     private User user; 
-
-    @DocumentReference
+    
+    @DocumentReference(lazy = false)
     private List<Abonnement> abonnements;
 
     private LocalDateTime createdAt;
