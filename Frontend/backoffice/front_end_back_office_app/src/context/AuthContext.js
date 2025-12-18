@@ -36,7 +36,7 @@
 
 //       const userData = {
 //         id: data.id,
-          
+
 //       };
 
 //       localStorage.setItem("user", JSON.stringify(userData));
@@ -79,7 +79,7 @@
 //         isLoggedIn,
 //         login,
 //         logout,
-//         updateUser,  
+//         updateUser,
 //         loading,
 //       }}
 //     >
@@ -89,8 +89,6 @@
 // };
 
 // export const useAuth = () => useContext(AuthContext);
-
-
 
 import { createContext, useContext, useEffect, useState } from "react";
 import api from "services/api";
@@ -104,11 +102,12 @@ export const AuthProvider = ({ children }) => {
 
   const isLoggedIn = !!token;
 
-  // -------------------------
-  // LOAD USER FROM API
-  // -------------------------
+  // ==================================================
+  // LOAD USER FROM API (ON REFRESH / FIRST LOAD)
+  // ==================================================
   useEffect(() => {
     const userId = localStorage.getItem("userId");
+
     if (!token || !userId) {
       setLoading(false);
       return;
@@ -116,10 +115,15 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUser = async () => {
       try {
-        const res = await api.get(`/auth/${userId}`);
+        const res = await api.get(`/auth/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
         setUser(res.data);
       } catch (err) {
-        console.error("Auth expired");
+        console.error("Auth expired:", err);
         logout();
       } finally {
         setLoading(false);
@@ -129,20 +133,17 @@ export const AuthProvider = ({ children }) => {
     fetchUser();
   }, [token]);
 
-  // -------------------------
+  // ==================================================
   // LOGIN
-  // -------------------------
+  // ==================================================
   const login = async (email, password) => {
     setLoading(true);
     try {
-      const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/auth/login`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        }
-      );
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
       if (!res.ok) throw new Error("Login failed");
 
@@ -152,15 +153,26 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("userId", data.id);
 
       setToken(data.token);
+      // user will be fetched automatically by useEffect
       return true;
     } finally {
       setLoading(false);
     }
   };
 
-  // -------------------------
+  // ==================================================
+  // UPDATE USER LOCALLY (AFTER PROFILE UPDATE)
+  // ==================================================
+  const updateUser = (newUserData) => {
+    setUser((prev) => ({
+      ...prev,
+      ...newUserData,
+    }));
+  };
+
+  // ==================================================
   // LOGOUT
-  // -------------------------
+  // ==================================================
   const logout = () => {
     localStorage.clear();
     setToken(null);
@@ -176,6 +188,7 @@ export const AuthProvider = ({ children }) => {
         isLoggedIn,
         login,
         logout,
+        updateUser,
         loading,
       }}
     >

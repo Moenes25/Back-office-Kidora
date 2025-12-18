@@ -82,7 +82,7 @@ const StatsCards = () => {
       {cards.map((card) => (
         <motion.div
           key={card.label}
-          className="overflow-hidden cursor-pointer rounded-2xl"
+          className="overflow-hidden cursor-pointer rounded-2xl "
           whileHover={{ scale: 1.05, boxShadow: "0px 0px 25px rgba(0,0,0,0.25)" }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
