@@ -1,63 +1,65 @@
 "use client";
-
-import React from "react";
 import { motion } from "framer-motion";
 import { FaClock } from "react-icons/fa";
 
 export default function ActivityCard({ activity }) {
-  const formatDate = (date) =>
-    new Date(date).toLocaleString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  const { user, action, ui } = activity;
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      className="relative flex items-start gap-4 mb-6"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative flex gap-4 pl-10"
     >
-      
       {/* Timeline Dot */}
-      <div className="flex flex-col items-center ">
-        <span className="relative z-10 w-4 h-4 rounded-full gradient-bg"></span>
-      </div>
+      <span
+        className={`absolute left-[18px] top-4 h-3 w-3 rounded-full ${ui.dot}`}
+      />
 
-      {/* Card Content */}
-      <div className="flex items-start justify-between flex-1 gap-3 p-4 transition shadow-sm bg-gray-50 rounded-xl hover:shadow-md">
-        {/* User Info */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 font-bold text-white bg-purple-300 rounded-full">
-            {activity.user.image ? (
-              <img
-                src={activity.user.image}
-                alt={activity.user.name}
-                onError={(e) =>
-                  (e.currentTarget.src =
-                    "https://via.placeholder.com/40")
-                }
-                className="object-cover w-full h-full rounded-full"
-              />
-            ) : (
-              <span className="text-purple-700">{activity.user.initials}</span>
+      {/* Card */}
+      <div className={`flex-1 rounded-lg border border-gray-200 p-3 ${ui.bg}`}>
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <span className={ui.color}>{ui.icon}</span>
+            <span className={ui.color}>{ui.label}</span>
+            {action.entity && (
+              <span className="text-gray-400">• {action.entity}</span>
             )}
           </div>
-          <div>
-            <p className="text-sm font-semibold text-gray-800">
-              {activity.user.name} — {activity.item}
-            </p>
-            <p className="text-xs text-gray-500">{activity.description}</p>
-            <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
-              <FaClock /> {formatDate(activity.timestamp)}
-            </div>
+
+          <div className="flex items-center gap-1 text-xs text-gray-400">
+            <FaClock />
+            {new Date(action.date).toLocaleTimeString("en-GB", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
           </div>
         </div>
 
-        {/* Action Icon */}
-        <div className="self-start mt-1">{activity.icon}</div>
+        {/* Content */}
+        <p className="mt-1 text-sm text-gray-700">
+          <span className="font-semibold">{action.name}</span>
+          {action.etabname && (
+            <span className="text-gray-400"> — {action.etabname}</span>
+          )}
+        </p>
+
+        {/* User */}
+        <div className="flex items-center gap-2">
+          <img
+            src={user.image}
+            alt=""
+            className="object-cover w-12 h-12 rounded-full"
+          />
+          <div className="">
+            <div className="flex items-center gap-1">
+              <p className="text-sm font-medium">{user.name} </p>
+              <p className="text-xs">{user.region} </p>
+            </div>
+            <p className="text-xs">{user.role} </p>
+          </div>
+        </div>
       </div>
     </motion.div>
   );

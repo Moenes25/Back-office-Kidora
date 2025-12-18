@@ -86,8 +86,8 @@ const ProfilePage = () => {
             transition={{ duration: 0.6 }}
           >
             <ProfileHeader />
-            {/* <CreativeCalendar month="March 2025" activities={mockActivities} /> */}
-        <ProfileTest />
+            
+        {/* <ProfileTest /> */}
         </motion.div>
 
         {/*  Mobile Admin Carousel */}
@@ -120,6 +120,7 @@ const ProfilePage = () => {
         <div className="hidden space-y-4 lg:block">
 
           <AdminCarousel />
+          <CreativeCalendar month="March 2025" activities={mockActivities} />
 
           <Notifications />
         </div>
