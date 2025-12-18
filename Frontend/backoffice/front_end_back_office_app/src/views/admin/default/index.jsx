@@ -6,8 +6,6 @@ import WeeklyRevenue from "views/admin/default/components/WeeklyRevenue";
 import TotalSpent from "views/admin/default/components/TotalSpent";
 import CrechesMap from "components/maps/CrechesMap";
 import Card from "components/card";
-import BarChart from "components/charts/BarChart";
-import PieChart from "components/charts/PieChart";
 import WidgetKids from "components/widget/Widget";
 import KpiBar from "components/KpiBar";
 import AlertsPanel from "components/AlertsPanel";
@@ -837,18 +835,36 @@ const nextExp = expirations[cardFilter] ?? {
   date: "-",
   restant: "J-∞",
 };
+const [pageByType, setPageByType] = useState({
+  creches: 0,
+  garderies: 0,
+  ecoles: 0
+});
+
+const currentType = cardFilter;
+const items = expirations[currentType] ?? [];
+const pageIndex = pageByType[currentType] ?? 0;
+const maxPage = items.length;
+const currentExp = items[pageIndex] ?? {
+  nom: "Aucune expiration trouvée",
+  licence: "-",
+  date: "-",
+  restant: "J-∞",
+  daysLeft: 9999
+};
+
 
 
 // Sévérité d’alarme à partir de "J-5", "J-12", etc.
 const alarm = React.useMemo(() => {
-  const days = nextExp?.daysLeft;
+  const days = currentExp?.daysLeft;
   if (typeof days === "number") {
     if (days < 0) return "critical"; // 🔴 Expiré = critique
     if (days <= 3) return "critical"; // 🔴 3 jours ou moins
     if (days <= 10) return "warn";    // 🟠 entre 4 et 10 jours
   }
   return "ok";                        // ✅ tout va bien
-}, [nextExp]);
+}, [currentExp]);
 
 
 
@@ -866,10 +882,11 @@ const countsTable = {
 
 // 🔢 Compteurs pour le BOUTON de la CARTE (ici: 1 élément par type)
 const countsCard = {
-  creches: expirations.creches ? 1 : 0,
-  garderies: expirations.garderies ? 1 : 0,
-  ecoles: expirations.ecoles ? 1 : 0,
+  creches: expirations.creches?.length ?? 0,
+  garderies: expirations.garderies?.length ?? 0,
+  ecoles: expirations.ecoles?.length ?? 0,
 };
+
 
 
 // données dynamiques
@@ -1099,18 +1116,18 @@ const availability = (() => {
         🔔
       </span>
     )}
-    {nextExp.nom}
+    {currentExp.nom}
   </h3>
 
   {/* Métadonnées */}
   <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
     <span className="inline-flex items-center gap-2 rounded-xl border border-black/10 bg-white/70 px-3 py-1 font-semibold text-gray-700">
       <svg width="16" height="16" viewBox="0 0 24 24" className="opacity-70"><path fill="currentColor" d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm8 1.5V8h4.5L14 3.5Z"/></svg>
-      {nextExp.licence}
+      {currentExp.licence}
     </span>
 <span className="inline-flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-1 font-semibold text-rose-700 ring-1 ring-rose-200">
   <svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M7 2v2H5a2 2 0 0 0-2 2v2h18V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7Zm14 8H3v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V10Zm-4 3h-4v4h4v-4Z"/></svg>
-  {nextExp.daysLeft < 0 ? "expiré le" : "expire le"} <span className="font-black ml-1">{nextExp.date}</span>
+  {currentExp.daysLeft < 0 ? "expiré le" : "expire le"} <span className="font-black ml-1">{currentExp.date}</span>
 </span>
 
   </div>
@@ -1127,10 +1144,10 @@ const availability = (() => {
   ].join(" ")}
 >
   <span className="inline-block h-2 w-2 rounded-full bg-current opacity-70" />
-  {nextExp.daysLeft < 0 ? "❌" : alarm === "critical" || alarm === "warn" ? "⏰" : "✅"}
- {nextExp.daysLeft < 0
-  ? `expiré depuis ${Math.abs(nextExp.daysLeft)} jours`
-  : `${nextExp.restant} restant`}
+  {currentExp.daysLeft < 0 ? "❌" : alarm === "critical" || alarm === "warn" ? "⏰" : "✅"}
+ {currentExp.daysLeft < 0
+  ? `expiré depuis ${Math.abs(currentExp.daysLeft)} jours`
+  : `${currentExp.restant} restant`}
 
 </div>
 
@@ -1152,6 +1169,23 @@ const availability = (() => {
       }}
     />
   </div>
+{/* Points de navigation */}
+{items.length > 1 && (
+  <div className="mt-4 flex justify-center gap-2">
+    {items.map((_, i) => (
+      <button
+        key={i}
+        onClick={() => setPageByType(prev => ({ ...prev, [currentType]: i }))}
+        className={`h-3 w-3 rounded-full border-2 transition ${
+          i === pageIndex
+           ? "bg-gray-800  dark:bg-white border-gray-800dark:border-white"
+          : "bg-transparent border-gray/800 dark:border-white/20"
+        }`}
+        aria-label={`Page ${i + 1}`}
+      />
+    ))}
+  </div>
+)}
 
   {/* Styles d’animation & alarme */}
   <style>{`

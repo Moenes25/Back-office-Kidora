@@ -527,34 +527,81 @@ function calculateEndDate(plan) {
 /* ----------------------------------------------------------------
    Composant principal
 ----------------------------------------------------------------- */
+function convertStatutToLabel(code) {
+  switch (code) {
+    case "PAYEE": return "Actif";
+    case "ESSAYE": return "En période d’essai";
+    case "RETARD": return "En retard de paiement";
+    case "SUSPENDU": return "Suspendu";
+    case "RESILE": return "Résilié";
+    default: return "Inconnu";
+  }
+}
+
 const ClientsPage = () => {
   const [data, setData] = useState([]);
 useEffect(() => {
-  getAllEtablissements().then(raw => {
-    const mapped = raw.map(etab => ({
-      id: etab.idEtablissment,
-      name: etab.nomEtablissement,
-      city: etab.region,
-      address: etab.adresse_complet || "",
-      phone: etab.telephone || "",
-      email: etab.email || "",
-      url_localisation: etab.url_localisation || "",
-      type:
-        etab.type === "CRECHE" ? "creches" :
-        etab.type === "GARDERIE" ? "garderies" :
-        etab.type === "ECOLE" ? "ecoles" : "autre",
-      status: etab.isActive ? "Actif" : "Suspendu", // ou adapte selon logique métier
-      password: "", // pas renvoyé par le backend en général
-      subscriptionDate: "", // tu peux le remplir plus tard si tu veux
-      plan: "", // optionnel
-      enfants: etab.nombreEnfants ?? 0,
-      parents: etab.nombreParents ?? 0,
-      educateurs: etab.nombreEducateurs ?? 0,
-      history: [],
-    }));
-    setData(mapped);
-  });
+  async function fetchData() {
+    try {
+      const [etabRes, abnRes] = await Promise.all([
+        getAllEtablissements(),
+        api.get("/abonnement/all"),
+      ]);
+
+      const etablissements = etabRes || [];
+      const abonnements = abnRes.data || [];
+
+      // Associer le dernier abonnement à chaque établissement
+      const abnMap = {};
+      for (const abn of abonnements) {
+        const id = abn.etablissement?.idEtablissment;
+        if (!id) continue;
+
+        // On garde le plus récent
+        if (
+          !abnMap[id] ||
+          new Date(abn.dateFinAbonnement) > new Date(abnMap[id].dateFinAbonnement)
+        ) {
+          abnMap[id] = abn;
+        }
+      }
+
+      // Mapper les données avec l'abonnement
+      const mapped = etablissements.map(etab => {
+        const abn = abnMap[etab.idEtablissment];
+
+        return {
+          id: etab.idEtablissment,
+          name: etab.nomEtablissement,
+          city: etab.region,
+          address: etab.adresse_complet || "",
+          phone: etab.telephone || "",
+          email: etab.email || "",
+          url_localisation: etab.url_localisation || "",
+          type:
+            etab.type === "CRECHE" ? "creches" :
+            etab.type === "GARDERIE" ? "garderies" :
+            etab.type === "ECOLE" ? "ecoles" : "autre",
+          status: abn ? convertStatutToLabel(abn?.statut) : "Sans abonnement",
+          subscriptionDate: abn?.dateDebutAbonnement || "",
+          plan: abn?.formule || "",
+          password: "", // pas utilisé ici
+          enfants: etab.nombreEnfants ?? 0,
+          parents: etab.nombreParents ?? 0,
+          educateurs: etab.nombreEducateurs ?? 0,
+          history: [],
+        };
+      });
+
+      setData(mapped);
+    } catch (err) {
+      console.error("Erreur chargement établissements + abonnements :", err);
+    }
+  }
+
+  fetchData();
 }, []);
+
 
 
   // UI
@@ -664,17 +711,29 @@ async function toBackendPayload(client) {
 
 
 
-
-
 const saveClient = async (e) => {
   e.preventDefault();
   const payload = await toBackendPayload(newClient);
 
   try {
     let added;
+
     if (editId) {
       await updateEtablissement(editId, payload);
-      setData((prev) => prev.map((r) => (r.id === editId ? { ...r, ...newClient } : r)));
+
+      setData((prev) =>
+        prev.map((r) => (r.id === editId ? { ...r, ...newClient } : r))
+      );
+
+      // ✅ Afficher une alerte de succès pour modification
+      Swal.fire({
+        icon: "success",
+        title: "Succès",
+        text: "L'établissement a été modifié avec succès.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
     } else {
       // 1. Créer l’établissement
       added = await saveEtablissement(payload);
@@ -691,20 +750,31 @@ const saveClient = async (e) => {
       };
 
       console.log("Abonnement payload envoyé :", abnPayload);
-       await saveAbonnement(abnPayload);
-
+      await saveAbonnement(abnPayload);
 
       // 3. Ajouter dans l'état local
       setData((prev) => [{ ...newClient, id: added.idEtablissment }, ...prev]);
+
+      // ✅ Afficher une alerte de succès pour ajout
+      Swal.fire({
+        icon: "success",
+        title: "Succès",
+        text: "L'établissement a été ajouté avec succès.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
     }
 
+    // Fermer le formulaire
     setShowAdd(false);
     resetNew();
     setEditId(null);
+
   } catch (err) {
     const message = err.response?.data?.message || err.message;
     console.error("Backend Error:", message);
 
+    // ❌ Afficher une alerte d'erreur
     Swal.fire({
       icon: "error",
       title: "Erreur",
@@ -712,6 +782,7 @@ const saveClient = async (e) => {
     });
   }
 };
+
 
 
 

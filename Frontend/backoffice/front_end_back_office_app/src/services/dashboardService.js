@@ -35,9 +35,7 @@ export const getChiffreAffairesTotal = async () => {
 // 🔔 Récupère les données pour AlertsPanel
 export const getAlertsData = async () => {
   try {
-    // 1️⃣ Abonnements en retard
     const resAbonnements = await api.get("/abonnement/all");
-
     const today = new Date();
 
     const latePayments = (resAbonnements.data || [])
@@ -50,7 +48,6 @@ export const getAlertsData = async () => {
       )
       .map((ab) => {
         let daysLate = "?";
-
         if (ab.dateFinAbonnement) {
           const dateFin = new Date(ab.dateFinAbonnement);
           const diff = today - dateFin;
@@ -64,15 +61,13 @@ export const getAlertsData = async () => {
         };
       });
 
-    // 2️⃣ Clients inactifs
-    const resEtab = await api.get("/etablissement/all");
+    // 🟠 Établissements inactifs AVEC nombre de jours
+    const resInactifs = await api.get("/etablissement/inactivate-nbr-jrs");
+    const inactiveClients = (resInactifs.data || []).map((etab) => ({
+  name: etab.nomEtablissement,
+  days: etab.joursInactivite ?? "?"
+}));
 
-    const inactiveClients = (resEtab.data || [])
-      .filter((etab) => etab && etab.isActive === false)
-      .map((etab) => ({
-        name: etab.nomEtablissement,
-        days: "?"
-      }));
 
     return {
       latePayments,
@@ -90,46 +85,45 @@ export const getAlertsData = async () => {
 
 
 
+
 /* ======================
    CROISSANCE
    ====================== */
+// dashboardService.js
 export async function getCroissanceData() {
-  const res = await api.get("/etablissement/croissance");
-  const rawData = res.data;
+  try {
+    const res = await api.get("/etablissement/croissance");
+    const rawData = res.data || [];
 
-  console.log("✅ Données reçues pour la croissance :", rawData);
+    const moisMap = {
+      janvier: 'Jan', février: 'Fév', mars: 'Mar', avril: 'Avr', mai: 'Mai', juin: 'Juin',
+      juillet: 'Juil', août: 'Aoû', septembre: 'Sep', octobre: 'Oct', novembre: 'Nov', décembre: 'Déc'
+    };
 
-  const months = [
-    "janvier", "février", "mars", "avril", "mai", "juin",
-    "juillet", "août", "septembre", "octobre", "novembre", "décembre"
-  ];
+    const labels = rawData.map(d => moisMap[d.mois.toLowerCase()] || d.mois);
+    const Garderies = rawData.map(d => d.nombreGarderies || 0);
+    const Crèches = rawData.map(d => d.nombreCreches || 0);
+    const Écoles = rawData.map(d => d.nombreEcoles || 0);
 
-  let garderies = [];
-  let creches = [];
-  let ecoles = [];
+    return {
+      labels,
+      Garderies,
+      Crèches,
+      Écoles,
+    };
 
-  months.forEach((mois) => {
-    const found = rawData.find((d) => d.mois.toLowerCase() === mois);
-    garderies.push(found?.nombreGarderies ?? 0);
-    creches.push(found?.nombreCreches ?? 0);
-    ecoles.push(found?.nombreEcoles ?? 0);
-  });
-
-  // ✅ Si toutes les valeurs sont à 0, injecter des données aléatoires (mock)
-  const allZero = [...garderies, ...creches, ...ecoles].every((val) => val === 0);
-  if (allZero) {
-    console.warn("🔧 Injection de données fictives pour test.");
-    garderies = months.map(() => Math.floor(Math.random() * 10));
-    creches = months.map(() => Math.floor(Math.random() * 5));
-    ecoles = months.map(() => Math.floor(Math.random() * 3));
+  } catch (err) {
+    console.error("❌ Erreur récupération croissance :", err);
+    return {
+      labels: [],
+      Garderies: [],
+      Crèches: [],
+      Écoles: [],
+    };
   }
-
-  return [
-    { type: "GARDERIE", valeurs: garderies },
-    { type: "CRECHE", valeurs: creches },
-    { type: "ECOLE", valeurs: ecoles },
-  ];
 }
+
+
 
 
 
@@ -137,10 +131,12 @@ export async function getCroissanceData() {
 /* ======================
    RÉPARTITION ANNUELLE
    ====================== */
-export async function getRepartitionAnnuelle(annee = 2024) {
- const res = await api.get("/etablissement/repartition-annuelle");
-  return res.data;
-}
+export const getRepartitionAnnuelle = async (annee) => {
+  const response = await api.get(`/abonnement/repartition-annuelle`, {
+    params: { annee }
+  });
+  return response.data;
+};
 
 
 
@@ -196,11 +192,12 @@ const data = {
     }
 
     // Trier par expiration la plus proche
-    return {
-      creches: groupes.creches.sort((a, b) => a.daysLeft - b.daysLeft)[0] || null,
-      garderies: groupes.garderies.sort((a, b) => a.daysLeft - b.daysLeft)[0] || null,
-      ecoles: groupes.ecoles.sort((a, b) => a.daysLeft - b.daysLeft)[0] || null,
-    };
+return {
+  creches: groupes.creches.sort((a, b) => a.daysLeft - b.daysLeft),
+  garderies: groupes.garderies.sort((a, b) => a.daysLeft - b.daysLeft),
+  ecoles: groupes.ecoles.sort((a, b) => a.daysLeft - b.daysLeft),
+};
+
 
   } catch (err) {
     console.error("❌ Erreur chargement expirations :", err);
@@ -243,6 +240,8 @@ export async function getTopEtablissements() {
         else if (statut === "RETARD") licence = "En alerte";
         else if (statut === "EXPIREE") licence = "Expirée";
         else if (statut === "ESSAYE") licence = "En essai";
+        else if (statut === "SUSPENDU") licence = "Suspendu";
+        else if (statut === "RESILE") licence = "Resile";
 
         return {
           nom: e.nomEtablissement,

@@ -1,5 +1,5 @@
 // src/components/AlertsPanel.jsx
-import React, { useRef } from "react";
+import React, { useRef,  useState } from "react";
 import { MdOutlinePayment, MdOutlineSupportAgent } from "react-icons/md";
 import { IoPauseCircleOutline } from "react-icons/io5";
 
@@ -39,7 +39,13 @@ function AlertCard({
   compact = false,
 }) {
   const { ref, onMove, onLeave } = useTilt();
-
+const [pageIndex, setPageIndex] = useState(0);
+const itemsPerPage = 3;
+const pageCount = Math.ceil(items.rows.length / itemsPerPage);
+const currentItems = items.rows.slice(
+  pageIndex * itemsPerPage,
+  (pageIndex + 1) * itemsPerPage
+);
   const toneMap = {
     red: {
       side: "from-red-500 to-rose-600",
@@ -174,33 +180,41 @@ function AlertCard({
         <div className="mt-4 h-px w-full bg-gradient-to-r from-black/0 via-black/10 to-black/0 translate-z-[30px]" />
 
         {/* liste */}
-        <ul className="translate-z-[40px] mt-3 space-y-2 text-sm leading-5">
-          {items.rows.map((row, i) => (
-            <li key={i} className="flex items-center justify-between">
-              <span className="flex min-w-0 items-center gap-2">
-                <span
-                  className="h-1.5 w-1.5 rounded-full"
-                  style={{ backgroundColor: t.accent }}
-                />
-                <span className="truncate">{row.left}</span>
-              </span>
-              <span className={`ml-2 whitespace-nowrap text-xs font-semibold ${t.text}`}>
-                {row.right}
-              </span>
-            </li>
-          ))}
-        </ul>
+       <ul className="translate-z-[40px] mt-3 space-y-2 text-sm leading-5">
+  {currentItems.map((row, i) => (
+    <li key={i} className="flex items-center justify-between">
+      <span className="flex min-w-0 items-center gap-2">
+        <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: t.accent }} />
+        <span className="truncate">{row.left}</span>
+      </span>
+      <span className={`ml-2 whitespace-nowrap text-xs font-semibold ${t.text}`}>
+        {row.right}
+      </span>
+    </li>
+  ))}
+       </ul>
 
-        {/* footer */}
-        <div className="mt-4 flex justify-end translate-z-[25px]">
-          <button
-            type="button"
-            onClick={onViewAll}
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-black/10 bg-white/70 hover:-translate-y-[1px] hover:shadow-sm transition"
-          >
-            Voir tout
-          </button>
-        </div>
+       {pageCount > 1 && (
+<div className="mt-4 flex justify-center gap-2 translate-z-[25px]">
+  {Array.from({ length: pageCount }).map((_, i) => (
+    <button
+      key={i}
+      onClick={() => setPageIndex(i)}
+      className={`h-3 w-3 rounded-full border-2 transition ${
+        i === pageIndex
+          ? "bg-gray-800  dark:bg-white border-gray-800dark:border-white"
+          : "bg-transparent border-gray/800 dark:border-white/20"
+      }`}
+      aria-label={`Page ${i + 1}`}
+    />
+  ))}
+</div>
+
+)}
+
+
+
+  
       </div>
 
       {/* Motion safety */}
@@ -227,7 +241,7 @@ export default function AlertsPanel({ alerts }) {
         ariaLabel="Alertes: retards de paiement"
         items={{
           icon: <MdOutlinePayment className="h-7 w-7 text-red-600" />,
-          rows: latePayments.slice(0, 3).map((c) => ({
+          rows: latePayments.map((c) => ({
             left: c.name,
             right: `${c.days} j · ${c.amount}`,
           })),
@@ -241,7 +255,7 @@ export default function AlertsPanel({ alerts }) {
         ariaLabel="Alertes: clients inactifs"
         items={{
           icon: <IoPauseCircleOutline className="h-7 w-7 text-amber-600" />,
-          rows: inactiveClients.slice(0, 3).map((c) => ({
+          rows: inactiveClients.map((c) => ({
             left: c.name,
             right: `${c.days} j`,
           })),
@@ -255,7 +269,7 @@ export default function AlertsPanel({ alerts }) {
         ariaLabel="Alertes: tickets prioritaires"
         items={{
           icon: <MdOutlineSupportAgent className="h-7 w-7 text-indigo-600" />,
-          rows: priorityTickets.slice(0, 3).map((t) => ({
+          rows: priorityTickets.map((t) => ({
             left: `${t.id} • ${t.client}`,
             right: t.age,
           })),

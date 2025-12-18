@@ -1,5 +1,6 @@
 // src/views/.../CalendarPage.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
+
 
 import { FiCalendar, FiClock, FiLayers, FiCheckCircle } from "react-icons/fi";
 import {
@@ -7,7 +8,13 @@ import {
   getEventCountToday,
   getEventCountByType,
   getTotalHeuresPlanifiees,
+  fetchEvents,
+  addEvent,
+  updateEvent,
+  deleteEvent,
+  fetchEtablissementsByType
 } from "services/CalendarService";
+import Swal from "sweetalert2";
 
 
 
@@ -58,62 +65,95 @@ creches: {
   },
 };
 
-// Liste des établissements par type
-const ORGS = {
-  creches: [
-    "Crèche Les Petits Pas",
-    "Crèche Arc-en-ciel",
-    "Crèche Les P’tits Loups",
-  ],
-  garderies: [
-    "Garderie Le Nid",
-    "Garderie Les Copains",
-    "Garderie La Marelle",
-  ],
-  ecoles: [
-    "École Pasteur",
-    "École Victor Hugo",
-    "École Jules Ferry",
-  ],
-};
+
 
 const TYPES = ["creches","garderies","ecoles"];
 
 /* ------------------------------- Modale ------------------------------- */
 function Modal({ open, onClose, onSubmit, onDelete, initial, defaultType, defaultDate , seed }) {
- const [form, setForm] = React.useState(
+const [form, setForm] = React.useState(
   initial ?? {
     title: "",
-    type:  defaultType ?? "creches",
-    org:   (ORGS[defaultType ?? "creches"]?.[0] ?? ""), // ← nouveau
-    date:  defaultDate ?? toISODate(new Date()),
+    type: defaultType ?? "creches",
+    org: "", // 🔁 Ici on laisse vide, il sera mis à jour dynamiquement
+    date: defaultDate ?? toISODate(new Date()),
     start: "", end: "", desc: ""
   }
 );
 
+const [orgOptions, setOrgOptions] = React.useState([]);
+const [loadingOrgs, setLoadingOrgs] = React.useState(true);
+
+
 
 React.useEffect(() => {
   if (!open) return;
-   const base = {
-     title: "",
-     type:  defaultType ?? "creches",
-    org:   (ORGS[defaultType ?? "creches"]?.[0] ?? ""),
-     date:  defaultDate ?? toISODate(new Date()),
-     start: "", end: "", desc: ""
-   };
-   // priorité: initial (édition) > base+seed (création guidée) > base
-   setForm(initial ? initial : { ...base, ...(seed || {}) });
+const base = {
+  title: "",
+  type: defaultType ?? "creches",
+  org: "", // 🟢 Corrigé ici aussi
+  date: defaultDate ?? toISODate(new Date()),
+  start: "", end: "", desc: ""
+};
+
+ if (initial) {
+  setForm({
+    title: initial.title || "",
+    type: initial.type || defaultType,
+     org: initial.org || "", 
+    date: initial.date || defaultDate,
+    start: initial.start || "",
+    end: initial.end || "",
+    desc: initial.desc || "",
+  });
+  console.log("✅ Initial org value:", initial.orgId);
+
+} else {
+  setForm({ ...base, ...(seed || {}) });
+}
+
 }, [open, initial, defaultType, defaultDate
   , seed
 ]);
-React.useEffect(() => {
-  setForm((f) => {
-    const list = ORGS[f.type] ?? [];
-    if (!list.length) return f;
-    // si le nom actuel n'appartient pas au nouveau type, on met le 1er de la liste
-    return list.includes(f.org) ? f : { ...f, org: list[0] };
-  });
-}, [form.type]); // oui, on écoute le type courant
+
+useEffect(() => {
+  if (!open) return;
+
+ async function loadOrgs() {
+  setLoadingOrgs(true); // 🟢 Début chargement
+
+  try {
+    const orgs = await fetchEtablissementsByType(form.type);
+    setOrgOptions(orgs);
+
+    const idList = orgs.map(o => o.idEtablissement);
+    const isOrgId = idList.includes(form.org);
+
+    if (!isOrgId) {
+      const matchByName = orgs.find(o =>
+        (o.nomEtablissement ?? o.nom)?.toLowerCase().trim() === initial?.orgName?.toLowerCase().trim()
+      );
+
+      if (matchByName) {
+        setForm(f => ({ ...f, org: matchByName.idEtablissement }));
+      } else if (orgs.length > 0) {
+        setForm(f => ({ ...f, org: orgs[0].idEtablissement }));
+      }
+    }
+  } catch (err) {
+    console.error("Erreur chargement établissements :", err);
+    setOrgOptions([]);
+  } finally {
+    setLoadingOrgs(false); // 🟢 Fin chargement
+  }
+}
+
+
+  loadOrgs();
+}, [form.type, open]);
+
+
+
 
 
   if (!open) return null;
@@ -144,32 +184,60 @@ React.useEffect(() => {
 {/* Type & Nom (même ligne) + Date (ligne suivante) */}
 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
   {/* Type */}
-  <label className="grid gap-1 text-sm">
-    <span className="font-semibold">Type</span>
-    <select
-      className="rounded-xl border border-black/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-      value={form.type}
-      onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
-    >
-      <option value="creches">Crèches</option>
-      <option value="garderies">Garderies</option>
-      <option value="ecoles">Écoles</option>
-    </select>
-  </label>
+<label className="grid gap-1 text-sm">
+  <span className="font-semibold">Type</span>
+  <select
+    className="rounded-xl border border-black/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+    value={form.type}
+    onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
+  >
+    <option value="creches">Crèches</option>
+  <option value="garderies">Garderies</option>
+  <option value="ecoles">Écoles</option>
+  </select>
+</label>
 
-  {/* Nom (dépend du type) */}
-  <label className="grid gap-1 text-sm">
-    <span className="font-semibold">Nom</span>
+
+
+{/* Nom (dépend du type) */}
+<label className="grid gap-1 text-sm">
+  <span className="font-semibold">Nom</span>
+  <div className="flex items-center gap-2">
     <select
-      className="rounded-xl border border-black/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+      className="flex-1 rounded-xl border border-black/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
       value={form.org}
-      onChange={(e) => setForm((f) => ({ ...f, org: e.target.value }))}
+      onChange={(e) => {
+        const value = e.target.value;
+        setForm((f) => ({ ...f, org: value }));
+      }}
+      disabled={loadingOrgs}
     >
-      {(ORGS[form.type] ?? []).map((n) => (
-        <option key={n} value={n}>{n}</option>
-      ))}
+      <option value="">
+        {loadingOrgs ? "Chargement..." : "-- Sélectionnez un établissement --"}
+      </option>
+      {orgOptions.map((etab) => {
+        const id = etab.idEtablissement;
+        const nom = etab.nomEtablissement;
+        return (
+          <option key={id} value={id}>
+            {nom}
+          </option>
+        );
+      })}
     </select>
-  </label>
+
+    {/* Spinner */}
+    {loadingOrgs && (
+      <div
+        className="inline-block animate-spin rounded-full border-2 border-t-blue-500 border-gray-200 h-4 w-4"
+        title="Chargement..."
+      />
+    )}
+  </div>
+</label>
+
+
+
 
   {/* Date (pleine largeur sous Type/Nom) */}
   <label className="grid gap-1 text-sm md:col-span-2">
@@ -220,12 +288,13 @@ React.useEffect(() => {
 
         <div className="mt-5 flex items-center justify-between">
           {initial && (
-            <button
-              onClick={() => onDelete?.(initial)}
-              className="rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-sm font-bold text-red-600 hover:bg-red-100"
-            >
-              Supprimer
-            </button>
+        <button
+  onClick={() => onDelete?.(initial)}
+  className="rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-sm font-bold text-red-600 hover:bg-red-100"
+>
+  Supprimer
+</button>
+
           )}
           <div className="ml-auto flex gap-2">
             <button onClick={onClose} className="rounded-xl border border-black/10 px-3 py-1.5 text-sm font-semibold hover:bg-gray-50">
@@ -382,12 +451,12 @@ function EventCard({ ev, onEdit }) {
 
 {/* Nom de l’établissement (sous les heures) */}
 
-{ev.org && (
+{ev.orgName && (
   <div className="mb-2">
     <span
       className={["inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1", c.soft, c.ring].join(" ")}
     >
-      {ev.org}
+     {ev.orgName}
     </span>
   </div>
 )}
@@ -410,16 +479,17 @@ function EventCard({ ev, onEdit }) {
       <div className="mt-3 flex items-center justify-between hidden">
         {/* Avatars (ou initiales) – prend ev.guests = [{name, color?}] */}
         <div className="flex -space-x-2">
-          {(ev.guests ?? []).slice(0,4).map((g, i) => (
-            <span
-              key={i}
-              title={g.name}
-              className="inline-grid h-7 w-7 place-items-center rounded-full border border-white text-[11px] font-bold shadow-sm"
-              style={{ background: g.color || "#f1f5f9", color: "#0f172a" }}
-            >
-              {initials(g.name)}
-            </span>
-          ))}
+       {(ev.guests ?? []).slice(0,4).map((g) => (
+  <span
+    key={g.name} // idéalement g.id
+    title={g.name}
+    className="inline-grid h-7 w-7 place-items-center rounded-full border border-white text-[11px] font-bold shadow-sm"
+    style={{ background: g.color || "#f1f5f9", color: "#0f172a" }}
+  >
+    {initials(g.name)}
+  </span>
+))}
+
           {ev.guests && ev.guests.length > 4 && (
             <span className="inline-grid h-7 w-7 place-items-center rounded-full border border-white bg-slate-100 text-[11px] font-bold text-slate-700 shadow-sm">
               +{ev.guests.length - 4}
@@ -527,6 +597,106 @@ function KPIStyles() {
   );
 }
 
+function MiniCalendarPopover({ open, onClose, value, onPick, eventsByDate }) {
+  if (!open) return null;
+
+  const base = new Date(value.getFullYear(), value.getMonth(), 1);
+  const startDay = (base.getDay() + 6) % 7; // lundi
+  const daysInMonth = new Date(
+    value.getFullYear(),
+    value.getMonth() + 1,
+    0
+  ).getDate();
+
+  // ⬅ mois précédent
+  const prevMonth = () => {
+    onPick(new Date(value.getFullYear(), value.getMonth() - 1, 1));
+  };
+
+  // ➡ mois suivant
+  const nextMonth = () => {
+    onPick(new Date(value.getFullYear(), value.getMonth() + 1, 1));
+  };
+
+  return (
+    <div className="absolute top-full mt-2 ml-20 z-[60]">
+      <div className="rounded-2xl bg-white p-4 shadow-2xl border border-black/10 w-[280px]">
+
+        {/* HEADER AVEC FLÈCHES */}
+        <div className="mb-2 flex items-center justify-between">
+          <button
+            onClick={prevMonth}
+            className="rounded-lg p-1 hover:bg-gray-100 text-gray-600"
+          >
+            ‹
+          </button>
+
+          <div className="text-sm font-extrabold">
+            {monthNames[value.getMonth()]} {value.getFullYear()}
+          </div>
+
+          <button
+            onClick={nextMonth}
+            className="rounded-lg p-1 hover:bg-gray-100 text-gray-600"
+          >
+            ›
+          </button>
+        </div>
+
+        {/* JOURS */}
+        <div className="grid grid-cols-7 gap-1 text-center text-[11px] text-gray-400 mb-1">
+          {["L","M","M","J","V","S","D"].map(d => (
+            <div key={d}>{d}</div>
+          ))}
+        </div>
+
+        {/* GRILLE */}
+        <div className="grid grid-cols-7 gap-1">
+          {Array.from({ length: startDay }).map((_, i) => (
+            <div key={"e"+i} />
+          ))}
+
+          {Array.from({ length: daysInMonth }).map((_, i) => {
+            const day = i + 1;
+            const iso = toISODate(
+              new Date(value.getFullYear(), value.getMonth(), day)
+            );
+            const types = eventsByDate[iso] || [];
+
+            return (
+              <button
+                key={day}
+                onClick={() => {
+                  onPick(new Date(value.getFullYear(), value.getMonth(), day));
+                  onClose();
+                }}
+                className="relative h-9 rounded-lg hover:bg-indigo-50 text-sm font-semibold"
+              >
+                {day}
+
+                {/* points événements */}
+                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5">
+                  {[...new Set(types)].slice(0, 3).map(t => (
+                    <span
+                      key={t}
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{
+                        background:
+                          t === "creches" ? "#a78bfa" :
+                          t === "garderies" ? "#f59e0b" :
+                          "#10b981"
+                      }}
+                    />
+                  ))}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* --------------------------------- page --------------------------------- */
 export default function CalendarPage() {
@@ -535,16 +705,39 @@ export default function CalendarPage() {
 
   // filtre type
   const [filterType, setFilterType] = React.useState("creches");
+const [events, setEvents] = React.useState([]);
+  const [todayPopupOpen, setTodayPopupOpen] = React.useState(false);
+const todayBtnRef = React.useRef(null);
+const todayArrowRef = React.useRef(null);
+
+const eventsByDate = React.useMemo(() => {
+  const map = {};
+  events.forEach(e => {
+    if (!e.date) return;
+    if (!map[e.date]) map[e.date] = [];
+    map[e.date].push(e.type);
+  });
+  return map;
+}, [events]);
+
 
   // exemples dynamiques pour la semaine en cours (=> garderies/écoles visibles)
   const seedWeek = startOfWeek(new Date());
   const seed = (offset) => toISODate(addDays(seedWeek, offset));
-const [events, setEvents] = React.useState(() => [
-  { id: crypto.randomUUID(), type: "creches",   org: "Crèche Les Petits Pas", title: "Sortie sciences",   date: seed(1), start: "08:00", end: "14:00", desc: "Musée des sciences & techno." },
-  { id: crypto.randomUUID(), type: "garderies", org: "Garderie Le Nid",       title: "Prépa Pâques",      date: seed(2), start: "06:00", end: "08:00", desc: "Organisation de la semaine." },
-  { id: crypto.randomUUID(), type: "ecoles",    org: "École Pasteur",         title: "Réunion équipe",    date: seed(4), start: "08:00", end: "16:00", desc: "Bilan mensuel & RH." },
-  { id: crypto.randomUUID(), type: "creches",   org: "Crèche Arc-en-ciel",    title: "Atelier extérieur", date: seed(1), start: "10:00", end: "12:00" },
-]);
+
+
+React.useEffect(() => {
+  async function loadEvents() {
+    try {
+      const data = await fetchEvents();
+      setEvents(data);
+    } catch (err) {
+      console.error("Erreur chargement événements:", err);
+    }
+  }
+  loadEvents();
+}, []);
+
 
  const [suggestOpen, setSuggestOpen] = React.useState(false);
  
@@ -564,12 +757,13 @@ const [events, setEvents] = React.useState(() => [
    setOpen(true);                        // on ouvre la modale
    setSuggestOpen(false);                // on ferme le popup
    // le "seed" est passé à Modal (voir en bas dans JSX) pour pré-remplir les champs
-   setSeedForModal({
-     type,
-     org: ORGS[type]?.[0] || "",
-     date: todayISO,
-     ...SUGGEST_TEMPLATES[type],
-   });
+  setSeedForModal({
+  type,
+  org: "", // ✅ on laisse vide, il sera mis à jour avec le 1er établissement chargé
+  date: todayISO,
+  ...SUGGEST_TEMPLATES[type],
+});
+
  };
 
 
@@ -606,6 +800,7 @@ React.useEffect(() => {
 }, [filterType]);
 
 
+
  // petit état local qui transporte le pré-remplissage vers Modal
  const [seedForModal, setSeedForModal] = React.useState(null);
 
@@ -628,19 +823,131 @@ React.useEffect(() => {
     setOpen(true);
   };
 
-  const submit = (form) => {
-    if (editing) {
-      setEvents((arr) => arr.map((e) => (e.id === editing.id ? { ...editing, ...form } : e)));
-    } else {
-      setEvents((arr) => arr.concat([{ id: crypto.randomUUID(), ...form }]));
-    }
-    setOpen(false);
-  };
+  
+/*const submit = async (form) => {
+  try {
+    // ✅ Validation : vérifier si l’établissement est bien un ID connu
+    const validOrg = form.org && typeof form.org === "string" && form.org.length > 0;
 
-  const remove = (ev) => {
-    setEvents((arr) => arr.filter((e) => e.id !== ev.id));
+    if (!validOrg) {
+      alert("Veuillez sélectionner un établissement valide.");
+      return;
+    }
+    
+    if (editing) {
+      await updateEvent({ ...editing, ...form });
+    } else {
+      await addEvent(form); // ✅ form.org est un ID valide ici
+    }
+
+    const newEvents = await fetchEvents();
+    setEvents(newEvents);
     setOpen(false);
-  };
+  } catch (err) {
+    console.error("Erreur lors de l’enregistrement:", err);
+    alert("Erreur lors de l’enregistrement : " + (err.response?.data?.message || err.message));
+  }
+};*/
+const submit = async (form) => {
+  try {
+    const validOrg = form.org && typeof form.org === "string";
+    if (!validOrg) {
+      await Swal.fire({
+        icon: "warning",
+        title: "Établissement requis",
+        text: "Veuillez sélectionner un établissement valide.",
+      });
+      return;
+    }
+
+    // 🔄 Loader pendant l'action
+    Swal.fire({
+      title: editing ? "Mise à jour en cours..." : "Création en cours...",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    if (editing) {
+      await updateEvent({ ...editing, ...form });
+
+      // ✅ Update local immédiat
+      setEvents(prev =>
+        prev.map(ev =>
+          ev.id === editing.id
+            ? { ...ev, ...form }
+            : ev
+        )
+      );
+
+      // ✅ Succès modification
+      Swal.fire({
+        icon: "success",
+        title: "Évènement modifié",
+        text: "Les modifications ont été enregistrées avec succès.",
+        timer: 1800,
+        showConfirmButton: false,
+      });
+
+    } else {
+      await addEvent(form);
+
+      const newEvents = await fetchEvents();
+      setEvents(newEvents);
+
+      // ✅ Succès ajout
+      Swal.fire({
+        icon: "success",
+        title: "Évènement ajouté",
+        text: "Le nouvel évènement a été créé avec succès.",
+        timer: 1800,
+        showConfirmButton: false,
+      });
+    }
+
+    setOpen(false);
+
+  } catch (err) {
+    console.error("Erreur lors de l’enregistrement:", err);
+
+    Swal.fire({
+      icon: "error",
+      title: "Erreur",
+      text: err.response?.data?.message || "Une erreur est survenue lors de l’enregistrement.",
+    });
+  }
+};
+
+
+
+
+const remove = async (ev) => {
+  const result = await Swal.fire({
+    title: "Êtes-vous sûr ?",
+    text: "Cette action supprimera définitivement l'événement.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Oui, supprimer",
+    cancelButtonText: "Annuler"
+  });
+
+  if (result.isConfirmed) {
+    try {
+      await deleteEvent(ev.id);
+      const newEvents = await fetchEvents();
+      setEvents(newEvents);
+      setOpen(false);
+      Swal.fire("Supprimé !", "L'événement a été supprimé.", "success");
+    } catch (err) {
+      console.error("Erreur lors de la suppression:", err);
+      Swal.fire("Erreur", "Impossible de supprimer l'événement.", "error");
+    }
+  }
+};
+
 // bornes de la semaine courante (inchangé)
 const weekStartISO = toISODate(weekStart);
 const weekEndISO   = toISODate(addDays(weekStart, 6));
@@ -721,7 +1028,47 @@ const countsThisWeek = React.useMemo(() => {
           </div>
           <div className="mt-1 flex items-center gap-2 text-sm">
             <button onClick={prevWeek} className="rounded-lg border border-black/10 px-2 py-1 hover:bg-gray-50">‹</button>
-            <button onClick={goToday} className="rounded-lg border border-black/10 px-2 py-1 font-semibold hover:bg-gray-50">Aujourd’hui</button>
+           <div className="relative inline-flex flex-col items-center">
+  {/* Bouton Aujourd’hui */}
+  <button
+    onClick={goToday}
+    className="rounded-lg border border-black/10 px-3 py-1 font-semibold hover:bg-gray-50"
+  >
+    Aujourd’hui
+  </button>
+
+  {/* Petite flèche */}
+  <button
+    ref={todayArrowRef}
+    onClick={() => setTodayPopupOpen(o => !o)}
+    className="mt-0.5 flex h-4 w-6 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100"
+    aria-label="Ouvrir le mini calendrier"
+  >
+    <svg
+      width="30"
+      height="30"
+      viewBox="0 0 24 24"
+      className={`transition-transform ${todayPopupOpen ? "rotate-180" : ""}`}
+    >
+      <path
+        fill="currentColor"
+        d="M7 10l5 5l5-5z"
+      />
+    </svg>
+  </button>
+    {/* ✅ MINI CALENDRIER — ICI ET PAS AILLEURS */}
+  <MiniCalendarPopover
+    open={todayPopupOpen}
+    onClose={() => setTodayPopupOpen(false)}
+    value={viewDate}
+    onPick={(d) => {
+      setViewDate(d);
+      setTodayPopupOpen(false);
+    }}
+    eventsByDate={eventsByDate}
+  />
+</div>
+
             <button onClick={nextWeek} className="rounded-lg border border-black/10 px-2 py-1 hover:bg-gray-50">›</button>
           </div>
         </div>
@@ -858,6 +1205,9 @@ const countsThisWeek = React.useMemo(() => {
        onClose={() => setSuggestOpen(false)}
        onPick={handlePickType}
     />
+
+
+
     </div>
   );
 }
