@@ -69,12 +69,14 @@ public class AuthServiceImpl implements  AuthService{
                 new  UsernamePasswordAuthenticationToken(email, password)
             );
             if (authentication.isAuthenticated()) {
-                String token = jwtUtils.generateToken(email);
+                
                 User user = userRepository.findByEmail(email);
+                String token = jwtUtils.generateToken(user.getId(),email,user.getRole().toString());
                 Map<String,Object> authData  = new HashMap<>();
                 authData.put("token", token);
                 authData.put("type", "Bearer");
                 // authData.put("user", user);
+                 authData.put("id", user.getId());
                 return authData;
             
             }

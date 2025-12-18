@@ -36,12 +36,12 @@ public class EventController {
         LocalDate date = LocalDate.parse(dateStr);
         return evenementService.getEvenementsParDate(date);
     }
-    @PutMapping(Constants.EVENEMENT_UPDATE)
+    @PutMapping(Constants.UPDATE + Constants.ID)
     public ResponseEntity <EvenementResponseDTO> modifierEvenement(@PathVariable String id, @RequestBody EvenementRequestDTO dto) {
         EvenementResponseDTO response = evenementService.modifierEvenement( id, dto);
         return ResponseEntity.ok(response);
     }
-    @DeleteMapping(Constants.EVENEMENT_DELETE)
+    @DeleteMapping(Constants.DELETE + Constants.ID)
     public ResponseEntity<String>supprimerEvenement(@PathVariable String id) {
         evenementService.supprimerEvenement(id);
         return ResponseEntity.ok("Événement supprimé avec succès !");
