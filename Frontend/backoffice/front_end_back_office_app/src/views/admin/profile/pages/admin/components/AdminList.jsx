@@ -14,6 +14,7 @@ import EditAdminModal from "./modals/EditAdminModal";
 import MessageModal from "./modals/MessageModal";
 import AddAdminModal from "./AddAdminModal";
 import { LuRefreshCcw } from "react-icons/lu";
+import avatar4Img from "../../../../../../assets/img/avatars/avatar4.png";
 
 const SkeletonCard = () => (
   <div className="flex items-start justify-between gap-4 p-4 bg-white border shadow-sm animate-pulse rounded-xl md:flex-row md:items-center">
@@ -172,6 +173,7 @@ const AdminList = () => {
                     <img
                       src={admin.image}
                       alt="admin"
+                      onError={(e) => { e.currentTarget.src = avatar4Img; }}
                       className="object-cover rounded-full h-14 w-14"
                     />
                     <span

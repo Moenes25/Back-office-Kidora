@@ -47,6 +47,7 @@ const ProfileDropdown = () => {
         <motion.img
           src={getImageUrl()}
           alt={user?.nom || "User Avatar"}
+          onError={(e) => { e.currentTarget.src = avatarFallback ; }}
           className="object-cover w-full h-full"
           whileHover={{ scale: 1.08 }}
           transition={{ duration: 0.2 }}
