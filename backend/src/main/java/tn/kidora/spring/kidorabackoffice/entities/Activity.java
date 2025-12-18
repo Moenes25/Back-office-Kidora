@@ -26,6 +26,9 @@ public class Activity {
     private String adminNom;
 
     private String adminImage;
+    private String adminRegion;
+    private Role adminRole;
+
 
     private LocalDateTime dateAction;
 }
