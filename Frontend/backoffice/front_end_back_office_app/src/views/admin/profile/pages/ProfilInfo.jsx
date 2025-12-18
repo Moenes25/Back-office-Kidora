@@ -13,6 +13,7 @@ import {
 import { RiUserSettingsFill } from "react-icons/ri";
 import api from "services/api";
 import { useAuth } from "context/AuthContext";
+import avatar4Img from "../../../../assets/img/avatars/avatar4.png";
 
 export default function ProfileInfo() {
   const { user, token, updateUser } = useAuth();
@@ -203,6 +204,7 @@ export default function ProfileInfo() {
                 ? URL.createObjectURL(previewImage)
                 : profileImage
             }
+          
             alt="profile"
             className="object-cover w-20 h-20 border-2 border-purple-300 rounded-xl"
           />

@@ -1,6 +1,7 @@
+"use client";
+
 import React, { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-
 
 const ProfileTabs = ({ activeTab, setActiveTab }) => {
   const tabs = [
@@ -26,8 +27,7 @@ const ProfileTabs = ({ activeTab, setActiveTab }) => {
   }, [activeTab]);
 
   return (
-    <div className="relative mt-6 border-b border-gray-200">
-      
+    <div className="relative px-2 mt-6 border-b border-gray-200 rounded-lg">
       <div
         ref={containerRef}
         role="tablist"
@@ -44,14 +44,17 @@ const ProfileTabs = ({ activeTab, setActiveTab }) => {
             onClick={() => setActiveTab(tab.id)}
             className={`
               relative inline-flex items-center px-4 py-2 font-semibold rounded-lg transition-all
-              ${
-                activeTab === tab.id
-                  ? "text-white bg-gradient-to-br from-purple-500 to-blue-500 shadow-lg"
-                  : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"
+              ${activeTab === tab.id 
+                ? " bg-white shadow-md" // background always white
+                : " text-gray-500 hover:text-gray-800 hover:bg-gray-100"
               }
             `}
           >
-            <span className="z-10">{tab.label}</span>
+            <span
+              className={activeTab === tab.id ? "gradient-text z-10" : "z-10"}
+            >
+              {tab.label}
+            </span>
 
             {/* Animated underline for active tab */}
             {activeTab === tab.id && (
@@ -71,6 +74,21 @@ const ProfileTabs = ({ activeTab, setActiveTab }) => {
       <style>{`
         .scrollbar-none::-webkit-scrollbar { display: none; }
         .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* gradient animation for text */
+        .gradient-text {
+          background: linear-gradient(90deg, #8b5cf6, #c048ec, #3b82f6);
+          background-size: 200% 200%;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          animation: gradientMove 3s ease infinite;
+        }
+
+        @keyframes gradientMove {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
       `}</style>
     </div>
   );
