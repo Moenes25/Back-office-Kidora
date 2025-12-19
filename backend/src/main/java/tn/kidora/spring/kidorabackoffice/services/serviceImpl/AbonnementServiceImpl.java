@@ -38,6 +38,7 @@ AbonnementMapper abonnementMapper;
         abonnement.setMontantPaye(dto.getMontantPaye());
         abonnement.setMontantDu(dto.getMontantDu());
         abonnement.setStatut(dto.getStatut());
+        abonnement.setFormule(dto.getFormule()); 
         abonnement.setEtablissement(etab);
 
         Abonnement saved = abonnementRepository.save(abonnement);
@@ -67,6 +68,7 @@ AbonnementMapper abonnementMapper;
         abonnement.setMontantPaye(dto.getMontantPaye());
         abonnement.setMontantDu(dto.getMontantDu());
         abonnement.setStatut(dto.getStatut());
+        abonnement.setFormule(dto.getFormule()); 
         abonnement.setEtablissement(etab);
         Abonnement updated = abonnementRepository.save(abonnement);
 //pour recuperer la reponse

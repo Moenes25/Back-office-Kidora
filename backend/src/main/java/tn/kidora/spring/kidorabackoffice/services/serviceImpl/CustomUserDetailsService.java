@@ -28,6 +28,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             user.getEmail(),user.getPassword(),
              Collections.singletonList(new SimpleGrantedAuthority("ROLE_" +user.getRole().name()))
             );
+            
 
     //    User user = userRepository.findByNom(username);
     //     if (user == null) {

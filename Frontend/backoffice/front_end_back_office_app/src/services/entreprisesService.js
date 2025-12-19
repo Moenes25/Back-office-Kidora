@@ -90,6 +90,11 @@ export async function updateEtablissement(id, payload) {
   }
 }
 
+export async function updateAbonnement(id, data) {
+  return await api.put(`/abonnement/update/${id}`, data);
+}
+
+
 // 🗑️ Supprimer un établissement
 export async function deleteEtablissement(id) {
   try {

@@ -15,7 +15,8 @@ export default function SidebarLinks({ routes, collapsed = false }) {
   return (
      <ul className="space-y-3 px-1 w-full" data-collapsed={collapsed ? "true" : "false"}>
       {routes
-        .filter((r) => ["/admin", "/auth", "/rtl"].includes(r.layout))
+         .filter((r) => ["/admin", "/auth", "/rtl"].includes(r.layout))
+         .filter((r) => !r.secondary) // 👈 ici on masque les routes secondaires (comme "Profile")
         .map((route, i) => {
           const active = isActive(route);
 

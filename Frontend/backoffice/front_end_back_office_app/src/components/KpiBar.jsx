@@ -2,8 +2,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { LuLineChart, LuPieChart, LuBarChart3 } from 'react-icons/lu';
-import { getCroissanceData, getRepartitionAnnuelle } from "services/dashboardService";
-
+import { getCroissanceData, getRepartitionAnnuelle  } from 'services/dashboardService';
 
 // --- Constantes FR & données
 const MONTHS_FR = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'];
@@ -37,10 +36,6 @@ const DONUT_BY_YEAR = Object.fromEntries(
     year, f.map((k,i)=>Math.round(totals2024[i]*k))
   ]))
 );
-
-
-
-
 
 /* =========================================================
  * Effets visuels globaux (CSS-in-JS)
@@ -172,38 +167,63 @@ function ChartCard({ title, icon, right, children }) {
 /* ============================
  * 1) Courbe
  * ============================ */
-function TechLine({ data, height = 300 }) {
+function TechLine({ height = 300 }) {
+  const [chartData, setChartData] = useState({
+    labels: [],
+    Garderies: [],
+    Crèches: [],
+    Écoles: [],
+  });
 
-  const series = useMemo(() =>
-    Object.entries(data).map(([name, dataArr], idx) => ({
+  useEffect(() => {
+    getCroissanceData().then(data => {
+      setChartData(data);
+    });
+  }, []);
+
+  const series = useMemo(() => {
+    return ['Garderies', 'Crèches', 'Écoles'].map((name, idx) => ({
       name,
       type: 'line',
       smooth: true,
       symbol: 'circle',
       symbolSize: 8,
       showSymbol: false,
-      lineStyle: { width: 3, shadowBlur: 16, shadowColor: TYPE_COLORS[idx], shadowOffsetY: 6 },
+      lineStyle: {
+        width: 3,
+        shadowBlur: 16,
+        shadowColor: TYPE_COLORS[idx],
+        shadowOffsetY: 6,
+      },
       itemStyle: { color: TYPE_COLORS[idx] },
       areaStyle: {
         opacity: 0.25,
-        color: { type:'linear', x:0,y:0,x2:0,y2:1,
-          colorStops:[
-            { offset:0, color: TYPE_COLORS[idx] },
-            { offset:1, color:'rgba(0,0,0,0)' },
+        color: {
+          type: 'linear',
+          x: 0, y: 0, x2: 0, y2: 1,
+          colorStops: [
+            { offset: 0, color: TYPE_COLORS[idx] },
+            { offset: 1, color: 'rgba(0,0,0,0)' },
           ],
         },
       },
-      data: dataArr,
+      data: chartData[name] || [],
       emphasis: { focus: 'series' },
-      // petit effet ripple ponctuel via markPoint + animation
       markPoint: {
-        symbol: 'circle', symbolSize: 0,
-        label: { show: true, formatter: '⬤', color: TYPE_COLORS[idx], fontSize: 10 },
-        data: [{ coord: ['Juin', dataArr[5] ?? 0] }],
-
+        symbol: 'circle',
+        symbolSize: 0,
+        label: {
+          show: true,
+          formatter: '⬤',
+          color: TYPE_COLORS[idx],
+          fontSize: 10,
+        },
+        data: [
+          { coord: ['Juin', (chartData[name] || [])[5] || 0] },
+        ],
       },
-    })), [data]
-  );
+    }));
+  }, [chartData]);
 
   const option = useMemo(() => ({
     animationDuration: 1000,
@@ -213,16 +233,19 @@ function TechLine({ data, height = 300 }) {
     tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
     legend: { bottom: 0, textStyle: { fontWeight: 700 } },
     xAxis: {
-      type: 'category', boundaryGap: false, data: MONTHS_FR,
+      type: 'category',
+      boundaryGap: false,
+      data: chartData.labels,
       axisLine: { lineStyle: { color: 'rgba(0,0,0,.25)' } },
       axisLabel: { fontWeight: 600 },
     },
     yAxis: {
-      type: 'value', axisLine: { show: false },
+      type: 'value',
+      axisLine: { show: false },
       splitLine: { lineStyle: { type: 'dashed', color: 'rgba(0,0,0,.1)' } },
     },
     series,
-  }), [series]);
+  }), [chartData, series]);
 
   return <ReactECharts option={option} style={{ height }} notMerge />;
 }
@@ -245,19 +268,76 @@ function YearSelect({ value, onChange, years }) {
 /* ============================
  * 2) Donut avec % inside + centre propre
  * ============================ */
-function TechDonut({ data, year, height = 300 }) {
-   const totalAll = data.reduce((a, b) => a + b, 0)
+
+
+function TechDonut({ year, height = 300 }) {
+  const [totals, setTotals] = useState([0, 0, 0]); // [Garderie, Crèche, École]
+  const totalAll = totals.reduce((a, b) => a + b, 0);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const data = await getRepartitionAnnuelle(year);
+
+        // Convertir l’API en tableau ordonné [Garderie, Crèche, École]
+        const map = {
+          GARDERIE: 0,
+          CRECHE: 1,
+          ECOLE: 2,
+        };
+
+        const ordered = [0, 0, 0];
+        data.forEach(item => {
+          const index = map[item.type?.toUpperCase()];
+          if (index !== undefined) {
+            ordered[index] = item.nombre;
+          }
+        });
+
+        setTotals(ordered);
+      } catch (err) {
+        console.error("Erreur chargement répartition annuelle:", err);
+      }
+    }
+
+    fetchData();
+  }, [year]);
 
   const option = useMemo(() => ({
     animationDuration: 900,
-    tooltip: { trigger: 'item', formatter: ({ name, value, percent }) => `${name}: ${value} (${percent}%)` },
+    tooltip: {
+      trigger: 'item',
+      formatter: ({ name, value, percent }) => `${name}: ${value} (${percent}%)`,
+    },
     legend: { bottom: 0 },
     graphic: [
       {
-        type: 'group', left: 'center', top: 'center',
+        type: 'group',
+        left: 'center',
+        top: 'center',
         children: [
-          { type: 'text', style: { text: `${totalAll}`, fontSize: 28, fontWeight: 900, textAlign: 'center' }, top: -10, left: -14 },
-          { type: 'text', style: { text: 'Total annuel', fontSize: 12, opacity: 0.7, textAlign: 'center' }, top: 16, left: -28 },
+          {
+            type: 'text',
+            style: {
+              text: `${totalAll}`,
+              fontSize: 28,
+              fontWeight: 900,
+              textAlign: 'center',
+            },
+            top: -10,
+            left: -14,
+          },
+          {
+            type: 'text',
+            style: {
+              text: 'Total annuel',
+              fontSize: 12,
+              opacity: 0.7,
+              textAlign: 'center',
+            },
+            top: 16,
+            left: -28,
+          },
         ],
       },
     ],
@@ -265,26 +345,42 @@ function TechDonut({ data, year, height = 300 }) {
       {
         name: 'Répartition',
         type: 'pie',
-        radius: ['55%','80%'],
-        avoidLabelOverlap: false, minShowLabelAngle: 0, labelLayout: () => ({ hideOverlap: false }),
-        itemStyle: { borderRadius: 12, borderColor: '#fff', borderWidth: 2, shadowBlur: 10, shadowColor: 'rgba(0,0,0,.15)' },
+        radius: ['55%', '80%'],
+        avoidLabelOverlap: false,
+        labelLayout: () => ({ hideOverlap: false }),
+        itemStyle: {
+          borderRadius: 12,
+          borderColor: '#fff',
+          borderWidth: 2,
+          shadowBlur: 10,
+          shadowColor: 'rgba(0,0,0,.15)',
+        },
         label: {
-          show: true, position: 'inside',
-          formatter: ({ percent }) => `${Math.round(percent)}%`, fontWeight: 800,
+          show: true,
+          position: 'inside',
+          formatter: ({ percent }) => `${Math.round(percent)}%`,
+          fontWeight: 800,
         },
         labelLine: { show: false },
-        emphasis: { scaleSize: 10, itemStyle: { shadowBlur: 18, shadowColor: 'rgba(0,0,0,.25)' } },
-          data: TYPE_LABELS.map((label, i) => ({
-        name: label,
-        value: data[i],
-        itemStyle: { color: TYPE_COLORS[i] },
-      })),
+        emphasis: {
+          scaleSize: 10,
+          itemStyle: {
+            shadowBlur: 18,
+            shadowColor: 'rgba(0,0,0,.25)',
+          },
+        },
+        data: TYPE_LABELS.map((name, i) => ({
+          name,
+          value: totals[i],
+          itemStyle: { color: TYPE_COLORS[i] },
+        })),
       },
     ],
-  }), [data, totalAll]);
+  }), [totals, totalAll]);
 
-   return <ReactECharts option={option} style={{ height }} notMerge  />;
+  return <ReactECharts option={option} style={{ height }} notMerge />;
 }
+
 
 /* ============================
  * 3) Radar tickets (avec glow + animation)
@@ -332,68 +428,21 @@ export default function KpiBar() {
   const [year, setYear] = useState('2024');
   const years = Object.keys(DONUT_BY_YEAR);
 
-  const [croissance, setCroissance] = useState({
-    Garderies: [],
-    Crèches: [],
-    Écoles: [],
-  });
-
-  const [repartition, setRepartition] = useState([0, 0, 0]);
-
-useEffect(() => {
-  async function fetchCharts() {
-    try {
-      const croissanceData = await getCroissanceData();
-      const repartitionData = await getRepartitionAnnuelle(year);
-
-      // ==========================
-      // CROISSANCE
-      // ==========================
-      setCroissance({
-        Garderies: croissanceData.find(d => d.type === "GARDERIE")?.valeurs ?? [],
-        Crèches:   croissanceData.find(d => d.type === "CRECHE")?.valeurs ?? [],
-        Écoles:    croissanceData.find(d => d.type === "ECOLE")?.valeurs ?? [],
-      });
-
-      // ==========================
-      // RÉPARTITION
-      // ==========================
-      const map = { GARDERIE: 0, CRECHE: 0, ECOLE: 0 };
-
-      repartitionData.forEach(item => {
-        map[item.type] = item.count;
-      });
-
-      setRepartition([
-        map.GARDERIE,
-        map.CRECHE,
-        map.ECOLE
-      ]);
-
-    } catch (err) {
-      console.error("Erreur lors de la récupération des données", err);
-    }
-  }
-
-  fetchCharts();
-}, [year]);
-
   return (
     <>
       <VisualFX />
       <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-3">
-        <ChartCard title="Croissance des inscriptions" icon={<LuLineChart className="h-5 w-5" />}>
-         <TechLine data={croissance} height={300} />
+      <ChartCard title="Croissance des inscriptions" icon={<LuLineChart className="h-5 w-5" />}>
+  <TechLine height={300} />
+</ChartCard>
 
-        </ChartCard>
 
         <ChartCard
           title="Répartition annuelle"
           icon={<LuPieChart className="h-5 w-5" />}
           right={<YearSelect value={year} onChange={setYear} years={years} />}
         >
-         <TechDonut data={repartition} year={year} height={300} />
-
+          <TechDonut year={year} height={300} />
         </ChartCard>
 
         <ChartCard title="Tickets par jour" icon={<LuBarChart3 className="h-5 w-5" />}>

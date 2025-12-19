@@ -14,7 +14,7 @@ import { RiPauseCircleLine, RiDeleteBinLine } from "react-icons/ri";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 import api from "services/api"; 
-import { getEntreprisesStats , getAllEtablissements, saveEtablissement, updateEtablissement, deleteEtablissement , getUserFromToken , saveAbonnement} from "services/entreprisesService";
+import { getEntreprisesStats , getAllEtablissements, saveEtablissement, updateEtablissement, deleteEtablissement , getUserFromToken , saveAbonnement , updateAbonnement} from "services/entreprisesService";
 
 
 /* ----------------------------------------------------------------
@@ -527,34 +527,81 @@ function calculateEndDate(plan) {
 /* ----------------------------------------------------------------
    Composant principal
 ----------------------------------------------------------------- */
+function convertStatutToLabel(code) {
+  switch (code) {
+    case "PAYEE": return "Actif";
+    case "ESSAYE": return "En période d’essai";
+    case "RETARD": return "En retard de paiement";
+    case "SUSPENDU": return "Suspendu";
+    case "RESILE": return "Résilié";
+    default: return "Inconnu";
+  }
+}
+
 const ClientsPage = () => {
   const [data, setData] = useState([]);
 useEffect(() => {
-  getAllEtablissements().then(raw => {
-    const mapped = raw.map(etab => ({
-      id: etab.idEtablissment,
-      name: etab.nomEtablissement,
-      city: etab.region,
-      address: etab.adresse_complet || "",
-      phone: etab.telephone || "",
-      email: etab.email || "",
-      url_localisation: etab.url_localisation || "",
-      type:
-        etab.type === "CRECHE" ? "creches" :
-        etab.type === "GARDERIE" ? "garderies" :
-        etab.type === "ECOLE" ? "ecoles" : "autre",
-      status: etab.isActive ? "Actif" : "Suspendu", // ou adapte selon logique métier
-      password: "", // pas renvoyé par le backend en général
-      subscriptionDate: "", // tu peux le remplir plus tard si tu veux
-      plan: "", // optionnel
-      enfants: etab.nombreEnfants ?? 0,
-      parents: etab.nombreParents ?? 0,
-      educateurs: etab.nombreEducateurs ?? 0,
-      history: [],
-    }));
-    setData(mapped);
-  });
+  async function fetchData() {
+    try {
+      const [etabRes, abnRes] = await Promise.all([
+        getAllEtablissements(),
+        api.get("/abonnement/all"),
+      ]);
+
+      const etablissements = etabRes || [];
+      const abonnements = abnRes.data || [];
+
+      // Associer le dernier abonnement à chaque établissement
+      const abnMap = {};
+      for (const abn of abonnements) {
+        const id = abn.etablissement?.idEtablissment;
+        if (!id) continue;
+
+        // On garde le plus récent
+        if (
+          !abnMap[id] ||
+          new Date(abn.dateFinAbonnement) > new Date(abnMap[id].dateFinAbonnement)
+        ) {
+          abnMap[id] = abn;
+        }
+      }
+
+      // Mapper les données avec l'abonnement
+      const mapped = etablissements.map(etab => {
+        const abn = abnMap[etab.idEtablissment];
+
+        return {
+          id: etab.idEtablissment,
+          name: etab.nomEtablissement,
+          city: etab.region,
+          address: etab.adresse_complet || "",
+          phone: etab.telephone || "",
+          email: etab.email || "",
+          url_localisation: etab.url_localisation || "",
+          type:
+            etab.type === "CRECHE" ? "creches" :
+            etab.type === "GARDERIE" ? "garderies" :
+            etab.type === "ECOLE" ? "ecoles" : "autre",
+          status: abn ? convertStatutToLabel(abn?.statut) : "Sans abonnement",
+          subscriptionDate: abn?.dateDebutAbonnement || "",
+          plan: abn?.formule || "",
+          password: "", // pas utilisé ici
+          enfants: etab.nombreEnfants ?? 0,
+          parents: etab.nombreParents ?? 0,
+          educateurs: etab.nombreEducateurs ?? 0,
+          history: [],
+        };
+      });
+
+      setData(mapped);
+    } catch (err) {
+      console.error("Erreur chargement établissements + abonnements :", err);
+    }
+  }
+
+  fetchData();
 }, []);
+
 
 
   // UI
@@ -664,17 +711,29 @@ async function toBackendPayload(client) {
 
 
 
-
-
 const saveClient = async (e) => {
   e.preventDefault();
   const payload = await toBackendPayload(newClient);
 
   try {
     let added;
+
     if (editId) {
       await updateEtablissement(editId, payload);
-      setData((prev) => prev.map((r) => (r.id === editId ? { ...r, ...newClient } : r)));
+
+      setData((prev) =>
+        prev.map((r) => (r.id === editId ? { ...r, ...newClient } : r))
+      );
+
+      // ✅ Afficher une alerte de succès pour modification
+      Swal.fire({
+        icon: "success",
+        title: "Succès",
+        text: "L'établissement a été modifié avec succès.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
     } else {
       // 1. Créer l’établissement
       added = await saveEtablissement(payload);
@@ -691,20 +750,31 @@ const saveClient = async (e) => {
       };
 
       console.log("Abonnement payload envoyé :", abnPayload);
-       await saveAbonnement(abnPayload);
-
+      await saveAbonnement(abnPayload);
 
       // 3. Ajouter dans l'état local
       setData((prev) => [{ ...newClient, id: added.idEtablissment }, ...prev]);
+
+      // ✅ Afficher une alerte de succès pour ajout
+      Swal.fire({
+        icon: "success",
+        title: "Succès",
+        text: "L'établissement a été ajouté avec succès.",
+        timer: 2000,
+        showConfirmButton: false,
+      });
     }
 
+    // Fermer le formulaire
     setShowAdd(false);
     resetNew();
     setEditId(null);
+
   } catch (err) {
     const message = err.response?.data?.message || err.message;
     console.error("Backend Error:", message);
 
+    // ❌ Afficher une alerte d'erreur
     Swal.fire({
       icon: "error",
       title: "Erreur",
@@ -712,6 +782,7 @@ const saveClient = async (e) => {
     });
   }
 };
+
 
 
 
@@ -794,10 +865,69 @@ const visibleCount = filtered.length;
   const drawerUI = selected ? STATUS_UI[selected.status] || {} : {};
 
   /* ----------------------- Actions ----------------------- */
-  const updateStatus = (id, newStatus) => {
-    setData((rows) => rows.map((r) => (r.id === id ? { ...r, status: newStatus } : r)));
-    setSelected((s) => (s && s.id === id ? { ...s, status: newStatus } : s));
-  };
+const updateStatus = async (etabId, newStatus) => {
+  try {
+    const statutMap = {
+      "Actif": "PAYEE",
+      "En période d’essai": "ESSAYE",
+      "En retard de paiement": "RETARD",
+      "Suspendu": "SUSPENDU",
+      "Résilié": "RESILE",
+    };
+
+    const mappedStatut = statutMap[newStatus];
+    if (!mappedStatut) throw new Error("Statut non reconnu");
+
+    // 1. Récupérer les abonnements de l’établissement
+    const res = await api.get(`/abonnement/byetablissement/${etabId}`);
+    const abonnements = res.data;
+
+    if (!abonnements || abonnements.length === 0) {
+      throw new Error("Aucun abonnement trouvé pour cet établissement");
+    }
+
+    // 2. Prendre le plus récent (par dateFinAbonnement)
+    const latest = abonnements.sort((a, b) => new Date(b.dateFinAbonnement) - new Date(a.dateFinAbonnement))[0];
+
+    // 3. Construire le payload
+    const client = data.find(c => c.id === etabId);
+    if (!client) throw new Error("Client non trouvé");
+
+    const abonnementPayload = {
+      etablissementId: etabId,
+      dateDebutAbonnement: client.subscriptionDate || new Date().toISOString().slice(0, 10),
+      dateFinAbonnement: calculateEndDate(client.plan),
+      montantPaye: 0,
+      montantDu: determinePrice(client.plan),
+      statut: mappedStatut,
+      formule: client.plan,
+    };
+
+    // 4. Appel à update avec le vrai ID d’abonnement
+    await updateAbonnement(latest.idAbonnement, abonnementPayload);
+
+    // 5. Mise à jour UI
+    setData((rows) => rows.map((r) => (r.id === etabId ? { ...r, status: newStatus } : r)));
+    setSelected((s) => (s && s.id === etabId ? { ...s, status: newStatus } : s));
+
+    Swal.fire({
+      icon: "success",
+      title: "Statut mis à jour",
+      text: `Nouveau statut : ${newStatus}`,
+      timer: 1400,
+      showConfirmButton: false,
+    });
+
+  } catch (err) {
+    console.error("Erreur updateStatus:", err);
+    Swal.fire({
+      icon: "error",
+      title: "Erreur",
+      text: err.response?.data?.message || err.message || "Une erreur est survenue.",
+    });
+  }
+};
+
 
   const printSelected = () => {
     if (!selected) return;
