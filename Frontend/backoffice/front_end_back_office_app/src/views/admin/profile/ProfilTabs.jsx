@@ -43,7 +43,7 @@ const ProfileTabs = ({ activeTab, setActiveTab }) => {
             aria-selected={activeTab === tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`
-              relative inline-flex items-center px-4 py-2 font-semibold rounded-lg transition-all
+              relative inline-flex items-center px-4 py-2 font-semibold rounded-t-lg transition-all
               ${activeTab === tab.id 
                 ? " bg-white shadow-md" // background always white
                 : " text-gray-500 hover:text-gray-800 hover:bg-gray-100"
@@ -51,7 +51,7 @@ const ProfileTabs = ({ activeTab, setActiveTab }) => {
             `}
           >
             <span
-              className={activeTab === tab.id ? "gradient-text z-10" : "z-10"}
+              className={activeTab === tab.id ? "gradient-text front-bold z-10" : "z-10"}
             >
               {tab.label}
             </span>

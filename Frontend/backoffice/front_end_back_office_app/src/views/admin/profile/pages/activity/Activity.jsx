@@ -15,34 +15,41 @@ export default function ActivityFeedSection() {
   }, []);
 
   const fetchActivities = async () => {
-    setLoading(true);
-    const data = await getAllActivities();
+  setLoading(true);
+  const data = await getAllActivities();
 
-    const mapped = data.map((a) => {
-      const type = normalizeAction(a.action);
+  const mapped = data.map((a) => {
+    const type = normalizeAction(a.action);
 
-      return {
-        id: a.id,
-        user: {
-          name: a.adminNom,
-          role: a.adminRole,
-          image: a.adminImage,
-          region: a.adminRegion,
-        },
-        action: {
-          type,
-          name: a.recordName,
-          date: a.dateAction,
-          entity: a.entityName,
-          etabname: a.nomEtablissement,
-        },
-        ui: ACTION_UI[type],
-      };
-    });
+    return {
+      id: a.id,
+      user: {
+        name: a.adminNom,
+        role: a.adminRole,
+        image: a.adminImage,
+        region: a.adminRegion,
+      },
+      action: {
+        type,
+        name: a.recordName,
+        date: a.dateAction,
+        entity: a.entityName,
+        etabname: a.nomEtablissement,
+      },
+      ui: ACTION_UI[type],
+    };
+  });
 
-    setActivities(mapped);
-    setLoading(false);
-  };
+  
+  const sorted = mapped.sort(
+    (a, b) =>
+      new Date(b.action.date) - new Date(a.action.date)
+  );
+
+  setActivities(sorted);
+  setLoading(false);
+};
+
 
   const grouped = groupActivitiesByDay(activities);
 

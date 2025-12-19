@@ -1,6 +1,3 @@
-
-
-
 package tn.kidora.spring.kidorabackoffice.config;
 
 import java.util.List;
@@ -59,7 +56,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/reset-password").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/api/auth/update-profile/**").permitAll()
-
                         // Only SUPER_ADMIN can access 
                         .requestMatchers("/api/superadmin/update-password")
                         .hasRole("SUPER_ADMIN")
@@ -67,12 +63,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/delete-user/**").hasRole("SUPER_ADMIN")
                         .requestMatchers("/api/auth/roles").hasRole("SUPER_ADMIN")
                         .requestMatchers("/api/auth/update/**").hasRole("SUPER_ADMIN")
-
                         // ACTIVITY
                         .requestMatchers(Constants.APP_ROOT + Constants.ACTIVITY + Constants.ALLACTIVITY)
                         .hasAnyRole("SUPER_ADMIN")
-                        
-
+                        .requestMatchers(Constants.APP_ROOT + Constants.ETABLISSEMENT + "/create-test-etablissement",
+                                Constants.APP_ROOT + Constants.ABONNEMENT + "/create-test-abonnement",
+                                Constants.APP_ROOT + Constants.EVENEMENT + "/create-test-evenement",
+                                Constants.APP_ROOT + Constants.ABONNEMENT + "/repartition-annuelle"
+                        ).permitAll()
                         // ETABLISSEMENT management endpoints
                         .requestMatchers(Constants.APP_ROOT + Constants.ETABLISSEMENT + Constants.ALL)
                         .permitAll()

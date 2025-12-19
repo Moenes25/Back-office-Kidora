@@ -1,12 +1,19 @@
 export const groupActivitiesByDay = (activities) => {
-  return activities.reduce((groups, activity) => {
-    const day = new Date(activity.action.date).toDateString();
+  const groups = activities.reduce((acc, activity) => {
+    const date = new Date(activity.action.date);
+    const dayKey = date.toDateString();
 
-    if (!groups[day]) {
-      groups[day] = [];
-    }
+    if (!acc[dayKey]) acc[dayKey] = [];
 
-    groups[day].push(activity);
-    return groups;
+    acc[dayKey].push(activity);
+    return acc;
   }, {});
+
+ 
+  return Object.fromEntries(
+    Object.entries(groups).sort(
+      ([dayA], [dayB]) =>
+        new Date(dayB) - new Date(dayA)
+    )
+  );
 };
