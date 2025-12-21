@@ -3,8 +3,8 @@
 import React, { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 
-const ProfileTabs = ({ activeTab, setActiveTab }) => {
-  const tabs = [
+const ProfileTabs = ({ activeTab, setActiveTab, allowedTabs }) => {
+  const allTabs = [
     { id: "profile", label: "Profil" },
     { id: "settings", label: "Settings" },
     { id: "security", label: "Security" },
@@ -12,6 +12,9 @@ const ProfileTabs = ({ activeTab, setActiveTab }) => {
     { id: "admin", label: "Admin" },
     { id: "notification", label: "Notifications" },
   ];
+
+  
+  const tabs = allTabs.filter(tab => allowedTabs.includes(tab.id));
 
   const containerRef = useRef(null);
   const activeRef = useRef(null);
@@ -45,7 +48,7 @@ const ProfileTabs = ({ activeTab, setActiveTab }) => {
             className={`
               relative inline-flex items-center px-4 py-2 font-semibold rounded-t-lg transition-all
               ${activeTab === tab.id 
-                ? " bg-white shadow-md" // background always white
+                ? " bg-white shadow-md" 
                 : " text-gray-500 hover:text-gray-800 hover:bg-gray-100"
               }
             `}
@@ -56,7 +59,6 @@ const ProfileTabs = ({ activeTab, setActiveTab }) => {
               {tab.label}
             </span>
 
-            {/* Animated underline for active tab */}
             {activeTab === tab.id && (
               <motion.span
                 layoutId="underline"
@@ -70,12 +72,10 @@ const ProfileTabs = ({ activeTab, setActiveTab }) => {
         ))}
       </div>
 
-      {/* Hide scrollbar */}
       <style>{`
         .scrollbar-none::-webkit-scrollbar { display: none; }
         .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* gradient animation for text */
         .gradient-text {
           background: linear-gradient(90deg, #8b5cf6, #c048ec, #3b82f6);
           background-size: 200% 200%;

@@ -3,14 +3,12 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaLock, FaMobileAlt, FaDesktop } from "react-icons/fa";
 
-import ChangePasswordModal from "./components/ChangePasswordModal";
 import api from "services/api";
-
+import ChangePassword from "./components/ChangePasswordModal";
 
 export default function SecuritySettings() {
   const [isPasswordPopup, setIsPasswordPopup] = useState(false);
   const [loading, setLoading] = useState(false);
-   
 
   const sessions = [
     {
@@ -37,7 +35,6 @@ export default function SecuritySettings() {
           oldPassword: currentPassword,
           newPassword: newPassword,
         },
-        
       });
 
       alert("Password updated successfully ✅");
@@ -117,7 +114,7 @@ export default function SecuritySettings() {
       {/* MODAL */}
       <AnimatePresence>
         {isPasswordPopup && (
-          <ChangePasswordModal
+          <ChangePassword
             onClose={() => setIsPasswordPopup(false)}
             onSubmit={handleChangePassword}
             loading={loading}
