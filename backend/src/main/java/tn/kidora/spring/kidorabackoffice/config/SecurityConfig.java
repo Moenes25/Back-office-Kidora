@@ -42,7 +42,10 @@ public class SecurityConfig {
         return http
                .csrf(AbstractHttpConfigurer::disable)
                .authorizeHttpRequests(auth ->
-               auth.requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.LOGIN,
+               auth
+                       .requestMatchers(Constants.APP_ROOT + Constants.CLIENT + Constants.CLIENT_REGISTER,
+                               Constants.APP_ROOT + Constants.CLIENT + Constants.CLIENT_LOGIN,
+                               Constants.APP_ROOT+Constants.AUTH+Constants.LOGIN,
                Constants.APP_ROOT+Constants.ETABLISSEMENT+"/create-test-etablissement",
                 Constants.APP_ROOT+Constants.ABONNEMENT+"/create-test-abonnement",
                 Constants.APP_ROOT+Constants.EVENEMENT+"/create-test-evenement",

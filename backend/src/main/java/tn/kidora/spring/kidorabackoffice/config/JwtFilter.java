@@ -1,6 +1,7 @@
 package tn.kidora.spring.kidorabackoffice.config;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,11 +23,20 @@ import tn.kidora.spring.kidorabackoffice.services.serviceImpl.CustomUserDetailsS
 public class JwtFilter  extends OncePerRequestFilter{
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtUtils jwtUtils;
-
+    private static final List<String> PUBLIC_URLS = List.of(
+            "/api/client/register",
+            "/api/client/login"
+    );
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-       
+        String path = request.getRequestURI();
+
+        // Ignorer les endpoints publics
+        if (PUBLIC_URLS.contains(path)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
                 final String authHeader = request.getHeader("Authorization");
                 String username = null;
                 String jwt = null;

@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.springframework.web.multipart.MultipartFile;
 import tn.kidora.spring.kidorabackoffice.dto.RegisterDto;
+import tn.kidora.spring.kidorabackoffice.dto.UserRegistreDto;
+import tn.kidora.spring.kidorabackoffice.entities.Client.Users;
 import tn.kidora.spring.kidorabackoffice.entities.Role;
 import tn.kidora.spring.kidorabackoffice.entities.Status;
 import tn.kidora.spring.kidorabackoffice.entities.User;
@@ -19,6 +21,7 @@ public interface AuthService {
     User updateAdminProfileById(String id, String newEmail, String newPassword,Role newRole);
     User updateSuperAdminPassword(String email, String oldPassword, String newPassword);
     List<User> getAllUsersByRegion(String region);
+    Users registerClient(UserRegistreDto dto);
 
 
 

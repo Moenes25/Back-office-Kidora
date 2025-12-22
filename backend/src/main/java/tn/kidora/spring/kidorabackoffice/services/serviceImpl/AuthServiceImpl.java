@@ -7,16 +7,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
-
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,9 +23,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tn.kidora.spring.kidorabackoffice.config.JwtUtils;
 import tn.kidora.spring.kidorabackoffice.dto.RegisterDto;
+import tn.kidora.spring.kidorabackoffice.dto.UserRegistreDto;
 import tn.kidora.spring.kidorabackoffice.entities.Role;
 
 import tn.kidora.spring.kidorabackoffice.entities.User;
+import tn.kidora.spring.kidorabackoffice.entities.Client.Users;
+import tn.kidora.spring.kidorabackoffice.repositories.Client.ClientRepo;
 import tn.kidora.spring.kidorabackoffice.repositories.UserRepository;
 import tn.kidora.spring.kidorabackoffice.services.AuthService;
 @AllArgsConstructor
@@ -41,6 +39,7 @@ public class AuthServiceImpl implements  AuthService{
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
+   private final ClientRepo clientRepo;
 
     @Override
     public User register(RegisterDto dto) {
@@ -62,27 +61,50 @@ public class AuthServiceImpl implements  AuthService{
         user.setRole(dto.getRole());
         user.setRegion(dto.getRegion());
         return userRepository.save(user);}
+    //Registre Client
+    @Override
+    public Users registerClient(UserRegistreDto dto) {
+        if(clientRepo.existsByEmail(dto.getEmail())){
+            throw new RuntimeException("Email already registered!");
+        }
+        System.out.println("RegisterClient called with DTO: " +dto);
+
+        Users user = new Users();
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setLastName(dto.getLastName());
+
+        return  clientRepo.save(user);
+    }
 
     public Map<String,Object> login(String email, String password) {
-        try{
-            Authentication authentication = authenticationManager.authenticate(
-                new  UsernamePasswordAuthenticationToken(email, password)
-            );
-            if (authentication.isAuthenticated()) {
-                
-                User user = userRepository.findByEmail(email);
-                String token = jwtUtils.generateToken(user.getId(),email,user.getRole().toString());
-                Map<String,Object> authData  = new HashMap<>();
-                authData.put("token", token);
-                authData.put("type", "Bearer");
-                // authData.put("user", user);
-                return authData;
-            
+        User user = userRepository.findByEmail(email);
+        if (user != null) {
+            try {
+                Authentication authentication = authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(email, password)
+                );
+                if (authentication.isAuthenticated()) {
+                    String token = jwtUtils.generateToken(user.getId(), email, user.getRole().toString());
+                    Map<String, Object> authData = new HashMap<>();
+                    authData.put("token", token);
+                    authData.put("type", "Bearer");
+                    return authData;
+                }
+            } catch (AuthenticationException e) {
+                throw new RuntimeException("Email ou mot de passe incorrect");
             }
-            throw new RuntimeException("Authentification échouée");
-        } catch(AuthenticationException e){
-            throw new RuntimeException("Email ou mot de passe incorrect");
         }
+        Users client = clientRepo.findByEmail(email);
+        if (client != null && passwordEncoder.matches(password, client.getPassword())) {
+            String token = jwtUtils.generateToken(client.getId(), email, "CLIENT");
+            Map<String, Object> authData = new HashMap<>();
+            authData.put("token", token);
+            authData.put("type", "Bearer");
+            return authData;
+        }
+        throw new RuntimeException("Email ou mot de passe incorrect");
     }
 
     @Override
@@ -200,6 +222,8 @@ public class AuthServiceImpl implements  AuthService{
         List<User> users = userRepository.findByRegion(region);
         return users;
     }
+
+
 
 
 }

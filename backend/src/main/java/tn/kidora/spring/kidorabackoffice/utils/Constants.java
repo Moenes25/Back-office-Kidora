@@ -46,6 +46,9 @@ public class Constants {
     public static final String UserByREGION = "/byRegion";
     public static final String ACTIVITY = "/activity";
     public static final String ALLACTIVITY = "/all";
+    public static final String CLIENT = "/client";
+    public static final String CLIENT_REGISTER = "/register";
+    public static final String CLIENT_LOGIN = "/login";
 
 
 
