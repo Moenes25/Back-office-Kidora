@@ -478,3 +478,11 @@ thead th{ position: relative; z-index: 1; }
   outline:none;
   box-shadow:var(--shadow-2), 0 0 0 4px rgba(99,102,241,.18);
 }
+
+
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

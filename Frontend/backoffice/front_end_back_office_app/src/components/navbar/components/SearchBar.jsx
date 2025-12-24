@@ -8,16 +8,30 @@ const SearchBar = () => {
   return (
     <>
       {/* ===== Desktop Search ===== */}
-      <div
-        className="items-center flex-1 hidden h-full px-3 max-w-[400px] mr-2 overflow-hidden rounded-full xl:flex bg-slate-100 ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10"
-      >
-        <FiSearch className="w-6 h-6 mr-2 text-slate-400 dark:text-slate-300" />
-        <input
-          type="text"
-          placeholder="Search..."
-          className="w-full text-sm font-medium border-0 rounded-full outline-none h-7 bg-slate-100 dark:bg-slate-900 text-slate-800 placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400 focus:ring-0"
-        />
-      </div>
+ <div
+  className="
+    xl:flex hidden items-center flex-1 h-full px-3 max-w-[400px] mr-2
+    overflow-hidden rounded-full bg-slate-100
+    shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_4px_14px_rgba(0,0,0,0.08)]
+    dark:bg-slate-900 bg-slate-200
+  "
+>
+  <FiSearch className="w-5 h-5 mr-2 text-slate-400 dark:text-slate-300" />
+  <input
+    type="text"
+    placeholder="Search..."
+    className="
+      w-full h-7 text-sm font-medium rounded-full bg-slate-200 dark:bg-slate-900
+      text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-400
+      border-0
+      outline-none focus:outline-none focus-visible:outline-none
+      ring-0 focus:ring-0 focus-visible:ring-0
+      focus:border-transparent
+      shadow-[inset_0_0_0_0_rgba(0,0,0,0)]
+    "
+  />
+</div>
+
 
       {/* ===== Mobile Icon ===== */}
       <button
