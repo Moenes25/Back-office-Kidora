@@ -5,6 +5,8 @@ import Navbar from "components/navbar";
 import Sidebar from "components/sidebar";
 import Footer from "components/footer/Footer";
 import routes from "routes.js";
+import bgImage from "../../assets/img/layout/bg-4.jpeg";
+
 
 // 👇 importe le robot
 import RobotAssistant from "components/ai/RobotAssistant";
@@ -62,7 +64,7 @@ export default function Admin(props) {
     : "xl:ml-[calc(16rem+12px)]";
 
   return (
-    <div className="flex h-full w-full relative">
+    <div className="relative flex w-full h-full">
       <Sidebar
         open={open}
         collapsed={collapsed}
@@ -72,12 +74,14 @@ export default function Admin(props) {
 
       {open && (
         <div
-          className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 xl:hidden"
+          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm xl:hidden"
           onClick={() => setOpen(false)}
         />
       )}
 
-      <div className="h-full w-full bg-lightPrimary dark:!bg-navy-900 relative z-0">
+      <div className="h-full w-full   dark:!bg-navy-900 relative z-0 bg-lightPrimary"
+      // style={{ backgroundImage: `url(${bgImage})`, backgroundAttachment: 'fixed', backgroundSize: 'cover', backgroundRepeat: 'no-repeat' }}
+      >
         <main className={["mx-[12px] h-full flex-none transition-all md:pr-2", mainMarginXL].join(" ")}>
           <div className="h-full">
             <Navbar

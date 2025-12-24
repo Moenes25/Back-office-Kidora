@@ -1,8 +1,10 @@
+"use client";
+
 import React, { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 
-const ProfileTabs = ({ activeTab, setActiveTab }) => {
-  const tabs = [
+const ProfileTabs = ({ activeTab, setActiveTab, allowedTabs }) => {
+  const allTabs = [
     { id: "profile", label: "Profil" },
     { id: "settings", label: "Settings" },
     { id: "security", label: "Security" },
@@ -11,64 +13,98 @@ const ProfileTabs = ({ activeTab, setActiveTab }) => {
     { id: "notification", label: "Notifications" },
   ];
 
-  const containerRef = useRef(null);
+  const tabs = allTabs.filter(tab => allowedTabs.includes(tab.id));
   const activeRef = useRef(null);
 
   useEffect(() => {
-    if (activeRef.current?.scrollIntoView) {
-      activeRef.current.scrollIntoView({
-        behavior: "smooth",
-        inline: "center",
-        block: "nearest",
-      });
-    }
+    activeRef.current?.scrollIntoView({
+      behavior: "smooth",
+      inline: "center",
+      block: "nearest",
+    });
   }, [activeTab]);
 
   return (
-    <div className="relative mt-6 border-b border-gray-200">
+    <div className="relative mt-8">
+      {/* TOP DIVIDER */}
+      <div className="absolute -top-3 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-200 to-transparent" />
+
       <div
-        ref={containerRef}
         role="tablist"
         aria-orientation="horizontal"
-        className="flex gap-4 px-2 -mx-2 overflow-x-auto whitespace-nowrap scrollbar-none sm:mx-0 sm:px-0"
-        style={{ WebkitOverflowScrolling: "touch" }}
+        className="relative flex gap-2 overflow-x-auto  overflow-y-visible scrollbar-none
+                   rounded-3xl bg-white/20 
+                   border border-slate-200/60
+                   p-2 shadow-[0_10px_30px_-20px_rgba(0,0,0,0.25)] mb-3"
       >
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            ref={activeTab === tab.id ? activeRef : null}
-            role="tab"
-            aria-selected={activeTab === tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`
-              relative inline-flex items-center px-4 py-2 font-semibold rounded-lg transition-all
-              ${
-                activeTab === tab.id
-                  ? "text-white bg-gradient-to-br from-purple-500 to-blue-500 shadow-lg"
-                  : "text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-              }
-            `}
-          >
-            <span className="z-10">{tab.label}</span>
+     {tabs.map((tab) => {
+  const active = activeTab === tab.id;
 
-            {/* Animated underline for active tab */}
-            {activeTab === tab.id && (
-              <motion.span
-                layoutId="underline"
-                className="absolute bottom-0 left-0 w-full h-1 rounded-full bg-gradient-to-r from-purple-300 to-blue-300"
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: "spring", stiffness: 500, damping: 30 }}
-              />
-            )}
-          </button>
-        ))}
+  return (
+    <button
+      key={tab.id}
+      ref={active ? activeRef : null}
+      role="tab"
+      aria-selected={active}
+      onClick={() => setActiveTab(tab.id)}
+      className="relative isolate "
+    >
+      {/* Fond actif (pill) */}
+      {active && (
+        <motion.span
+          layoutId="active-pill"
+          className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white to-slate-50 shadow-md"
+          transition={{ type: "spring", stiffness: 450, damping: 32 }}
+        />
+      )}
+
+      {/* Label + underline calé sur le mot */}
+      <span className="relative z-10 block px-5 py-2.5 text-sm font-semibold whitespace-nowrap">
+        <span
+          className={
+            active
+              ? "relative inline-block text-transparent bg-clip-text gradient-text"
+              : "relative inline-block text-slate-500 hover:text-slate-800"
+          }
+        >
+          {tab.label}
+          {active && (
+            <motion.span
+              layoutId="underline"
+              className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full
+                         bg-gradient-to-r from-indigo-400 to-purple-400"
+              transition={{ type: "spring", stiffness: 450, damping: 32 }}
+            />
+          )}
+        </span>
+      </span>
+    </button>
+  );
+})}
+
       </div>
 
-      {/* Hide scrollbar */}
       <style>{`
         .scrollbar-none::-webkit-scrollbar { display: none; }
-        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+        .scrollbar-none { scrollbar-width: none; }
+
+      .gradient-text{
+  background: linear-gradient(90deg, #8b5cf6, #c048ec, #3b82f6);
+  background-size: 200% 200%;
+  /* Fallback cross-browser */
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: gradientMove 5s ease infinite;
+}
+
+
+        @keyframes gradientMove {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
       `}</style>
     </div>
   );

@@ -105,6 +105,15 @@ input:checked.defaultCheckbox::before {
   animation: gradientMove 3s ease infinite;
 }
 
+
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -468,4 +477,12 @@ thead th{ position: relative; z-index: 1; }
 .pg-btn:focus-visible{
   outline:none;
   box-shadow:var(--shadow-2), 0 0 0 4px rgba(99,102,241,.18);
+}
+
+
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
 }
