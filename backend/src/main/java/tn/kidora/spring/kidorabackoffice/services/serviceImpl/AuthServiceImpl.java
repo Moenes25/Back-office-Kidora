@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tn.kidora.spring.kidorabackoffice.config.JwtUtils;
 import tn.kidora.spring.kidorabackoffice.dto.RegisterDto;
-import tn.kidora.spring.kidorabackoffice.dto.UserRegistreDto;
+import tn.kidora.spring.kidorabackoffice.dto.Client.UserRegistreDto;
+import tn.kidora.spring.kidorabackoffice.entities.Client.RoleUsers;
 import tn.kidora.spring.kidorabackoffice.entities.Role;
 
 import tn.kidora.spring.kidorabackoffice.entities.User;
@@ -69,11 +71,54 @@ public class AuthServiceImpl implements  AuthService{
         }
         System.out.println("RegisterClient called with DTO: " +dto);
 
+        // Créer l'entité Users
         Users user = new Users();
-        user.setUsername(dto.getUsername());
+        user.setNom(dto.getNom());
+        user.setPrenom(dto.getPrenom());
         user.setEmail(dto.getEmail());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setLastName(dto.getLastName());
+        user.setRole(dto.getRole());  // RoleUsers: ROLE_PARENT ou ROLE_EDUCATEUR
+
+        // Champs optionnels selon le rôle
+        if (dto.getRole() == RoleUsers.PARENT) {
+            user.setProfession(dto.getProfession());
+            user.setRelation(dto.getRelation());
+            user.setNumTel(dto.getNumTel());
+            user.setAdresse(dto.getAdresse());
+        } else if (dto.getRole() == RoleUsers.EDUCATEUR) {
+            user.setSpecialisation(dto.getSpecialisation());
+            user.setExperience(dto.getExperience());
+            user.setDisponibilite(dto.getDisponibilite());
+            user.setClasse(dto.getClasse());
+        }
+        // ✅ Gérer l'image de profil si envoyée
+        if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {
+            try {
+                String uploadDir = "uploads/users/";
+                File directory = new File(uploadDir);
+                if (!directory.exists()) {
+                    directory.mkdirs();
+                }
+
+                // Nom unique du fichier
+                String fileName = System.currentTimeMillis() + "_" + dto.getImageFile().getOriginalFilename();
+                Path filePath = Paths.get(uploadDir, fileName);
+
+                // Copier le fichier sur le disque
+                Files.copy(dto.getImageFile().getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+                // Enregistrer le chemin relatif dans l'entité
+                user.setImageUrl("/" + uploadDir + fileName);
+
+            } catch (IOException e) {
+                throw new RuntimeException("Erreur lors du téléchargement de l'image : " + e.getMessage(), e);
+            }
+        }
+        user.setActive(true);
+        user.setCreatedAt(LocalDateTime.now());
+        user.setUpdatedAt(LocalDateTime.now());
+
+        // Sauvegarder l'utilisateur dans la base
 
         return  clientRepo.save(user);
     }

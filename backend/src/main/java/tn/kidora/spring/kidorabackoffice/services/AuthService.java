@@ -5,10 +5,9 @@ import java.util.Map;
 
 import org.springframework.web.multipart.MultipartFile;
 import tn.kidora.spring.kidorabackoffice.dto.RegisterDto;
-import tn.kidora.spring.kidorabackoffice.dto.UserRegistreDto;
+import tn.kidora.spring.kidorabackoffice.dto.Client.UserRegistreDto;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Users;
 import tn.kidora.spring.kidorabackoffice.entities.Role;
-import tn.kidora.spring.kidorabackoffice.entities.Status;
 import tn.kidora.spring.kidorabackoffice.entities.User;
 
 public interface AuthService {

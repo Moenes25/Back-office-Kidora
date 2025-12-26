@@ -49,6 +49,14 @@ public class Constants {
     public static final String CLIENT = "/client";
     public static final String CLIENT_REGISTER = "/register";
     public static final String CLIENT_LOGIN = "/login";
+    public static final String AJOUTER_ENFANT = "/ajouter";
+    public static final String DELETE_ENFANT="/delet-enfnat";
+    public static final String GETALLENFANT="/AllEnfant";
+    public static final String UPDATE_ENFANT="/UpdateEnfant";
+    public static final String GET_ANFANT_BYID_PARENT="/BYIdPrent";
+    public static final String DELETE_CLIENT = "/delete-client";
+    public static final String update_CLIENT = "/update-client";
+
 
 
 

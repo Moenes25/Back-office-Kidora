@@ -58,7 +58,7 @@ public class SecurityConfig {
                                                 ).hasAnyRole("ADMIN_GENERAL","SUPER_ADMIN")
   
                               .requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.REGISTER).hasRole("SUPER_ADMIN")
-                              .anyRequest().authenticated())
+                              .anyRequest().permitAll())
                      
                      
              .addFilterBefore(new JwtFilter(customUserDetailsService, jwtUtils), UsernamePasswordAuthenticationFilter.class)

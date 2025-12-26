@@ -2,9 +2,10 @@ package tn.kidora.spring.kidorabackoffice.entities.Client;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDate;
+
 import java.time.LocalDateTime;
 import java.util.List;
 @Data
@@ -17,32 +18,30 @@ public class Users {
 
     @Id
     private String id;
-    private String username;
+    private String nom;
+    private String prenom;
     private String email;
     private String password;
+    private  String profession;
+    private String relation; //mére, pére
+    private String numTel;
+    private String adresse;
     private RoleUsers role;
-    private String matricule;
     private boolean active;
-
-    private String firstName;
-    private String lastName;
-    private String profileImage;
+    private String specialisation;
+    private Integer experience;
+    private String disponibilite;
+    private String classe;
+    private String  imageUrl;;
 
     private boolean canManageUsers;
     private boolean canManageSystem;
     private boolean canViewReports;
 
-    private String specialization;
-    private String qualification;
-    private String experienceYears;
-    private LocalDate hireDate;
-    private String contractType;
-    private double salary;
-    private boolean available;
 
-    private List<String> certifications;
+    @DBRef
+    private List<Enfants> enfants;
 
-    private boolean primaryContact;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

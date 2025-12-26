@@ -9,4 +9,6 @@ import tn.kidora.spring.kidorabackoffice.entities.User;
 public interface ClientRepo extends MongoRepository<Users,String> {
     boolean existsByEmail(String email);
     Users findByEmail(String email);
+
+    String Id(String id);
 }
