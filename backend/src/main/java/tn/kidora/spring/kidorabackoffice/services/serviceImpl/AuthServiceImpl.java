@@ -78,7 +78,7 @@ public class AuthServiceImpl implements  AuthService{
         user.setEmail(dto.getEmail());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(dto.getRole());  // RoleUsers: ROLE_PARENT ou ROLE_EDUCATEUR
-
+        user.setStatutClient(dto.getStatutClient());
         // Champs optionnels selon le rôle
         if (dto.getRole() == RoleUsers.PARENT) {
             user.setProfession(dto.getProfession());

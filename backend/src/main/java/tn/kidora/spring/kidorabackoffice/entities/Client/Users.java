@@ -32,7 +32,8 @@ public class Users {
     private Integer experience;
     private String disponibilite;
     private String classe;
-    private String  imageUrl;;
+    private String  imageUrl;
+    private StatutClient statutClient;
 
     private boolean canManageUsers;
     private boolean canManageSystem;

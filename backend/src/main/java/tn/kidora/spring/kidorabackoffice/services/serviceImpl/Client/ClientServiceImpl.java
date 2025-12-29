@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +47,9 @@ public class ClientServiceImpl implements  ClientService{
             if (dto.getDisponibilite() != null) user.setDisponibilite(dto.getDisponibilite());
             if (dto.getClasse() != null) user.setClasse(dto.getClasse());
         }
+        if (dto.getStatutClient() != null) {
+            user.setStatutClient(dto.getStatutClient());
+        }
         if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {
             String fileName = System.currentTimeMillis() + "_" + dto.getImageFile().getOriginalFilename();
             Path path = Paths.get("uploads/users/" + fileName);
@@ -60,5 +64,20 @@ public class ClientServiceImpl implements  ClientService{
         }
 
         return clientRepo.save(user);
+    }
+
+    @Override
+    public List<Users> getAllClients() {
+        return clientRepo.findAll();
+    }
+
+    @Override
+    public List<Users> getParents() {
+        return clientRepo.findByRole(RoleUsers.PARENT);
+    }
+
+    @Override
+    public List<Users> getEducateurs() {
+        return clientRepo.findByRole(RoleUsers.EDUCATEUR);
     }
 }

@@ -56,6 +56,9 @@ public class Constants {
     public static final String GET_ANFANT_BYID_PARENT="/BYIdPrent";
     public static final String DELETE_CLIENT = "/delete-client";
     public static final String update_CLIENT = "/update-client";
+    public static final String ALL_CLIENTS = "/all";
+    public static final String ALL_PARENTS = "/parents";
+    public static final String ALL_EDUCATEURS = "/educateurs";
 
 
 

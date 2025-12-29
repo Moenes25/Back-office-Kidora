@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import tn.kidora.spring.kidorabackoffice.dto.AbonnementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.AbonnementResponseDTO;
+import tn.kidora.spring.kidorabackoffice.dto.PaiementHistoriqueDto;
 import tn.kidora.spring.kidorabackoffice.entities.Abonnement;
 import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.StatutPaiement;
@@ -153,5 +154,27 @@ return  ResponseEntity.ok(response);
     @Override
     public List<Map<String, Object>> getRepartitionAnnuelle(int annee) {
         return abonnementRepository.getRepartitionParTypeEtablissement(annee);
+    }
+
+    @Override
+    public List<PaiementHistoriqueDto> getHistoriquePaiements() {
+        List<Abonnement> abonnements = abonnementRepository.findAll();
+
+        return abonnements.stream().map(abo -> {
+            PaiementHistoriqueDto dto = new PaiementHistoriqueDto();
+            dto.setIdFacture(
+                    abo.getReferenceFacture() != null ? abo.getReferenceFacture() : abo.getIdAbonnement()
+            );
+            dto.setDate(abo.getDateDebutAbonnement()); // ou dateDebutAbonnement si tu préfères
+            if (abo.getEtablissement() != null) {
+                dto.setNomEtablissement(abo.getEtablissement().getNomEtablissement());
+                dto.setTypeEtablissement(abo.getEtablissement().getType());
+                dto.setGouvernorat(abo.getEtablissement().getRegion());
+                dto.setEmail(abo.getEtablissement().getEmail());
+            }
+            dto.setLibelleAbonnement(abo.getFormule());
+            dto.setStatutFacture(abo.getStatutFacture());
+            return dto;
+        }).toList();
     }
 }

@@ -25,8 +25,14 @@ public class Abonnement {
 
     private StatutPaiement statut;
     private String formule ;
+    // Informations de facture (1 facture pour cet abonnement)
+    private String referenceFacture;
+    private LocalDate dateFacture;
+    private StatutFacture statutFacture;
+    private boolean envoyee;
 
-   @DocumentReference
+
+    @DocumentReference
    private Etablissement etablissement;
 }
 

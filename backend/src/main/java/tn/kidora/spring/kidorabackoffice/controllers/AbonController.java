@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.kidora.spring.kidorabackoffice.dto.AbonnementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.AbonnementResponseDTO;
+import tn.kidora.spring.kidorabackoffice.dto.PaiementHistoriqueDto;
 import tn.kidora.spring.kidorabackoffice.entities.Abonnement;
 import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.StatutPaiement;
@@ -73,5 +74,8 @@ public class AbonController {
                 .build();
         return abonnementRepository.save(abonnement);
     }
-    
+    @GetMapping("/paiements/historique")
+    public ResponseEntity<List<PaiementHistoriqueDto>> getHistoriquePaiements() {
+        return ResponseEntity.ok(abonnementService.getHistoriquePaiements());
+    }
 }

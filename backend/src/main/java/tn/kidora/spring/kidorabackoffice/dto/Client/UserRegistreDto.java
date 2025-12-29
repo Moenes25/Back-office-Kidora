@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.multipart.MultipartFile;
 import tn.kidora.spring.kidorabackoffice.entities.Client.RoleUsers;
+import tn.kidora.spring.kidorabackoffice.entities.Client.StatutClient;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
@@ -26,5 +27,6 @@ public class UserRegistreDto {
     RoleUsers role;
     MultipartFile imageFile;
     String imageUrl;
+    StatutClient statutClient;
 
 }

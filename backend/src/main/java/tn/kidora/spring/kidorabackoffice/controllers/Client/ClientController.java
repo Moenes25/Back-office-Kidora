@@ -11,12 +11,14 @@ import tn.kidora.spring.kidorabackoffice.dto.Client.ClientUpdateDto;
 import tn.kidora.spring.kidorabackoffice.dto.LoginDto;
 import tn.kidora.spring.kidorabackoffice.dto.Client.UserRegistreDto;
 import tn.kidora.spring.kidorabackoffice.entities.Client.RoleUsers;
+import tn.kidora.spring.kidorabackoffice.entities.Client.StatutClient;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Users;
 import tn.kidora.spring.kidorabackoffice.services.AuthService;
 import tn.kidora.spring.kidorabackoffice.services.serviceImpl.Client.ClientService;
 import tn.kidora.spring.kidorabackoffice.utils.Constants;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @AllArgsConstructor
@@ -65,6 +67,7 @@ public class ClientController {
             @RequestParam(value = "experience", required = false) Integer experience,
             @RequestParam(value = "disponibilite", required = false) String disponibilite,
             @RequestParam(value = "classe", required = false) String classe,
+            @RequestParam(value = "statutClient", required = false) StatutClient statutClient,
 
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
     ) {
@@ -83,10 +86,22 @@ public class ClientController {
         dto.setDisponibilite(disponibilite);
         dto.setClasse(classe);
         dto.setImageFile(imageFile);
+        dto.setStatutClient(statutClient);
 
         Users updatedUser = clientService.updateProfile(id, dto);
 
         return ResponseEntity.ok(updatedUser);
     }
-
+    @GetMapping(Constants.ALL_CLIENTS)
+    public ResponseEntity<List<Users>> getAllClients() {
+        return ResponseEntity.ok(clientService.getAllClients());
+    }
+    @GetMapping(Constants.ALL_PARENTS)
+    public ResponseEntity<List<Users>> getAllParents() {
+        return ResponseEntity.ok(clientService.getParents());
+    }
+    @GetMapping(Constants.ALL_EDUCATEURS)
+    public ResponseEntity<List<Users>> getAllEducateurs() {
+        return ResponseEntity.ok(clientService.getEducateurs());
+    }
 }
