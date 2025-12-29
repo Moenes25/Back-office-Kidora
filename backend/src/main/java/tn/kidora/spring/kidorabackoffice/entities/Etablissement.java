@@ -1,6 +1,7 @@
 package tn.kidora.spring.kidorabackoffice.entities;
 
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -38,5 +39,7 @@ public class Etablissement {
     
     @DocumentReference(lazy = false)
     private List<Abonnement> abonnements;
+
+    private LocalDateTime createdAt;
 
 }

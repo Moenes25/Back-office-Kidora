@@ -44,6 +44,23 @@ public class Constants {
     public static final String ROLES = "/roles";
     public static final String SUPERADMIN_UPDATE_PASSWORD = "/superadmin/update-password";
     public static final String UserByREGION = "/byRegion";
+    public static final String ACTIVITY = "/activity";
+    public static final String ALLACTIVITY = "/all";
+    public static final String CLIENT = "/client";
+    public static final String CLIENT_REGISTER = "/register";
+    public static final String CLIENT_LOGIN = "/login";
+    public static final String AJOUTER_ENFANT = "/ajouter";
+    public static final String DELETE_ENFANT="/delet-enfnat";
+    public static final String GETALLENFANT="/AllEnfant";
+    public static final String UPDATE_ENFANT="/UpdateEnfant";
+    public static final String GET_ANFANT_BYID_PARENT="/BYIdPrent";
+    public static final String DELETE_CLIENT = "/delete-client";
+    public static final String update_CLIENT = "/update-client";
+    public static final String ALL_CLIENTS = "/all";
+    public static final String ALL_PARENTS = "/parents";
+    public static final String ALL_EDUCATEURS = "/educateurs";
+
+
 
 
 

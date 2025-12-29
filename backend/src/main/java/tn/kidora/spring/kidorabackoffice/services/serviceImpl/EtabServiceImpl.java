@@ -3,6 +3,7 @@ package tn.kidora.spring.kidorabackoffice.services.serviceImpl;
 import lombok.AllArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneId;
 import java.time.chrono.ChronoPeriod;
@@ -53,6 +54,7 @@ public class EtabServiceImpl implements EtabService {
 
         Etablissement etab = etablissementMapper.toEntity(dto);
         etab.setUser(user);
+        etab.setCreatedAt(LocalDateTime.now());
         // etab.setPassword(encoder.encode(dto.getPassword()));
         // Etablissement.builder()
         //         .nomEtablissement(dto.getNomEtablissement())
