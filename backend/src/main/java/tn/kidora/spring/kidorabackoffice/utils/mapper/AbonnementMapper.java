@@ -15,7 +15,7 @@ public class AbonnementMapper {
         abonnement.setDateDebutAbonnement(dto.getDateDebutAbonnement());
         abonnement.setDateFinAbonnement(dto.getDateFinAbonnement());
         abonnement.setMontantDu(dto.getMontantDu());
-        abonnement.setMontantPaye(dto.getMontantPaye());
+        abonnement.setMontantTotal(dto.getMontantTotal());
         abonnement.setStatut(dto.getStatut());
         abonnement.setFormule(dto.getFormule());
        
@@ -29,7 +29,7 @@ public class AbonnementMapper {
         abonnementResponseDTO.setDateDebutAbonnement(abonnement.getDateDebutAbonnement());
         abonnementResponseDTO.setDateFinAbonnement(abonnement.getDateFinAbonnement());
         abonnementResponseDTO.setMontantDu(abonnement.getMontantDu());
-        abonnementResponseDTO.setMontantPaye(abonnement.getMontantPaye());
+        abonnementResponseDTO.setMontantTotal(abonnement.getMontantTotal());
         abonnementResponseDTO.setStatut(abonnement.getStatut());
         abonnementResponseDTO.setFormule(abonnement.getFormule());
         if (abonnement.getEtablissement() != null) {

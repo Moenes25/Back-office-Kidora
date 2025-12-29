@@ -10,7 +10,7 @@ public class AbonnementResponseDTO {
      private String idAbonnement;
     private LocalDate dateDebutAbonnement;
     private LocalDate dateFinAbonnement;
-    private Double montantPaye;
+    private Double montantTotal;
     private Double montantDu;
     private StatutPaiement statut;
     private String formule;

@@ -20,7 +20,7 @@ public class Abonnement {
     private String idAbonnement;
     private LocalDate dateDebutAbonnement;
     private LocalDate dateFinAbonnement;
-    private Double montantPaye;
+    private Double montantTotal;
     private Double montantDu;
 
     private StatutPaiement statut;
