@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import tn.kidora.spring.kidorabackoffice.dto.Client.EnfantRequestDto;
 import tn.kidora.spring.kidorabackoffice.dto.Client.EnfantResponseDto;
+import tn.kidora.spring.kidorabackoffice.entities.Client.Classes;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Enfants;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Users;
+import tn.kidora.spring.kidorabackoffice.repositories.Client.ClasseRepository;
 import tn.kidora.spring.kidorabackoffice.repositories.Client.ClientRepo;
 import tn.kidora.spring.kidorabackoffice.repositories.Client.EnfantRepository;
 import tn.kidora.spring.kidorabackoffice.utils.mapper.Client.EnfantMapper;
@@ -24,10 +26,13 @@ public class EnfantServiceImpl implements  EnfantService {
    private final EnfantRepository enfantRepository;
     private final EnfantMapper enfantMapper;
     private final ClientRepo clientRepo;
+    private  final ClasseRepository classeRepository;
 
     @Override
     public EnfantResponseDto ajouterEnfant(EnfantRequestDto dto, String parentId)  {
-        Enfants enfant = enfantMapper.dtoToEntity(dto);
+        Classes classe = classeRepository.findById(dto.getClasse())
+                .orElseThrow(() -> new RuntimeException("Classe introuvable avec l'id : " + dto.getClasse()));
+        Enfants enfant = enfantMapper.dtoToEntity(dto,classe);
         if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {
             try {
                 String uploadDir = "uploads/enfants/";
@@ -70,7 +75,11 @@ public class EnfantServiceImpl implements  EnfantService {
         if (dto.getNom() != null) enfant.setNom(dto.getNom());
         if (dto.getPrenom() != null) enfant.setPrenom(dto.getPrenom());
         if (dto.getAge() != null) enfant.setAge(dto.getAge());
-        if (dto.getClasse() != null) enfant.setClasse(dto.getClasse());
+        if (dto.getClasse() != null) {
+            Classes classe = classeRepository.findById(dto.getClasse())
+                    .orElseThrow(() -> new RuntimeException("Classe introuvable avec l'id : " + dto.getClasse()));
+            enfant.setClasse(classe);
+        }
 
         if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {
             try {

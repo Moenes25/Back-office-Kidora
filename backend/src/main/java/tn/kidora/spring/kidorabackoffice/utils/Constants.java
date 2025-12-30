@@ -59,7 +59,8 @@ public class Constants {
     public static final String ALL_CLIENTS = "/all";
     public static final String ALL_PARENTS = "/parents";
     public static final String ALL_EDUCATEURS = "/educateurs";
-
+    public static final String AJOUTER_CLASSE = "/ajouter";
+    public static final String GET_ALL_CLASSES = "/all";
 
 
 
