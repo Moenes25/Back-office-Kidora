@@ -25,11 +25,13 @@ import org.springframework.web.multipart.MultipartFile;
 import tn.kidora.spring.kidorabackoffice.config.JwtUtils;
 import tn.kidora.spring.kidorabackoffice.dto.RegisterDto;
 import tn.kidora.spring.kidorabackoffice.dto.Client.UserRegistreDto;
+import tn.kidora.spring.kidorabackoffice.entities.Client.Classes;
 import tn.kidora.spring.kidorabackoffice.entities.Client.RoleUsers;
 import tn.kidora.spring.kidorabackoffice.entities.Role;
 
 import tn.kidora.spring.kidorabackoffice.entities.User;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Users;
+import tn.kidora.spring.kidorabackoffice.repositories.Client.ClasseRepository;
 import tn.kidora.spring.kidorabackoffice.repositories.Client.ClientRepo;
 import tn.kidora.spring.kidorabackoffice.repositories.UserRepository;
 import tn.kidora.spring.kidorabackoffice.services.AuthService;
@@ -42,6 +44,7 @@ public class AuthServiceImpl implements  AuthService{
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
    private final ClientRepo clientRepo;
+   private  final ClasseRepository classeRepository;
 
     @Override
     public User register(RegisterDto dto) {
@@ -90,7 +93,13 @@ public class AuthServiceImpl implements  AuthService{
             user.setExperience(dto.getExperience());
             user.setDisponibilite(dto.getDisponibilite());
             user.setClasse(dto.getClasse());
+            if (dto.getClassesIds() != null && !dto.getClassesIds().isEmpty()) {
+                List<Classes> classes = classeRepository.findAllById(dto.getClassesIds());
+                user.setClasses(classes);
+            }
         }
+
+
         // ✅ Gérer l'image de profil si envoyée
         if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {
             try {

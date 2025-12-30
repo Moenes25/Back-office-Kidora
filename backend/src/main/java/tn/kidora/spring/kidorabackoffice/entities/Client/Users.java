@@ -42,7 +42,8 @@ public class Users {
 
     @DBRef
     private List<Enfants> enfants;
-
+    @DBRef
+    private List<Classes> classes;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
