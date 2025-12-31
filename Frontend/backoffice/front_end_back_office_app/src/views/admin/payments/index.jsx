@@ -717,7 +717,7 @@ const onRowAction = (id, action) => {
           <thead>
   <tr className="bg-slate-50/60 text-xs uppercase text-slate-400">
    
-    <th className="px-3 py-3 text-left font-semibold">ID facture</th>
+    <th className="px-3 py-3 text-left font-semibold hidden">ID facture</th>
     <th className="px-3 py-3 text-left font-semibold">Date</th>
     <th className="px-3 py-3 text-left font-semibold">Établissement</th> {/* ex-Client */}
     <th className="px-3 py-3 text-left font-semibold">Type</th>
@@ -742,7 +742,7 @@ const onRowAction = (id, action) => {
     >
    
 
-      <td className="px-3 py-3 text-xs font-mono text-slate-500">{row.id}</td>
+      <td className="px-3 py-3 text-xs font-mono text-slate-500 hidden">{row.id}</td>
       <td className="px-3 py-3 text-xs text-slate-500">{row.date}</td>
 
       {/* Établissement (avatar + sous-ligne “Responsable facturation” peut rester) */}

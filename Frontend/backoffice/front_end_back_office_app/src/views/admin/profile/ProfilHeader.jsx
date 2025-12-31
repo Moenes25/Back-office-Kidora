@@ -9,6 +9,32 @@ import ProfileHeaderSkeleton from "./components/ProfileHeaderSkeleton";
 import ProfileStats from "./components/ProfileStats";
 
 const DEFAULT_AVATAR = "../../../assets/img/avatars/avatar11.png";
+const messages = [
+  {
+    id: 1,
+    type: "system",
+    title: "Security Update",
+    content: "Your password was successfully changed.",
+    time: "2 min ago",
+    color: "indigo",
+  },
+  {
+    id: 2,
+    type: "admin",
+    title: "New Admin Added",
+    content: "Sara Ben has been added to Sfax region.",
+    time: "1 hour ago",
+    color: "emerald",
+  },
+  {
+    id: 3,
+    type: "ai",
+    title: "AI Insight",
+    content: "Admin activity increased by 18% this week.",
+    time: "Yesterday",
+    color: "purple",
+  },
+];
 
 export default function ProfileHeader() {
   const { user } = useAuth();

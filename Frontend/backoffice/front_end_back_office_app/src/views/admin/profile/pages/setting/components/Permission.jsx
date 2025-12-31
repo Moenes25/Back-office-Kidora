@@ -22,6 +22,37 @@ const modules = [
 
 const PERMS = ["View", "Create", "Edit", "Delete"];
 
+/* ================== FRONT RBAC CONFIG ================== */
+const ROLE_PERMISSIONS = {
+  SUPER_ADMIN: {
+    Dashboard: ["View", "Create", "Edit", "Delete"],
+    Admins: ["View", "Create", "Edit", "Delete"],
+    Companies: ["View", "Create", "Edit", "Delete"],
+    Settings: ["View", "Edit"],
+  },
+
+  ADMIN_GENERAL: {
+    Dashboard: ["View"],
+    Admins: ["View", "Edit"],
+    Companies: ["View", "Create"],
+    Settings: ["View"],
+  },
+
+  SUPPORT_TECH: {
+    Dashboard: ["View"],
+    Admins: ["View"],
+    Companies: [],
+    Settings: [],
+  },
+};
+  const hasPermission = (role, module, perm) => {
+  if (role === "SUPER_ADMIN") return true;
+
+  return (
+    ROLE_PERMISSIONS[role]?.[module]?.includes(perm) || false
+  );
+};
+
 export default function RolesPermissions() {
   const { token } = useAuth();
   const [roles, setRoles] = useState([]);
@@ -50,10 +81,28 @@ const scrollRoles = (dir) => {
       .catch(console.error);
   }, [token]);
 
-  const togglePerm = (role, module, perm) => {
-    const id = `${role}-${module}-${perm}`;
-    setPermissions((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
+const togglePerm = (role, module, perm) => {
+  if (role === "SUPER_ADMIN") return; // 🔒 verrouillé
+
+  const id = `${role}-${module}-${perm}`;
+  setPermissions((prev) => ({ ...prev, [id]: !prev[id] }));
+};
+
+
+useEffect(() => {
+  if (!activeRole) return;
+
+  const newPerms = {};
+
+  modules.forEach((module) => {
+    PERMS.forEach((perm) => {
+      const id = `${activeRole}-${module.name}-${perm}`;
+      newPerms[id] = hasPermission(activeRole, module.name, perm);
+    });
+  });
+
+  setPermissions(newPerms);
+}, [activeRole]);
 
   /* ================== RENDER ================== */
   return (
@@ -163,15 +212,15 @@ const scrollRoles = (dir) => {
               {PERMS.map((perm) => {
                 const id = `${activeRole}-${module.name}-${perm}`;
                 return (
-                  <PermissionRow
-                    key={id}
-                    title={`${perm} ${module.name}`}
-                    desc={`Allow role to ${perm.toLowerCase()} ${module.name}.`}
-                    checked={permissions[id] || false}
-                    onClick={() =>
-                      togglePerm(activeRole, module.name, perm)
-                    }
-                  />
+                 <PermissionRow
+  key={id}
+  title={`${perm} ${module.name}`}
+  desc={`Allow role to ${perm.toLowerCase()} ${module.name}.`}
+  checked={permissions[id] || false}
+  disabled={activeRole === "SUPER_ADMIN"}
+  onClick={() => togglePerm(activeRole, module.name, perm)}
+/>
+
                 );
               })}
             </div>
@@ -183,7 +232,7 @@ const scrollRoles = (dir) => {
 }
 
 /* ================== PERMISSION ROW ================== */
-function PermissionRow({ title, desc, checked, onClick }) {
+function PermissionRow({ title, desc, checked, disabled, onClick }) {
   return (
     <motion.div
       whileHover={{ scale: 1.01 }}
@@ -197,19 +246,22 @@ function PermissionRow({ title, desc, checked, onClick }) {
       </div>
 
       <button
+        disabled={disabled}
         onClick={onClick}
         className={`relative inline-flex h-6 w-11 items-center rounded-full
-          transition-all ${
-            checked ? "bg-purple-600" : "bg-slate-300"
-          }`}
+          transition-all
+          ${checked ? "bg-purple-600" : "bg-slate-300"}
+          ${disabled ? "opacity-60 cursor-not-allowed" : ""}
+        `}
       >
         <span
           className={`inline-block h-5 w-5 rounded-full bg-white shadow
-            transform transition-transform ${
-              checked ? "translate-x-5" : "translate-x-1"
-            }`}
+            transform transition-transform
+            ${checked ? "translate-x-5" : "translate-x-1"}
+          `}
         />
       </button>
     </motion.div>
   );
 }
+
