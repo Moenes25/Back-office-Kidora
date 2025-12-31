@@ -152,7 +152,10 @@ public class AuthServiceImpl implements  AuthService{
         }
         Users client = clientRepo.findByEmail(email);
         if (client != null && passwordEncoder.matches(password, client.getPassword())) {
-            String token = jwtUtils.generateToken(client.getId(), email, "CLIENT");
+            String role = (client.getRole() != null)
+                    ? client.getRole().toString()
+                    : "PARENT";
+            String token = jwtUtils.generateToken(client.getId(), email, role);
             Map<String, Object> authData = new HashMap<>();
             authData.put("token", token);
             authData.put("type", "Bearer");
