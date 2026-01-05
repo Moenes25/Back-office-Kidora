@@ -7,6 +7,8 @@ import org.springframework.web.multipart.MultipartFile;
 import tn.kidora.spring.kidorabackoffice.entities.Client.RoleUsers;
 import tn.kidora.spring.kidorabackoffice.entities.Client.StatutClient;
 
+import java.util.List;
+
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ClientUpdateDto {
@@ -24,7 +26,7 @@ public class ClientUpdateDto {
     String specialisation;
     Integer experience;
     String disponibilite;
-    String classe;
+    List<String> classesIds;  // Pour permettre la mise à jour de plusieurs classes
 
     RoleUsers role;
     StatutClient statutClient ;

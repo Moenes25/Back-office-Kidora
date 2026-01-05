@@ -25,7 +25,6 @@ public class UserRegistreDto {
     String specialisation;
     Integer experience;
     String disponibilite;
-    String classe;
     RoleUsers role;
     MultipartFile imageFile;
     String imageUrl;

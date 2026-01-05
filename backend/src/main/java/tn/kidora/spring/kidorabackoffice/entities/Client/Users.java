@@ -27,17 +27,16 @@ public class Users {
     private String numTel;
     private String adresse;
     private RoleUsers role;
-    private boolean active;
+    //private boolean active;
     private String specialisation;
     private Integer experience;
     private String disponibilite;
-    private String classe;
     private String  imageUrl;
     private StatutClient statutClient;
 
-    private boolean canManageUsers;
-    private boolean canManageSystem;
-    private boolean canViewReports;
+    //private boolean canManageUsers;
+    //private boolean canManageSystem;
+    //private boolean canViewReports;
 
 
     @DBRef
