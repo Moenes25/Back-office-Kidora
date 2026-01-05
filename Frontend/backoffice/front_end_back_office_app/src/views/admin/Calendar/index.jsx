@@ -15,6 +15,7 @@ import {
   fetchEtablissementsByType
 } from "services/CalendarService";
 import Swal from "sweetalert2";
+import WidgetKids from "components/widget/Widget";
 
 
 
@@ -1004,16 +1005,30 @@ const countsThisWeek = React.useMemo(() => {
 
       <KPIStyles />
 
-<div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
- <KPI title="Évènements (semaine)" value={kpis.weekCount} icon={<FiCalendar className="text-2xl" />} gradient="linear-gradient(135deg,#6366f1,#06b6d4)" />
-
-<KPI title="Aujourd’hui" value={kpis.todayCount} icon={<FiClock className="text-2xl" />} gradient="linear-gradient(135deg,#f59e0b,#ef4444)" />
-
-<KPI title={typeLabel} value={kpis.countByType} icon={<FiLayers className="text-2xl" />} gradient="linear-gradient(135deg,#10b981,#22d3ee)" />
-
-<KPI title="Heures planifiées" value={kpis.plannedHours} icon={<FiCheckCircle className="text-2xl" />} gradient="linear-gradient(135deg,#64748b,#94a3b8)" />
-
+<div className="mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  <WidgetKids
+    variant="solid" bg="#4f46e5" size="sm" fx={false}            // indigo
+    icon={<FiCalendar />} title="Évènements (semaine)"
+    value={kpis.weekCount}
+  />
+  <WidgetKids
+    variant="solid" bg="#f59e0b" size="sm" fx={false}            // amber
+    icon={<FiClock />} title="Aujourd’hui"
+    value={kpis.todayCount}
+  />
+  <WidgetKids
+    variant="solid" bg="#10b981" size="sm" fx={false}            // emerald
+    icon={<FiLayers />} title={typeLabel}
+    value={kpis.countByType}
+  />
+  <WidgetKids
+    variant="solid" bg="#334155" size="sm" fx={false}            // slate
+    icon={<FiCheckCircle />} title="Heures planifiées"
+    value={kpis.plannedHours}
+    format={(n)=>`${n} h`}
+  />
 </div>
+
 
 
       {/* halo fond */}

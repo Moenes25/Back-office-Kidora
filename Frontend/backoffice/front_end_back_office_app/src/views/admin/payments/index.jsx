@@ -12,7 +12,14 @@ import {
 } from "react-icons/fi";
 
 
-
+import { FiUsers, FiActivity, FiStar } from "react-icons/fi"; 
+import WidgetKids from "components/widget/Widget";
+const CARD_BG = {
+  total:  "#4f46e5", // indigo
+  paid:   "#10b981", // emerald
+  unpaid: "#f59e0b", // amber
+  sent:   "#8b5cf6", // purple
+};
 
 const fmtMoney = (n) =>
   (Number(n) || 0).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " DT";
@@ -34,12 +41,14 @@ function computeTotals(lines = []) {
 }
 
 /* --------------------------- Données démo --------------------------- */
+
 const STATS = [
-  { id: "total",  label: "Total des factures",   value: 582, hint: "Toutes les factures générées" },
-  { id: "paid",   label: "Factures payées",      value: 346, hint: "Paiements confirmés" },
-  { id: "unpaid", label: "Factures impayées",    value: 236, hint: "En attente de règlement" },
-  { id: "sent",   label: "Factures envoyées",    value: 126, hint: "En cours de suivi" },
+  { id: "total",  label: "Total des factures",   value: 582, icon: <FiTrendingUp className="text-2xl" /> },
+  { id: "paid",   label: "Factures payées",      value: 346, icon: <FiCheckCircle className="text-2xl" /> },
+  { id: "unpaid", label: "Factures impayées",    value: 236, icon: <FiAlertTriangle className="text-2xl" /> },
+  { id: "sent",   label: "Factures envoyées",    value: 126, icon: <FiSend className="text-2xl" /> },
 ];
+
 
 const PAYMENTS = [
   { id:"#F202401", date:"1 juin 2025, 08:22", avatarColor:"from-fuchsia-500 to-orange-400", client:"Crèche XYZ", type:"creche",  region:"Tunis",     email:"xyzstore@mail.com",    abonnement:"Kidora – Premium / Mensuel", status:"Payée" },
@@ -228,27 +237,26 @@ function PaymentsFilterDrawer({
 
 /* ------------------------------ UI ------------------------------ */
 const StatCard = ({ stat, index }) => {
-  const meta = STAT_META[stat.id] || {
-    gradient: "linear-gradient(135deg,#6366f1,#06b6d4)",
-    icon: <FiTrendingUp className="text-2xl" />,
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 12, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay: 0.08 * index, type: "spring", stiffness: 120 }}
-      className="contents"   // pas de wrapper visuel, juste l'anim
     >
-      <KPI
+      <WidgetKids
+        variant="solid"
+        size="sm"
+        fx={false}                              // même sobriété que ta 1ère carte
+        bg={CARD_BG[stat.id] || "#4f46e5"}      // fond plein
+        icon={stat.icon /* ou ton meta.icon */}
         title={stat.label}
         value={stat.value}
-        icon={meta.icon}
-        gradient={meta.gradient}
+        // format={(n)=>n.toLocaleString('fr-FR')} // si tu veux formatter
       />
     </motion.div>
   );
 };
+
 
 
 
@@ -669,6 +677,7 @@ const onRowAction = (id, action) => {
 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
   {STATS.map((s, i) => <StatCard key={s.id} stat={s} index={i} />)}
 </div>
+
 
       {/* Header */}
       {/* TOOLBAR */}

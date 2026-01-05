@@ -5,6 +5,7 @@ import {
   FiSearch, FiFilter, FiDownload, FiPlus, FiMoreVertical,
   FiTrash2, FiCheckCircle, FiClock, FiArchive
 } from "react-icons/fi";
+import WidgetKids from "components/widget/Widget";
 
 /* -------------------- Demo data -------------------- */
 
@@ -226,6 +227,12 @@ const pageRows = filtered.slice(start, start + PAGE_SIZE);
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "tickets.csv"; a.click();
     URL.revokeObjectURL(a.href);
   };
+const TicketIcon = (props) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" {...props}>
+    <path fill="currentColor" d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4z"/>
+    <path fill="currentColor" d="M12 6v12" />
+  </svg>
+);
 
   /* ------- Add ticket modal ------- */
   const [showAdd, setShowAdd] = useState(false);
@@ -248,33 +255,29 @@ const pageRows = filtered.slice(start, start + PAGE_SIZE);
     <div className="relative overflow-x-hidden p-5">
     
 
-      {/* KPIs */}
-    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-  <KPI
-    title="Tickets au total"
-    value={kpi.total}
-    icon={<TicketIcon />}                             // ← icône remplacée
-    gradient="linear-gradient(135deg,#6366f1,#06b6d4)" // bleu → cyan
+{/* KPIs */}
+<div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+  <WidgetKids
+    variant="solid" bg="#4f46e5" size="sm" fx={false}
+    icon={<TicketIcon />} title="Tickets au total" value={kpi.total}
   />
-  <KPI
-    title="En attente"
-    value={kpi.pending}
-    icon={<FiClock className="text-2xl" />}
-    gradient="linear-gradient(135deg,#fb923c,#ef4444)" // orange → rose
+
+  <WidgetKids
+    variant="solid" bg="#f59e0b" size="sm" fx={false}
+    icon={<FiClock />} title="En attente" value={kpi.pending}
   />
-  <KPI
-    title="Résolus"
-    value={kpi.solved}
-    icon={<FiCheckCircle className="text-2xl" />}
-    gradient="linear-gradient(135deg,#10b981,#22d3ee)" // vert → cyan
+
+  <WidgetKids
+    variant="solid" bg="#10b981" size="sm" fx={false}
+    icon={<FiCheckCircle />} title="Résolus" value={kpi.solved}
   />
-  <KPI
-    title="Archivés"
-    value={kpi.archived}
-    icon={<FiArchive className="text-2xl" />}
-    gradient="linear-gradient(135deg,#64748b,#94a3b8)" // gris bleuté
+
+  <WidgetKids
+    variant="solid" bg="#334155" size="sm" fx={false}
+    icon={<FiArchive />} title="Archivés" value={kpi.archived}
   />
 </div>
+
 
 
       {/* Toolbar */}
@@ -381,7 +384,7 @@ const pageRows = filtered.slice(start, start + PAGE_SIZE);
       [&_th:first-child]:rounded-l-xl [&_th:last-child]:rounded-r-xl
     ">
             <tr>
-              {["ID","Demandeur","Sujet","Priorité","Agent","Date","Statut","Actions"].map((h)=>(
+              {["Demandeur","Sujet","Priorité","Agent","Date","Statut","Actions"].map((h)=>(
                 <th key={h} className="px-4 py-3">{h}</th>
               ))}
             </tr>
@@ -391,7 +394,7 @@ const pageRows = filtered.slice(start, start + PAGE_SIZE);
   const absoluteIndex = start + idx; // index global dans rows
   return (
     <Row3D key={`${r.id}-${absoluteIndex}`}>
-      <td className="px-4 py-4 font-mono text-xs text-gray-600">{r.id}</td>
+      <td className="px-4 py-4 font-mono text-xs text-gray-600 hidden">{r.id}</td>
       <td className="px-4 py-4">{r.demandeur}</td>
       <td className="px-4 py-4 text-slate-800">{r.sujet}</td>
       <td className="px-4 py-4"><BadgePriorite p={r.priorite} /></td>

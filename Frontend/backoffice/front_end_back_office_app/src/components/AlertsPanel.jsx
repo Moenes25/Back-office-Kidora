@@ -27,17 +27,7 @@ function useTilt() {
 }
 
 /* ===== Carte ===== */
-function AlertCard({
-  title,
-  tone = "red",
-  subtitle,
-  count,
-  items,
-  ariaLabel,
-  href,
-  onViewAll,
-  compact = false,
-}) {
+function AlertCard({ title, tone="red", subtitle, count, items, ariaLabel, href, onViewAll, compact=false, className="" }) {
   const { ref, onMove, onLeave } = useTilt();
 const [pageIndex, setPageIndex] = useState(0);
 const itemsPerPage = 3;
@@ -90,13 +80,10 @@ const currentItems = items.rows.slice(
       onMouseMove={onMove}
       onMouseLeave={onLeave}
       className={[
-        "relative grid grid-cols-[10px,1fr] overflow-hidden rounded-3xl",
-        "bg-white/90 backdrop-blur-xl dark:bg-white/5",
-        "border border-black/5",
-        "transform-gpu transition-transform duration-300 will-change-transform",
-        "[transform-style:preserve-3d] perspective-[1200px]",
-        "[transform:rotateX(var(--rx,0deg))_rotateY(var(--ry,0deg))]",
+        "relative grid grid-cols-[10px,1fr] overflow-hidden rounded-3xl bg-white/90 backdrop-blur-xl border border-black/5",
+        "transform-gpu transition-transform duration-300 [transform-style:preserve-3d] perspective-[1200px]",
         "hover:scale-[1.01] focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10",
+        className,               
       ].join(" ")}
       style={{ boxShadow: t.shadow }}
     >
@@ -228,12 +215,16 @@ const currentItems = items.rows.slice(
 }
 
 /* ===== Panneau ===== */
-export default function AlertsPanel({ alerts }) {
+export default function AlertsPanel({ alerts, stacked = false }) {
   const { latePayments = [], inactiveClients = [], priorityTickets = [] } = alerts || {};
 
+ const cls = stacked
+    ? "grid grid-cols-1 gap-5 auto-rows-[minmax(0,1fr)]"
+    : "grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3";
   return (
-    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+      <div className={cls}>
       <AlertCard
+        className="h-full"                           // <= s’étire dans la ligne
         title="Clients en retard de paiement"
         tone="red"
         subtitle="Urgent"
@@ -241,13 +232,11 @@ export default function AlertsPanel({ alerts }) {
         ariaLabel="Alertes: retards de paiement"
         items={{
           icon: <MdOutlinePayment className="h-7 w-7 text-red-600" />,
-          rows: latePayments.map((c) => ({
-            left: c.name,
-            right: `${c.days} j · ${c.amount}`,
-          })),
+          rows: latePayments.map(c => ({ left: c.name, right: `${c.days} j · ${c.amount}` })),
         }}
       />
       <AlertCard
+        className="h-full"
         title="Clients inactifs"
         tone="amber"
         subtitle="Surveiller"
@@ -255,13 +244,11 @@ export default function AlertsPanel({ alerts }) {
         ariaLabel="Alertes: clients inactifs"
         items={{
           icon: <IoPauseCircleOutline className="h-7 w-7 text-amber-600" />,
-          rows: inactiveClients.map((c) => ({
-            left: c.name,
-            right: `${c.days} j`,
-          })),
+          rows: inactiveClients.map(c => ({ left: c.name, right: `${c.days} j` })),
         }}
       />
       <AlertCard
+        className="h-full"
         title="Tickets support prioritaires"
         tone="indigo"
         subtitle="Haute prio"
@@ -269,12 +256,10 @@ export default function AlertsPanel({ alerts }) {
         ariaLabel="Alertes: tickets prioritaires"
         items={{
           icon: <MdOutlineSupportAgent className="h-7 w-7 text-indigo-600" />,
-          rows: priorityTickets.map((t) => ({
-            left: `${t.id} • ${t.client}`,
-            right: t.age,
-          })),
+          rows: priorityTickets.map(t => ({ left: `${t.id} • ${t.client}`, right: t.age })),
         }}
       />
     </div>
   );
 }
+

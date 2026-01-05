@@ -4,8 +4,12 @@ import Card from "components/card";
 import {
   FiSearch, FiFilter, FiPrinter, FiChevronLeft, FiChevronRight, FiPlus,
   FiEdit2, FiTrash2, FiEye, FiEyeOff, FiPhone, FiMail, FiMapPin, FiLink,
-  FiUsers, FiCheckCircle, FiAlertTriangle, FiPauseCircle, FiCalendar, FiDownload
+  FiCheckCircle, FiDownload
 } from "react-icons/fi";
+
+import WidgetKids from "components/widget/Widget";
+import { FiUsers, FiCalendar, FiAlertTriangle, FiHome, FiLayers } from "react-icons/fi";
+
 
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -1028,36 +1032,30 @@ const deleteClient = async (row) => {
 
       <KPIStyles />
 
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-  <KPI
-    title="Clients (total)"
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-5 mt-3">
+  <WidgetKids
+    variant="solid" bg="#4f46e5" size="sm" fx={false}  // indigo
+    icon={<FiUsers />} title="Entreprises (total)"
     value={backendStats.total}
-    startOnView={false}
-    icon={<FiUsers className="text-2xl" />}
-    gradient="linear-gradient(135deg,#6366f1,#06b6d4)"
   />
-  <KPI
-    title="Actifs"
+  <WidgetKids
+    variant="solid" bg="#10b981" size="sm" fx={false}  // emerald
+    icon={<FiCheckCircle />} title="Actifs"
     value={backendStats.actifs}
-    startOnView={false}
-    icon={<FiCheckCircle className="text-2xl" />}
-    gradient="linear-gradient(135deg,#10b981,#22d3ee)"
   />
-  <KPI
-    title="En essai"
+  <WidgetKids
+    variant="solid" bg="#a78bfa" size="sm" fx={false}   // violet
+    icon={<FiCalendar />} title="En essai"
     value={backendStats.essais}
-    startOnView={false}
-    icon={<FiCalendar className="text-2xl" />}
-    gradient="linear-gradient(135deg,#a78bfa,#06b6d4)"
   />
-  <KPI
-    title="En retard de paiement"
-   value={backendStats.retards}
-    startOnView={false}
-    icon={<FiAlertTriangle className="text-2xl" />}
-    gradient="linear-gradient(135deg,#f59e0b,#ef4444)"
+  <WidgetKids
+    variant="solid" bg="#f59e0b" size="sm" fx={false}  // amber → orange
+    icon={<FiAlertTriangle />} title="En retard"
+    value={backendStats.retards}
   />
+
 </div>
+
 
 
 
@@ -1099,7 +1097,7 @@ const deleteClient = async (row) => {
           <thead className="sticky top-0 z-10 bg-gray-200/80 backdrop-blur text-xs uppercase rounded-xl text-gray-700 [&_th]:py-5 shadow-xl">
 
               <tr>
-                <Th onClick={() => toggleSort("id")} label="ID" sortIcon={headerSortIcon("id")} />
+               {/* <Th onClick={() => toggleSort("id")} label="ID" sortIcon={headerSortIcon("id")} />*/}
                 <Th onClick={() => toggleSort("name")} label="Nom" sortIcon={headerSortIcon("name")} />
                 <Th onClick={() => toggleSort("type")} label="Type" sortIcon={headerSortIcon("type")} />
                 <Th onClick={() => toggleSort("city")} label="Ville" sortIcon={headerSortIcon("city")} />
@@ -1119,7 +1117,7 @@ const deleteClient = async (row) => {
                   className="border-b last:border-0 hover:bg-gray-50 transition-colors"
                   style={{ animation: `fadeIn .25s ease-out both`, animationDelay: `${i * 40}ms` }}
                 >
-                  <td className="px-3 py-4 whitespace-nowrap text-xs font-mono text-gray-600">{r.id}</td>
+                  <td className="px-3 py-4 whitespace-nowrap text-xs font-mono text-gray-600 hidden">{r.id}</td>
                   <td className="px-3 py-4 font-semibold text-navy-700">
                     <button
                       onClick={() => setSelected(r)}

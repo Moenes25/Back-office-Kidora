@@ -113,41 +113,11 @@ function VisualFX() {
 /* =========================================================
  * Card avec décor animé (aurora + petits charts)
  * =======================================================*/
-function ChartCard({ title, icon, right, children }) {
+function ChartCard({ title, icon, right, children, className = "" }) {
   return (
-    <div className="card-aurora grain tilt p-5 shadow-[0_28px_70px_-24px_rgba(2,6,23,.28),0_16px_40px_-24px_rgba(2,6,23,.22)]">
-      {/* décor animé */}
-      <div className="bg-charts">
-        {/* Sparkline animée (SVG) */}
-        <svg className="bg-spark" viewBox="0 0 400 200" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="spark" x1="0" x2="1" y1="0" y2="0">
-              <stop offset="0%" stopOpacity="0.4" stopColor="#60a5fa"/>
-              <stop offset="100%" stopOpacity="0.4" stopColor="#a78bfa"/>
-            </linearGradient>
-          </defs>
-          <path d="M0,120 C40,80 80,140 120,100 C160,60 200,140 240,110 C280,80 320,140 360,120"
-                fill="none" stroke="url(#spark)" strokeWidth="10" strokeLinecap="round"/>
-        </svg>
-
-        {/* Mini bar chart animé (SVG) */}
-        <svg className="bg-bars" viewBox="0 0 400 200" preserveAspectRatio="none">
-          <g transform="translate(20,20)">
-            {Array.from({length:12}).map((_,i)=>(
-              <rect key={i}
-                x={i*28} y={Math.random()*80}
-                width="18" height={60+Math.random()*60}
-                rx="6" ry="6"
-                fill={i%2? "#34d399" : "#60a5fa"}
-                opacity="0.35">
-                <animate attributeName="y" dur={`${6+i%5}s`} values="40;70;40" repeatCount="indefinite"/>
-              </rect>
-            ))}
-          </g>
-        </svg>
-      </div>
-
-      {/* header */}
+    <div
+      className={`card-aurora grain tilt p-5 shadow-[0_28px_70px_-24px_rgba(2,6,23,.28),0_16px_40px_-24px_rgba(2,6,23,.22)] ${className} h-full flex flex-col`}
+    >
       <div className="relative z-[1] mb-3 flex items-center justify-between gap-3">
         <h3 className="text-lg font-extrabold flex items-center gap-2">
           <span className="text-xl">{icon}</span>
@@ -156,99 +126,48 @@ function ChartCard({ title, icon, right, children }) {
         {right ? <div className="shrink-0">{right}</div> : null}
       </div>
 
-      {/* chart container */}
-      <div className="chart-shell relative z-[1] p-2">
+      {/* le chart doit prendre tout l’espace restant */}
+      <div className="chart-shell relative z-[1] p-2 flex-1 min-h-0">
         {children}
       </div>
     </div>
   );
 }
 
+
+
 /* ============================
  * 1) Courbe
  * ============================ */
 function TechLine({ height = 300 }) {
-  const [chartData, setChartData] = useState({
-    labels: [],
-    Garderies: [],
-    Crèches: [],
-    Écoles: [],
-  });
+  const [chartData, setChartData] = useState({ labels: [], Garderies: [], Crèches: [], Écoles: [] });
 
-  useEffect(() => {
-    getCroissanceData().then(data => {
-      setChartData(data);
-    });
-  }, []);
-
-  const series = useMemo(() => {
-    return ['Garderies', 'Crèches', 'Écoles'].map((name, idx) => ({
-      name,
-      type: 'line',
-      smooth: true,
-      symbol: 'circle',
-      symbolSize: 8,
-      showSymbol: false,
-      lineStyle: {
-        width: 3,
-        shadowBlur: 16,
-        shadowColor: TYPE_COLORS[idx],
-        shadowOffsetY: 6,
-      },
-      itemStyle: { color: TYPE_COLORS[idx] },
-      areaStyle: {
-        opacity: 0.25,
-        color: {
-          type: 'linear',
-          x: 0, y: 0, x2: 0, y2: 1,
-          colorStops: [
-            { offset: 0, color: TYPE_COLORS[idx] },
-            { offset: 1, color: 'rgba(0,0,0,0)' },
-          ],
-        },
-      },
-      data: chartData[name] || [],
-      emphasis: { focus: 'series' },
-      markPoint: {
-        symbol: 'circle',
-        symbolSize: 0,
-        label: {
-          show: true,
-          formatter: '⬤',
-          color: TYPE_COLORS[idx],
-          fontSize: 10,
-        },
-        data: [
-          { coord: ['Juin', (chartData[name] || [])[5] || 0] },
-        ],
-      },
-    }));
-  }, [chartData]);
+  useEffect(() => { getCroissanceData().then(setChartData); }, []);
 
   const option = useMemo(() => ({
-    animationDuration: 1000,
-    animationEasing: 'cubicOut',
-    grid: { left: 10, right: 10, bottom: 40, top: 30, containLabel: true },
-    backgroundColor: 'transparent',
-    tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
+    animationDuration: 900,
+    grid: { left: 10, right: 10, bottom: 40, top: 20, containLabel: true },
+    tooltip: { trigger: 'axis' },
     legend: { bottom: 0, textStyle: { fontWeight: 700 } },
-    xAxis: {
-      type: 'category',
-      boundaryGap: false,
-      data: chartData.labels,
-      axisLine: { lineStyle: { color: 'rgba(0,0,0,.25)' } },
-      axisLabel: { fontWeight: 600 },
-    },
-    yAxis: {
-      type: 'value',
-      axisLine: { show: false },
-      splitLine: { lineStyle: { type: 'dashed', color: 'rgba(0,0,0,.1)' } },
-    },
-    series,
-  }), [chartData, series]);
+    xAxis: { type: 'category', boundaryGap: false, data: chartData.labels },
+    yAxis: { type: 'value', splitLine: { lineStyle: { type: 'dashed', color: 'rgba(0,0,0,.12)' } } },
+    series: [
+      { name: 'Garderies', type: 'line', stack: 'total', smooth: true, showSymbol: false,
+        areaStyle: { opacity: .35 }, lineStyle: { width: 0 }, itemStyle: { color: '#60a5fa' },
+        data: chartData.Garderies },
+      { name: 'Crèches',   type: 'line', stack: 'total', smooth: true, showSymbol: false,
+        areaStyle: { opacity: .35 }, lineStyle: { width: 0 }, itemStyle: { color: '#a78bfa' },
+        data: chartData.Crèches },
+      { name: 'Écoles',    type: 'line', stack: 'total', smooth: true, showSymbol: false,
+        areaStyle: { opacity: .35 }, lineStyle: { width: 0 }, itemStyle: { color: '#34d399' },
+        data: chartData.Écoles },
+    ]
+  }), [chartData]);
 
   return <ReactECharts option={option} style={{ height }} notMerge />;
 }
+
+
 
 /* ============================
  * Select année (donut seulement)
@@ -269,157 +188,112 @@ function YearSelect({ value, onChange, years }) {
  * 2) Donut avec % inside + centre propre
  * ============================ */
 
-
 function TechDonut({ year, height = 300 }) {
-  const [totals, setTotals] = useState([0, 0, 0]); // [Garderie, Crèche, École]
-  const totalAll = totals.reduce((a, b) => a + b, 0);
+  const [totals, setTotals] = useState([0,0,0]);
+  const totalAll = totals.reduce((a,b)=>a+b,0);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const data = await getRepartitionAnnuelle(year);
-
-        // Convertir l’API en tableau ordonné [Garderie, Crèche, École]
-        const map = {
-          GARDERIE: 0,
-          CRECHE: 1,
-          ECOLE: 2,
-        };
-
-        const ordered = [0, 0, 0];
-        data.forEach(item => {
-          const index = map[item.type?.toUpperCase()];
-          if (index !== undefined) {
-            ordered[index] = item.nombre;
-          }
-        });
-
-        setTotals(ordered);
-      } catch (err) {
-        console.error("Erreur chargement répartition annuelle:", err);
-      }
-    }
-
-    fetchData();
+    (async () => {
+      const data = await getRepartitionAnnuelle(year);
+      const map = { GARDERIE: 0, CRECHE: 1, ECOLE: 2 };
+      const ordered = [0,0,0];
+      data.forEach(it => { const i = map[it.type?.toUpperCase()]; if (i!=null) ordered[i] = it.nombre; });
+      setTotals(ordered);
+    })();
   }, [year]);
 
-  const option = useMemo(() => ({
-    animationDuration: 900,
-    tooltip: {
-      trigger: 'item',
-      formatter: ({ name, value, percent }) => `${name}: ${value} (${percent}%)`,
-    },
-    legend: { bottom: 0 },
-    graphic: [
-      {
-        type: 'group',
-        left: 'center',
-        top: 'center',
-        children: [
-          {
-            type: 'text',
-            style: {
-              text: `${totalAll}`,
-              fontSize: 28,
-              fontWeight: 900,
-              textAlign: 'center',
-            },
-            top: -10,
-            left: -14,
-          },
-          {
-            type: 'text',
-            style: {
-              text: 'Total annuel',
-              fontSize: 12,
-              opacity: 0.7,
-              textAlign: 'center',
-            },
-            top: 16,
-            left: -28,
-          },
-        ],
-      },
-    ],
-    series: [
-      {
-        name: 'Répartition',
-        type: 'pie',
-        radius: ['55%', '80%'],
-        avoidLabelOverlap: false,
-        labelLayout: () => ({ hideOverlap: false }),
-        itemStyle: {
-          borderRadius: 12,
-          borderColor: '#fff',
-          borderWidth: 2,
-          shadowBlur: 10,
-          shadowColor: 'rgba(0,0,0,.15)',
-        },
-        label: {
-          show: true,
-          position: 'inside',
-          formatter: ({ percent }) => `${Math.round(percent)}%`,
-          fontWeight: 800,
-        },
-        labelLine: { show: false },
-        emphasis: {
-          scaleSize: 10,
-          itemStyle: {
-            shadowBlur: 18,
-            shadowColor: 'rgba(0,0,0,.25)',
-          },
-        },
-        data: TYPE_LABELS.map((name, i) => ({
-          name,
-          value: totals[i],
-          itemStyle: { color: TYPE_COLORS[i] },
-        })),
-      },
-    ],
-  }), [totals, totalAll]);
+  // ⬇️ centre X/Y unique pour la série ET le texte, avec Y légèrement au-dessus
+  const CX = '60%';
+  const CY = '46%'; // était '50%'
+
+const option = useMemo(() => ({
+  animationDuration: 900,
+  tooltip: { trigger: 'item', formatter: p => `${p.name}: ${p.value} (${p.percent}%)` },
+  legend: { left: 0, top: 8, orient: 'vertical', align: 'left',
+    itemWidth: 12, itemHeight: 12, itemGap: 6, textStyle: { fontSize: 11 }
+  },
+
+  // ⬇️ on utilise "title" pour afficher le total en haut
+  /*title: {
+    show: true,
+    left: '60%',   // aligné avec le donut
+    top: 0,
+    text: String(totalAll),
+    subtext: 'Total',
+    itemGap: 2,
+    textAlign: 'center',
+    textStyle: { fontSize: 28, fontWeight: 900, color: '#0f172a' },
+    subtextStyle: { fontSize: 12, color: '#64748b' }
+  },*/
+
+  series: [{
+    name: 'Répartition',
+    type: 'pie',
+    roseType: 'radius',
+    radius: ['30%','80%'],
+    center: ['60%','50%'],
+    label: { show: true, formatter: '{b}\n{d}%', color: '#334155', fontWeight: 700 },
+    labelLine: { length: 8, length2: 6, smooth: true },
+    avoidLabelOverlap: true,
+    labelLayout: { moveOverlap: 'shiftY', edgeDistance: 10 },
+    itemStyle: { borderColor: '#fff', borderWidth: 2 },
+    data: TYPE_LABELS.map((name, i) => ({ name, value: totals[i], itemStyle: { color: TYPE_COLORS[i] } }))
+  }]
+}), [totals, totalAll]);
 
   return <ReactECharts option={option} style={{ height }} notMerge />;
 }
+
+
+
+
+
 
 
 /* ============================
  * 3) Radar tickets (avec glow + animation)
  * ============================ */
-function TechRadarTickets({ height = 300 }) {
-  const globalMax = Math.max(...TYPE_LABELS.flatMap((n)=>DATA_BARS[n])) * 1.4;
-
+function TechPolarBars({ height = 300 }) {
   const option = useMemo(() => ({
     animationDuration: 850,
-    backgroundColor: 'transparent',
     color: TYPE_COLORS,
-    tooltip: {
-      trigger: "item",
-      formatter: (p) => {
-        const vals = p.value.map((v,i)=>`${DAYS_FR[i]}: ${v}`).join("<br/>");
-        return `<b>${p.name}</b><br/>${vals}`;
-      },
+    legend: {
+      left: 0, top: 8, orient: 'vertical',
+      itemWidth: 12, itemHeight: 12, itemGap: 6,
+      textStyle: { fontSize: 11 }
     },
-    legend: { bottom: 0 },
-    radar: {
-      indicator: DAYS_FR.map((d) => ({ name: d, max: globalMax })),
-      splitNumber: 5, radius: "70%", center: ["50%","50%"],
-      axisName: { fontWeight: 700 },
-      splitArea: { areaStyle: { color: ["#f8fafc","#eef2ff"] } },
-      splitLine: { lineStyle: { type: "dashed", color: "rgba(0,0,0,.25)" } },
-      axisLine: { lineStyle: { color: "rgba(0,0,0,.2)" } },
+    angleAxis: {
+      type: 'category',
+      data: DAYS_FR,
+      axisLabel: { fontWeight: 700 },
+      axisLine: { lineStyle: { color: 'rgba(0,0,0,.25)' } },
+      axisTick: { show:false }
     },
+    radiusAxis: {
+      axisLine: { show:false },
+      axisLabel: { color: '#64748b' },
+      splitLine: { lineStyle: { type:'dashed', color:'rgba(0,0,0,.15)' } }
+    },
+    polar: { center: ['55%','52%'] }, // décale un peu pour laisser la légende
+    tooltip: { trigger: 'item' },
     series: TYPE_LABELS.map((name, i) => ({
-      name, type: "radar", symbol: "circle", symbolSize: 6,
-      lineStyle: { width: 3, color: TYPE_COLORS[i] },
-      areaStyle: { color: TYPE_COLORS[i], opacity: 0.14 },
-      itemStyle: { color: TYPE_COLORS[i], shadowBlur: 10, shadowColor: TYPE_COLORS[i] },
-      emphasis: { focus: "series" },
-      data: [{ value: DATA_BARS[name], name }],
-    })),
-  }), [globalMax]);
+      name,
+      type: 'bar',
+      coordinateSystem: 'polar',
+      data: (DATA_BARS[name] || []),
+      roundCap: true,
+      barWidth: 10,
+      itemStyle: {
+        color: TYPE_COLORS[i]
+      },
+      emphasis: { focus: 'series' }
+    }))
+  }), []);
 
   return <ReactECharts option={option} style={{ height }} notMerge />;
 }
+
+
 
 
 
@@ -433,22 +307,29 @@ export default function KpiBar() {
   return (
     <>
       <VisualFX />
-      <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-3">
-      <ChartCard title="Croissance des inscriptions" icon={<LuLineChart className="h-5 w-5" />}>
-  <TechLine height={300} />
-</ChartCard>
+      <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 md:grid-rows-2 md:auto-rows-[260px]">
+        {/* 1) grande ligne, span 2 rangées à gauche */}
+        <ChartCard
+          className="md:row-span-2" title="Croissance des inscriptions" icon={<LuLineChart className="h-5 w-5" />}
+        >
+         <TechLine height="100%" />
+        </ChartCard>
 
-
+        {/* 2) donut en haut à droite */}
         <ChartCard
           title="Répartition annuelle"
           icon={<LuPieChart className="h-5 w-5" />}
           right={<YearSelect value={year} onChange={setYear} years={years} />}
         >
-          <TechDonut year={year} height={300} />
+          <TechDonut year={year}  height={160}  />
         </ChartCard>
 
-        <ChartCard title="Tickets par jour" icon={<LuBarChart3 className="h-5 w-5" />}>
-          <TechRadarTickets height={300} />
+        {/* 3) radar en bas à droite */}
+        <ChartCard
+          title="Tickets par jour"
+          icon={<LuBarChart3 className="h-5 w-5" />}
+        >
+          <TechPolarBars height="100%" />
         </ChartCard>
       </div>
     </>

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-
+import WidgetKids from "components/widget/Widget";
 // --- hook: compter jusqu'au chiffre (sans lib)
 function useCountUp(target, duration = 900) {
   const [val, setVal] = useState(0);
@@ -17,7 +17,14 @@ function useCountUp(target, duration = 900) {
   }, [target, duration]);
   return val;
 }
-
+const COLOR_BG = {
+  indigo:  "#4f46e5",
+  purple:  "#8b5cf6",
+  sky:     "#0ea5e9",
+  emerald: "#10b981",
+  rose:    "#e11d48",
+  orange:  "#f59e0b",
+};
 // --- hook: petite anim d'entrée à l'apparition
 function useReveal() {
   const ref = useRef(null);
@@ -42,56 +49,21 @@ function useReveal() {
  * - icon: ReactNode
  * - color: 'indigo' | 'purple' | 'sky' | 'emerald' | 'rose' | 'orange'
  */
-export default function StatCard({ title, value, icon, color = "indigo" }) {
-  const { ref, show } = useReveal();
-  const count = useCountUp(value);
-
-  // bulles de couleur pour l’icône
-  const bubble =
-    color === "indigo"  ? "from-indigo-500 to-purple-500" :
-    color === "purple"  ? "from-purple-500 to-pink-500"   :
-    color === "sky"     ? "from-sky-400 to-indigo-500"    :
-    color === "emerald" ? "from-emerald-400 to-green-600" :
-    color === "rose"    ? "from-rose-400 to-pink-600"     :
-                          "from-orange-400 to-amber-600";
+export default function StatCard(props) {
+  // compat si la page passe `stat={s}`
+  const p = props.stat ? { ...props.stat, ...props } : props;
+  const { title, value, icon, color = "indigo" } = p;
 
   return (
-    <div
-      ref={ref}
-      className={[
-        "group relative overflow-hidden rounded-2xl bg-white p-4 shadow-sm",
-        "transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl",
-        show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
-      ].join(" ")}
-    >
-      {/* halo animé */}
-      <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity">
-        <div className="absolute -inset-24 bg-gradient-to-br from-transparent via-white/40 to-transparent blur-2xl" />
-      </div>
+ <WidgetKids
+  variant="solid"
+  size="sm"
+  fx={false}
+  bg={CARD_BG[stat.id] || "#4f46e5"}
+  icon={stat.icon}             // ✅ existe maintenant
+  title={stat.label}
+  value={stat.value}
+/>
 
-      <div className="flex items-center gap-3">
-        {/* pastille icône */}
-        <div className={`relative grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br ${bubble}`}>
-          <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-emerald-400">
-            <span className="absolute inset-0 rounded-full animate-ping bg-emerald-400/60" />
-          </span>
-          <div className="scale-100 transition-transform duration-300 group-hover:scale-110 text-white">
-            {icon}
-          </div>
-        </div>
-
-        <div className="flex flex-col">
-          <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-            {title}
-          </span>
-          <span className="text-2xl font-extrabold tabular-nums">{count}</span>
-        </div>
-      </div>
-
-      {/* soulignement animé */}
-      <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-gray-100">
-        <div className={`h-1 w-1/2 rounded-full bg-gradient-to-r ${bubble} transition-[transform] duration-700 group-hover:translate-x-1/2`} />
-      </div>
-    </div>
   );
 }

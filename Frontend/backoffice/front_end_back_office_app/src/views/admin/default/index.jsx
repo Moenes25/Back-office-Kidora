@@ -14,6 +14,9 @@ import AIIndicatorsPanel from "components/ai/AIIndicatorsPanel";
 
 import { getTotalEtablissements , getChiffreAffairesTotal,getAlertsData ,  getNextExpirationsByType , getTopEtablissements}  from "services/dashboardService";
 
+// en haut du fichier
+import { FiPlus, FiCalendar, FiLifeBuoy, FiFilePlus, FiCpu, FiUsers, FiKey, FiShield } from "react-icons/fi";
+import { useNavigate } from "react-router-dom"; // si tu utilises react-router
 
 
 // icons (lucide via react-icons)
@@ -735,6 +738,74 @@ function WidgetFX() {
 
 
 
+
+function SectionCard({ icon, title, children, footer }) {
+  return (
+    <div className="
+      h-full flex flex-col
+      rounded-2xl overflow-hidden bg-white
+      shadow-[0_14px_38px_rgba(2,6,23,.12)] ring-1 ring-black/5
+    ">
+      {/* header */}
+      <div className="flex items-center gap-2 bg-[#3b5edb] text-white px-4 py-2 text-sm font-semibold">
+        <span className="inline-grid h-5 w-5 place-items-center rounded-md bg-white/15">{icon}</span>
+        <span>{title}</span>
+      </div>
+
+      {/* body: occupe l’espace restant */}
+      <div className="p-4 flex-1">{children}</div>
+
+      {/* footer: reste collé en bas */}
+      {footer && <div className="px-4 pb-4 mt-auto">{footer}</div>}
+    </div>
+  );
+}
+
+
+// Bouton orange “gros” (Accès rapide)
+function QuickBtn({ icon, label, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold
+                 bg-gradient-to-b from-[#ff7a3d] to-[#ff5e24] text-white
+                 shadow-[0_10px_22px_rgba(249,115,22,.35)] active:translate-y-[1px] transition"
+    >
+      <span className="inline-grid h-7 w-7 place-items-center ">{icon}</span>
+      {label}
+    </button>
+  );
+}
+
+// Lignes à puces (à gauche un petit point)
+function BulletList({ items }) {
+  return (
+    <ul className="space-y-2 text-[13px] text-slate-700">
+      {items.map((t, i) => (
+        <li key={i} className="flex items-start gap-2">
+          <span className="mt-1 h-1.5 w-1.5 rounded-full bg-slate-400" />
+          <span>{t}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// Bouton secondaire bleu (footer des cartes)
+function PrimaryAction({ icon, label, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full inline-flex items-center justify-center gap-2 rounded-xl
+                 bg-[#3b5edb] text-white px-4 py-2 text-sm font-bold
+                 shadow-[0_12px_28px_rgba(59,94,219,.35)] hover:brightness-110 transition"
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
+
 /* ---------------------------------------------------
   DASHBOARD
 --------------------------------------------------- */
@@ -878,7 +949,7 @@ const countsTable = {
   ecoles: etablissements.filter(e => e.type === "ecoles").length,
 };
 
-
+const navigate = useNavigate?.() || ((to)=>console.log("go:", to));
 
 // 🔢 Compteurs pour le BOUTON de la CARTE (ici: 1 élément par type)
 const countsCard = {
@@ -941,52 +1012,121 @@ const availability = (() => {
       {/* 🔵 KPI CARDS */}
       {/* *********************************************************** */}
 <WidgetFX />
-<div className="mt-3 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-6">
-  <WidgetKids
-  tone="green"
-  icon={pickIcon("Nombre Totale d'etablissements")}
-  title="Nombre Totale d'etablissements"
-  value={nombreEtablissements}
-/>
-<WidgetKids
-  tone="blue"
-  icon={pickIcon("Nombre Totale de Parents")}
-  title="Nombre Totale de Parents"
- value={55}
-/>
+<div className="mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
+  <WidgetKids variant="solid" bg="#16a34a" size="sm" fx={false}    
+    icon={pickIcon("Nombre Totale d'etablissements")}
+    title="Nombre Totale d'etablissements"
+    value={nombreEtablissements}
+  />
 
-<WidgetKids
-  tone="orange"
-  icon={pickIcon("Nombre Totale des Enfants")}
-  title="Nombre Totale des Enfants"
-   value={55}
-/>
-<WidgetKids
-  tone="red"
-  icon={pickIcon("Chiffres d'Affaires Totales")}
-  title="Chiffres d'Affaires Totales"
-  value={chiffreAffaires}
-  format={(n) => n.toLocaleString('fr-FR', { style: 'currency', currency: 'TND' })}
-/>
-<WidgetKids
-  tone="blue"
-  icon={pickIcon("Nombre d'activité d'etablissement")}
-  title="Nombre d'activité d'etablissement"
-  value={55}
-/>
+  <WidgetKids variant="solid" bg="#4f46e5" size="sm" fx={false}    
+    icon={pickIcon("Nombre Totale de Parents")}
+    title="Nombre Totale de Parents"
+    value={55}
+  />
 
-<WidgetKids
-  tone="green"
-  icon={pickIcon("Nombre de raports par jours")}
-  title="Nombre de rapports par jour"
-  value={55}
-/>
+  <WidgetKids variant="solid" bg="#10b981" size="sm" fx={false}    
+    icon={pickIcon("Nombre Totale des Enfants")}
+    title="Nombre Totale des Enfants"
+    value={55}
+  />
 
+  <WidgetKids variant="solid" bg="#22c55e" size="sm" fx={false}    
+    icon={pickIcon("Chiffres d'Affaires Totales")}
+    title="Chiffres d'Affaires Totales"
+    value={chiffreAffaires}
+    format={(n) => n.toLocaleString('fr-FR', { style: 'currency', currency: 'TND' })}
+  />
 
+  <WidgetKids variant="solid" bg="#f59e0b" size="sm" fx={false}    
+    icon={pickIcon("Nombre d'activité d'etablissement")}
+    title="Nombre d'activité d'etablissement"
+    value={55}
+  />
+
+  <WidgetKids variant="solid" bg="#111827" size="sm" fx={false}    
+    icon={pickIcon("Nombre de raports par jours")}
+    title="Nombre de rapports par jour"
+    value={55}
+  />
 </div>
 
 
 
+
+
+
+
+<div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+      {/* 1) Accès rapide */}
+      <SectionCard icon={<FiPlus />} title="Accès rapide">
+        <div className="space-y-2">
+          <QuickBtn
+            icon={<FiPlus />}
+            label="Ajouter une entreprise"
+            onClick={() => navigate("/admin/Entreprises")}  // ← path EXACT (casse incluse)
+          />
+          <QuickBtn
+            icon={<FiCalendar />}
+            label="Planning"
+            onClick={() => navigate("/admin/calendrier")}
+          />
+          <QuickBtn
+            icon={<FiLifeBuoy />}
+            label="Gérer tickets"
+            onClick={() => navigate("/admin/support")}
+          />
+          <QuickBtn
+            icon={<FiCpu />}
+            label="Analyse IA"
+            onClick={() => navigate("/admin/ia")}
+          />
+        </div>
+      </SectionCard>
+
+      {/* 2) Gestion des admins */}
+      <SectionCard
+        icon={<FiShield />}
+        title="Gestion des admins"
+        footer={
+          <PrimaryAction
+            icon={<FiUsers />}
+            label="Gérer les admins"
+           onClick={() => navigate("/admin/profile", { state: { section: "admin" } })}
+          />
+        }
+      >
+        <BulletList
+          items={[
+            "Liste des administrateurs",
+            "Créer / Modifier un admin",
+            "Rôles & permissions",
+            "Historique des connexions",
+          ]}
+        />
+      </SectionCard>
+
+      {/* 3) Finances */}
+      <SectionCard
+        icon={<FiFilePlus />}
+        title="Paiements"
+        footer={
+          <PrimaryAction
+            icon={<FiFilePlus />}
+            label="Envoyer Facture"
+            onClick={() => navigate("/admin/paiements")}
+          />
+        }
+      >
+        <BulletList
+          items={[
+            "Suivi des paiements",
+            "Relancer abonnement",
+            "Facturation",
+          ]}
+        />
+      </SectionCard>
+    </div>
 
 
 
@@ -1051,29 +1191,17 @@ const availability = (() => {
   />
 </Card>
 
+{/* ===== EXPIRATION + TABLE (colonne gauche) | ALERTES (colonne droite) ===== */}
+<div className="mt-6 grid gap-5 xl:grid-cols-[2fr,1fr] items-start">
+  {/* COLONNE GAUCHE : Expiration + Table */}
+  <div className="grid gap-5 content-start">
+    {/* --- Carte Prochaine expiration --- */}
+    <Card
+      extra="p-6 rounded-3xl relative group overflow-hidden bg-white/80 backdrop-blur-xl border border-black/10 shadow-[0_28px_70px_-24px_rgba(2,6,23,.28),0_12px_24px_-18px_rgba(2,6,23,.22)]"
+      data-alarm={alarm}
+    >
 
-      {/* *********************************************************** */}
-      {/* 🔔 ALERTS */}
-      {/* *********************************************************** */}
-    <div className="mt-6 animate-fadeIn">
-     <AlertsPanel alerts={alerts} />
-   </div>
 
-<div className="mt-6 grid grid-cols-1 gap-5">
-{/* === CARTE PROCHAINE EXPIRATION (style amélioré) === */}
-<Card
-  extra={`
-    col-span-full p-6 rounded-3xl relative group overflow-hidden
-    bg-white/80 backdrop-blur-xl border border-black/10
-    shadow-[0_28px_70px_-24px_rgba(2,6,23,.28),0_12px_24px_-18px_rgba(2,6,23,.22)]
-  `}
-  data-alarm={alarm} // ← "ok" | "warn" | "critical"
->
-  {/* HALO DE FOND (indigo) */}
-  <span
-    className="pointer-events-none absolute -inset-16 -z-10 opacity-0 blur-3xl transition-opacity duration-300 group-hover:opacity-40"
-    style={{ background: "radial-gradient(700px 340px at 20% 0%, rgba(99,102,241,.18), transparent 60%)" }}
-  />
 
   {/* HALO ROUGE ANIMÉ (visible si alarme) */}
   <span
@@ -1081,13 +1209,7 @@ const availability = (() => {
     className="alarm-glow pointer-events-none absolute inset-0 -z-10 opacity-0"
   />
 
-  {/* LIGNE SCAN EN HAUT (accent danger) */}
-  <span
-    className="absolute left-0 right-0 top-0 h-[3px] overflow-hidden"
-    aria-hidden
-  >
-    <span className="block h-full w-[40%] alarm-scan" />
-  </span>
+
 
   {/* Header : label + filtre */}
   <div className="flex items-start justify-between gap-4">
@@ -1151,24 +1273,6 @@ const availability = (() => {
 
 </div>
 
-
-  {/* Barre de progression / activité – couleur selon alarme */}
-  <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-black/10">
-    <span
-      className="block h-full w-[45%] rounded-full"
-      style={{
-        background:
-          alarm === "critical"
-            ? "linear-gradient(90deg,#fb7185,#ef4444,#fb7185)"
-            : alarm === "warn"
-            ? "linear-gradient(90deg,#f59e0b,#f97316,#f59e0b)"
-            : "linear-gradient(90deg,#34d399,#10b981,#34d399)",
-        backgroundSize: "200% 100%",
-        animation: "stripes 2.4s linear infinite",
-        filter: "saturate(1.05)",
-      }}
-    />
-  </div>
 {/* Points de navigation */}
 {items.length > 1 && (
   <div className="mt-4 flex justify-center gap-2">
@@ -1224,13 +1328,11 @@ const availability = (() => {
     [data-alarm="warn"]     .alarm-scan { background: linear-gradient(90deg,transparent,#f59e0b,transparent); animation: stripes 1.8s linear infinite; }
     [data-alarm="ok"]       .alarm-scan { background: linear-gradient(90deg,transparent,#10b981,transparent); animation: stripes 2.4s linear infinite; }
   `}</style>
-</Card>
+    </Card>
 
-
-
-  {/* === TABLE TOP 10 (avec SON filtre propre) === */}
-  <Card extra="col-span-full p-6 rounded-3xl relative group overflow-hidden shadow-lg ">
-    <div className="card-glow"></div>
+    {/* --- Table Top 10 --- */}
+    <Card extra="p-6 rounded-3xl relative group overflow-hidden shadow-lg">
+         <div className="card-glow"></div>
 
     <div className="mb-4 flex items-center justify-between ">
       <h3 className="relative z-10 text-lg font-extrabold">
@@ -1353,8 +1455,20 @@ const availability = (() => {
           </nav>
         </div>  {/* ← fin pagination */}
     </div>
-  </Card>
+    </Card>
+  </div>
+
+  {/* COLONNE DROITE : Alertes empilées */}
+  <div className="grid gap-5 auto-rows-[minmax(0,1fr)]">
+    <AlertsPanel alerts={alerts} stacked />
+  </div>
 </div>
+
+
+
+  
+
+
 
 
     </div>
