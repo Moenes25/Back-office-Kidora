@@ -62,6 +62,16 @@ public class Constants {
     public static final String AJOUTER_CLASSE = "/ajouter";
     public static final String GET_ALL_CLASSES = "/all";
 
+    // -------------------- ANALYTICS --------------------
+    public static final String ANALYTICS = "/analytics";
+    public static final String ANALYTICS_DASHBOARD = "/dashboard";
+    public static final String ANALYTICS_ETABS_AVEC_ABON = "/etablissements/avec-abonnement";
+    public static final String ANALYTICS_ETABS_SANS_ABON = "/etablissements/sans-abonnement";
+    public static final String ANALYTICS_REPARTITION_TYPE = "/repartition/type";
+    public static final String ANALYTICS_REPARTITION_STATUT = "/repartition/statut";
+    public static final String ANALYTICS_EVOLUTION_MENSUELLE = "/evolution-mensuelle";
+
+
 
 
 
