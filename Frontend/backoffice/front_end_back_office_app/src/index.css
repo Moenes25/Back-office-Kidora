@@ -236,40 +236,40 @@ input:checked.defaultCheckbox::before {
       /* ===== ZEBRA + LIFT ===== */
    
    
-      tbody tr:hover::before{ opacity:.9; }
+      .no-ukp tbody tr:hover::before{ opacity:.9; }
 
     
   
 
       /* ===== COULEUR PAR TYPE via :has() (si supporté) ===== */
       /* Crèche */
-      tbody tr:has(td:nth-child(3) .bg-purple-100){
+     .no-ukp  tbody tr:has(td:nth-child(3) .bg-purple-100){
         border-left: 4px solid rgba(168,85,247,.35);
       }
-      tbody tr:has(td:nth-child(3) .bg-purple-100):hover{
+    .no-ukp  tbody tr:has(td:nth-child(3) .bg-purple-100):hover{
         box-shadow: var(--shadow-2), 0 0 0 3px rgba(168,85,247,.15) inset;
       }
       /* Garderie */
-      tbody tr:has(td:nth-child(3) .bg-amber-100){
+    .no-ukp  tbody tr:has(td:nth-child(3) .bg-amber-100){
         border-left: 4px solid rgba(245,158,11,.35);
       }
-      tbody tr:has(td:nth-child(3) .bg-amber-100):hover{
+    .no-ukp  tbody tr:has(td:nth-child(3) .bg-amber-100):hover{
         box-shadow: var(--shadow-2), 0 0 0 3px rgba(245,158,11,.15) inset;
       }
       /* École */
-      tbody tr:has(td:nth-child(3) .bg-emerald-100){
+   .no-ukp   tbody tr:has(td:nth-child(3) .bg-emerald-100){
         border-left: 4px solid rgba(16,185,129,.35);
         
       }
-      tbody tr:has(td:nth-child(3) .bg-emerald-100):hover{
+     .no-ukp  tbody tr:has(td:nth-child(3) .bg-emerald-100):hover{
         box-shadow: var(--shadow-2), 0 0 0 3px rgba(16,185,129,.15) inset;
       }
 
       /* ===== BADGES ===== */
-      td .rounded-full.border.shadow-sm{
+    .no-ukp  td .rounded-full.border.shadow-sm{
         transition: transform .16s var(--ease-pop), box-shadow .2s var(--ease-pop), background .2s;
       }
-      td .rounded-full.border.shadow-sm:hover{
+    .no-ukp  td .rounded-full.border.shadow-sm:hover{
         transform: translateZ(2px) scale(1.04);
         box-shadow: 0 6px 18px rgba(2,6,23,.12);
     
@@ -335,12 +335,12 @@ input:checked.defaultCheckbox::before {
       }
 
       /* Cadre spécial pour les lignes de type Garderie */
-tbody tr:has(td:nth-child(3) .bg-amber-100){
+.no-ukp tbody tr:has(td:nth-child(3) .bg-amber-100){
   --accent: rgba(245,158,11,.55);
   --accent-soft: rgba(245,158,11,.12);
   isolation: isolate;               /* pour que ::after reste au-dessus du fond */
 }
-tbody tr:has(td:nth-child(3) .bg-amber-100)::after{
+.no-ukp tbody tr:has(td:nth-child(3) .bg-amber-100)::after{
   content:"";
   position:absolute;
   inset: 4px 6px;                   /* marge intérieure du cadre */
@@ -352,27 +352,27 @@ tbody tr:has(td:nth-child(3) .bg-amber-100)::after{
 }
 
 /* (Option) fais pareil pour Crèche / École si tu veux une cohérence visuelle : */
-tbody tr:has(td:nth-child(3) .bg-purple-100)::after{
+.no-ukp tbody tr:has(td:nth-child(3) .bg-purple-100)::after{
   content:""; position:absolute; inset:4px 6px; border-radius:14px; pointer-events:none;
   box-shadow: 0 0 0 2px rgba(168,85,247,.50) inset, 0 12px 26px rgba(168,85,247,.12);
 }
-tbody tr:has(td:nth-child(3) .bg-emerald-100)::after{
+.no-ukptbody tr:has(td:nth-child(3) .bg-emerald-100)::after{
   content:""; position:absolute; inset:4px 6px; border-radius:14px; pointer-events:none;
   box-shadow: 0 0 0 2px rgba(16,185,129,.50) inset, 0 12px 26px rgba(16,185,129,.12);
 }
   /* === Taille des lignes (padding vertical) === */
 
 /* === Effet "carte 3D" pour chaque ligne === */
-tbody tr{
+.no-ukp tbody tr{
   position: relative;              /* nécessaire pour ::after */
   transition: transform .22s var(--ease-pop), box-shadow .22s var(--ease-pop);
 }
-tbody tr > *{ 
+.no-ukp tbody tr > *{ 
   position: relative; z-index: 1;  /* le contenu reste au-dessus du décor */
 }
 
 /* Ombre + léger fond arrondi à l’intérieur de la ligne */
-tbody tr::after{
+.no-ukp tbody tr::after{
   content:"";
   position: absolute;
   inset: 2px 8px;                  /* marges internes pour le cadre/ombre */
@@ -385,23 +385,23 @@ tbody tr::after{
 }
 
 /* Survol : lève la ligne et accentue l’ombre */
-tbody tr:hover{
+.no-ukp tbody tr:hover{
   transform: translateY(-2px);
 }
-tbody tr:hover::after{
+.no-ukp tbody tr:hover::after{
   box-shadow: 0 14px 36px rgba(2,6,23,.18), inset 0 0 0 1px rgba(2,6,23,.06);
 }
 
 /* (Option) Appuie visuel quand on clique */
-tbody tr:active{ transform: translateY(0); }
-tbody tr:active::after{ box-shadow: 0 6px 18px rgba(2,6,23,.12); }
+.no-ukp tbody tr:active{ transform: translateY(0); }
+.no-ukp tbody tr:active::after{ box-shadow: 0 6px 18px rgba(2,6,23,.12); }
 
 /* Ombre permanente pour CHAQUE LIGNE */
-tbody tr{
+.no-ukp tbody tr{
   position: relative;
 }
 
-tbody tr::before{
+.no-ukp tbody tr::before{
   content: "";
   position: absolute;
   /* un peu de marge horizontale pour que l'ombre respire */
@@ -415,7 +415,7 @@ tbody tr::before{
 }
 
 /* le contenu reste au-dessus de la carte */
-tbody tr > *{
+.no-ukp tbody tr > *{
   position: relative;
   z-index: 1;
   background: transparent;
@@ -423,10 +423,10 @@ tbody tr > *{
 }
 
 /* (option) même style pour l'en-tête */
-thead tr{
+.no-ukp thead tr{
   position: relative;
 }
-thead tr::before{
+.no-ukp thead tr::before{
   content: "";
   position: absolute;
   left: 0px; right: 0px; top: 0; bottom: 0;
@@ -437,7 +437,7 @@ thead tr::before{
               rgba(10, 37, 64, .25) 0px -1px 4px 0px inset;
   z-index: 0;
 }
-thead th{ position: relative; z-index: 1; }
+.no-ukp thead th{ position: relative; z-index: 1; }
 /* ===== Support-like Pagination ===== */
 .ukp-wrap{
   display:flex; align-items:center; justify-content:space-between;

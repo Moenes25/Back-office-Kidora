@@ -283,13 +283,13 @@ function SupportToolbar({
     <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
       <div className="flex flex-wrap items-center gap-2">
         {/* Recherche */}
-        <div className="group flex items-center gap-2 rounded-2xl border border-white/20 bg-white/70 px-3 py-2 text-sm shadow-[0_10px_30px_rgba(2,6,23,.10)] backdrop-blur-xl">
+        <div className="group flex items-center gap-2 rounded-2xl border border-white/20 bg-white/70 px-3 py-2 text-sm shadow-[0_10px_30px_rgba(2,6,23,.10)] backdrop-blur-xl dark:bg-navy-800 dark:text-white">
           <FiSearch className="opacity-60" />
           <input
             value={q}
             onChange={(e)=>setQ(e.target.value)}
             placeholder="Rechercher un client…"
-            className="w-72 bg-transparent outline-none placeholder:text-gray-400"
+            className="w-72 bg-transparent outline-none placeholder:text-gray-400 dark:bg-navy-800 dark:text-white"
           />
         </div>
 
@@ -443,7 +443,7 @@ function SupportPagination({ page, pageCount, total, onPage }) {
 
       <div className="ukp-actions">
         <button
-          className="pg-btn"
+          className="pg-btn dark:text-"
           onClick={() => onPage(1)}
           disabled={page === 1}
           aria-label="Première"
@@ -541,6 +541,8 @@ function convertStatutToLabel(code) {
     default: return "Inconnu";
   }
 }
+
+
 
 const ClientsPage = () => {
   const [data, setData] = useState([]);
@@ -1090,127 +1092,110 @@ const deleteClient = async (row) => {
             {filtered.length} client(s) • page {page} / {Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))}
           </div>
         </div>
+<div className="mt-3 overflow-x-auto">
+ <table className="no-ukp min-w-[980px] w-full border-collapse text-slate-800 dark:text-white dark:bg-navy-800 dark:shadow-none">
+    {/* EN-TÊTE */}
+    <thead className="sticky top-0 z-10">
+     <tr className="bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 border-b dark:bg-transparent dark:text-white">
+        {/* <Th onClick={() => toggleSort("id")} label="ID" sortIcon={headerSortIcon("id")} /> */}
+        <Th onClick={() => toggleSort("name")}  label="Nom"    sortIcon={headerSortIcon("name")} />
+        <Th onClick={() => toggleSort("type")}  label="Type"   sortIcon={headerSortIcon("type")}  />
+        <Th onClick={() => toggleSort("city")}  label="Ville"  sortIcon={headerSortIcon("city")}  />
+        <Th onClick={() => toggleSort("status")} label="Statut" sortIcon={headerSortIcon("status")} />
+        <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500">Actions</th>
+      </tr>
+    </thead>
 
-        <div className="mt-3 overflow-x-auto">
-          <table className="min-w-[980px] w-full border-separate [border-spacing:0_10px] p-2 mb-4 rounded-xl shadow-xl">
+    {/* LIGNES */}
+    <tbody className="text-sm dark:bg-navy-800">
+      {pageRows.map((r) => (
+          <tr
+     key={r.id}
+     className="border-b last:border-0 transition-colors
+                border-slate-200 dark:border-white/10
+                hover:bg-slate-50 dark:bg-navy-800
+                text-slate-800 dark:text-white"
+   >
+          {/* ID masqué si tu veux */}
+          {/* <td className="px-4 py-3 whitespace-nowrap font-mono text-xs text-slate-500">{r.id}</td> */}
+          <td className="px-4 py-3 dark:bg-navy-800 dark:text-white">
+            <button
+              onClick={() => setSelected(r)}
+              className="font-semibold text-slate-800 hover:underline dark:text-white"
+              title="Voir les détails"
+            >
+              {r.name}
+            </button>
+          </td>
+          <td className="px-4 py-3 whitespace-nowrap dark:bg-navy-800 dark:text-white">
+            <TypeBadge type={r.type} />
+          </td>
+          <td className="px-4 py-3 dark:bg-navy-800 dark:text-white">{r.city}</td>
+          <td className="px-4 py-3 whitespace-nowrap dark:bg-navy-800 dark:text-white">
+            <StatusBadge status={r.status} />
+          </td>
+          <td className="px-2 py-2 dark:bg-navy-800 dark:text-white">
+            <div className="flex items-center justify-end gap-1.5">
+              <button
+                onClick={() => setSelected(r)}
+                className="icon-btn dark:text-white"
+                title="Détails"
+              >
+                <FiEye />
+              </button>
+              <button
+                onClick={() => startEdit(r)}
+                className="icon-btn dark:text-white"
+                title="Modifier"
+              >
+                <FiEdit2 />
+              </button>
+              <button
+                onClick={() => deleteClient(r)}
+                className="icon-btn danger dark:text-white"
+                title="Supprimer"
+              >
+                <FiTrash2 />
+              </button>
 
-          <thead className="sticky top-0 z-10 bg-gray-200/80 backdrop-blur text-xs uppercase rounded-xl text-gray-700 [&_th]:py-5 shadow-xl">
+              {/* actions rapides (compactes) */}
+             {/*   <button
+                onClick={() => updateStatus(r.id, "Actif")}
+                className="chip subtle success"
+                title="Marquer Actif"
+              >
+                Actif
+              </button>
+              <button
+                onClick={() => updateStatus(r.id, "Suspendu")}
+                className="chip subtle warning"
+                title="Suspendre"
+              >
+                Suspendre
+              </button>
+              <button
+                onClick={() => updateStatus(r.id, "Résilié")}
+                className="chip subtle danger"
+                title="Résilier"
+              >
+                Résilier
+              </button> */}
+            </div>
+          </td>
+        </tr>
+      ))}
 
-              <tr>
-               {/* <Th onClick={() => toggleSort("id")} label="ID" sortIcon={headerSortIcon("id")} />*/}
-                <Th onClick={() => toggleSort("name")} label="Nom" sortIcon={headerSortIcon("name")} />
-                <Th onClick={() => toggleSort("type")} label="Type" sortIcon={headerSortIcon("type")} />
-                <Th onClick={() => toggleSort("city")} label="Ville" sortIcon={headerSortIcon("city")} />
-               {/*<Th onClick={() => toggleSort("plan")} label="Formule" sortIcon={headerSortIcon("plan")}/>*/}
+      {pageRows.length === 0 && (
+        <tr>
+          <td colSpan={6} className="px-4 py-12 text-center text-sm text-slate-500">
+            Aucun résultat. Ajustez vos filtres.
+          </td>
+        </tr>
+      )}
+    </tbody>
+  </table>
+</div>
 
-                 {/*<Th onClick={() => toggleSort("subscriptionDate")} label="Abonné depuis" sortIcon={headerSortIcon("subscriptionDate")} />*/}
-                <Th onClick={() => toggleSort("status")} label="Statut" sortIcon={headerSortIcon("status")} />
-                <th className="px-3 py-2 text-left hidden">Contact</th>
-                <th className="">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm [&_td]:py-5 [&_th]:py-3 rounded-xl shadow-xl">
-
-              {pageRows.map((r, i) => (
-                <tr
-                  key={r.id}
-                  className="border-b last:border-0 hover:bg-gray-50 transition-colors"
-                  style={{ animation: `fadeIn .25s ease-out both`, animationDelay: `${i * 40}ms` }}
-                >
-                  <td className="px-3 py-4 whitespace-nowrap text-xs font-mono text-gray-600 hidden">{r.id}</td>
-                  <td className="px-3 py-4 font-semibold text-navy-700">
-                    <button
-                      onClick={() => setSelected(r)}
-                      className="hover:underline"
-                      title="Voir les détails"
-                    >
-                      {r.name}
-                    </button>
-                  </td>
-                  <td className="px-3 py-5 whitespace-nowrap"><TypeBadge type={r.type} /></td>
-                  <td className="px-3 py-5">{r.city}</td>
-                  <td className="px-3 py-5 hidden">{r.plan}</td>
-                  <td className="px-3 py-5 whitespace-nowrap hidden">{r.subscriptionDate}</td>
-                  <td className="px-3 py-5 whitespace-nowrap"><StatusBadge status={r.status} /></td>
-                  <td className="px-3 py-5 hidden">
-                    <div className="flex flex-wrap items-center gap-2">
-                      {r.phone && (
-                        <a className="inline-flex items-center gap-1 hover:underline" href={`tel:${r.phone}`}>
-                          <FiPhone /> {r.phone}
-                        </a>
-                      )}
-                      {r.email && (
-                        <a className="inline-flex items-center gap-1 hover:underline" href={`mailto:${r.email}`}>
-                          <FiMail /> {r.email}
-                        </a>
-                      )}
-                      {r.url_localisation && (
-                        <a className="inline-flex items-center gap-1 hover:underline" href={r.url_localisation} target="_blank" rel="noreferrer">
-                          <FiMapPin /> Maps
-                        </a>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-3 py-5">
-                    <div className="flex items-center gap-1 justify-end">
-                      <button
-                        onClick={() => setSelected(r)}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 bg-white text-xs shadow-xl"
-                        title="Détails"
-                      >
-                        👁️
-                      </button>
-                      <button
-                        onClick={() => startEdit(r)}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 bg-white text-xs shadow-xl"
-                        title="Modifier"
-                      >
-                        <FiEdit2 />
-                      </button>
-                      <button
-                        onClick={() => deleteClient(r)}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 bg-white text-xs shadow-xl"
-                        title="Supprimer"
-                      >
-                        <FiTrash2 />
-                      </button>
-                      {/* actions statut rapides */}
-                      <button
-                        onClick={() => updateStatus(r.id, "Actif")}
-                        className="hidden sm:inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-2 text-xs font-semibold text-emerald-700 shadow-xl"
-                        title="Marquer Actif"
-                      >
-                        <HiOutlineRefresh /> Actif
-                      </button>
-                      <button
-                        onClick={() => updateStatus(r.id, "Suspendu")}
-                        className="hidden sm:inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-2 text-xs font-semibold text-amber-700 shadow-xl"
-                        title="Suspendre"
-                      >
-                        <RiPauseCircleLine /> Suspendre
-                      </button>
-                      <button
-                        onClick={() => updateStatus(r.id, "Résilié")}
-                        className="hidden sm:inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2.5 py-2 text-xs font-semibold text-rose-700 shadow-xl"
-                        title="Résilier"
-                      >
-                        <RiDeleteBinLine /> Résilier
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-
-              {pageRows.length === 0 && (
-                <tr>
-                  <td colSpan={9} className="px-3 py-10 text-center text-sm text-gray-500">
-                    Aucun résultat. Ajustez vos filtres.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
 
         {/* pagination */}
        <SupportPagination
@@ -1240,7 +1225,7 @@ const deleteClient = async (row) => {
                   <h3 className="text-lg font-extrabold text-navy-700 dark:text-white">
                     {selected.name} <span className="ml-2"><TypeBadge type={selected.type} /></span>
                   </h3>
-                  <div className="text-xs text-gray-500">{selected.id}</div>
+                 {/*  <div className="text-xs text-gray-500">{selected.id}</div> */}
                 </div>
                 <button
                   className="rounded-lg border border-black/10 bg-white px-2 py-1 text-xs font-semibold shadow-sm hover:bg-gray-50"
@@ -1629,300 +1614,136 @@ const Th = ({ label, sortIcon, onClick }) => (
 );
 
 /* animations */
-/* animations & styles créatifs — MAX DROP-IN */
 const StyleOnce = () => {
   useEffect(() => {
-    const ID = "clients-kf";
-    const old = document.getElementById(ID);
-    if (old) old.remove();
+    const ID = "clients-table-pro";
+    document.getElementById(ID)?.remove();
 
     const s = document.createElement("style");
     s.id = ID;
     s.innerHTML = `
-      :root{
-        --ease-pop: cubic-bezier(.2,.8,.2,1);
-        --shadow-1: 0 1px 2px rgba(2,6,23,.06);
-        --shadow-2: 0 8px 24px rgba(2,6,23,.12);
-        --shadow-3: 0 20px 60px rgba(2,6,23,.18);
-        --ring-edu: 0 0 0 4px rgba(99,102,241,.18);
-      }
-
-      /* ===== KEYFRAMES ===== */
-      @keyframes fadeIn { from{opacity:0; transform: translateY(6px)} to{opacity:1; transform: translateY(0)} }
-      @keyframes eduRow {
-        0% { opacity: 0; transform: translateY(8px) rotateX(2deg) scale(.985); }
-        60% { opacity: 1; transform: translateY(0) rotateX(0) scale(1.006); }
-        100% { opacity: 1; transform: translateY(0) rotateX(0) scale(1); }
-      }
-      @keyframes shake { 0%,100% { transform: translateX(0) } 25% { transform: translateX(-2px) } 50% { transform: translateX(2px) } 75% { transform: translateX(-1px) } }
-      @keyframes softTilt {
-        0% { transform: perspective(1200px) rotateX(0) }
-        100%{ transform: perspective(1200px) rotateX(2deg) }
-      }
-      @keyframes ripple {
-        from { transform: scale(0); opacity:.35; }
-        to   { transform: scale(2.6); opacity:0; }
-      }
-
-      /* ===== WRAPPER : feuille 3D + motif cahier + halo ===== */
-
-
-      /* ===== TABLE ===== */
-    
-
-
-      /* ===== ZEBRA + LIFT ===== */
-   
-   
-      tbody tr:hover::before{ opacity:.9; }
-
-    
-  
-
-      /* ===== COULEUR PAR TYPE via :has() (si supporté) ===== */
-      /* Crèche */
-      tbody tr:has(td:nth-child(3) .bg-purple-100){
-        border-left: 4px solid rgba(168,85,247,.35);
-      }
-      tbody tr:has(td:nth-child(3) .bg-purple-100):hover{
-        box-shadow: var(--shadow-2), 0 0 0 3px rgba(168,85,247,.15) inset;
-      }
-      /* Garderie */
-      tbody tr:has(td:nth-child(3) .bg-amber-100){
-        border-left: 4px solid rgba(245,158,11,.35);
-      }
-      tbody tr:has(td:nth-child(3) .bg-amber-100):hover{
-        box-shadow: var(--shadow-2), 0 0 0 3px rgba(245,158,11,.15) inset;
-      }
-      /* École */
-      tbody tr:has(td:nth-child(3) .bg-emerald-100){
-        border-left: 4px solid rgba(16,185,129,.35);
-        
-      }
-      tbody tr:has(td:nth-child(3) .bg-emerald-100):hover{
-        box-shadow: var(--shadow-2), 0 0 0 3px rgba(16,185,129,.15) inset;
-      }
-
-      /* ===== BADGES ===== */
-      td .rounded-full.border.shadow-sm{
-        transition: transform .16s var(--ease-pop), box-shadow .2s var(--ease-pop), background .2s;
-      }
-      td .rounded-full.border.shadow-sm:hover{
-        transform: translateZ(2px) scale(1.04);
-        box-shadow: 0 6px 18px rgba(2,6,23,.12);
-    
-      }
-
-      /* ===== BOUTONS (icônes) : relief + ripple ===== */
-      .inline-flex.h-8.w-8.items-center.justify-center.rounded-lg{
-        position: relative;
-        overflow: hidden;
-        background: linear-gradient(180deg, #fff, #f6f7fb);
-        box-shadow: 0 1px 0 rgba(0,0,0,.05), 0 6px 16px rgba(2,6,23,.10);
-        transition: transform .15s var(--ease-pop), box-shadow .2s var(--ease-pop), background .2s;
-        will-change: transform;
-      }
-      .inline-flex.h-8.w-8.items-center.justify-center.rounded-lg:hover{
-        transform: translateY(-1px);
-        box-shadow: var(--shadow-2);
-        background: linear-gradient(180deg, #fff, #eef0ff);
-      }
-      .inline-flex.h-8.w-8.items-center.justify-center.rounded-lg:active{
-        transform: translateY(0);
-        box-shadow: var(--shadow-1);
-      }
-      .inline-flex.h-8.w-8.items-center.justify-center.rounded-lg::after{
-        content:""; position:absolute; inset:auto; left:50%; top:50%;
-        width:120%; aspect-ratio:1; border-radius:9999px;
-        background: radial-gradient(circle, rgba(99,102,241,.22), transparent 60%);
-        transform: translate(-50%,-50%) scale(0);
-      }
-      .inline-flex.h-8.w-8.items-center.justify-center.rounded-lg:active::after{
-        animation: ripple .4s ease-out;
-      }
-
-      /* Supprimer : glow de sécurité */
-      button[title="Supprimer"]{ box-shadow: 0 2px 12px rgba(244,63,94,.35); }
-      button[title="Supprimer"]:hover{ box-shadow: 0 10px 28px rgba(244,63,94,.45); }
-
-      /* ===== CHIPS ACTIONS ===== */
-      .hidden.sm\\:inline-flex.items-center.gap-1.rounded-full{
-        box-shadow: 0 2px 10px rgba(2,6,23,.08);
-        transition: transform .15s var(--ease-pop), box-shadow .2s var(--ease-pop);
-      }
-      .hidden.sm\\:inline-flex.items-center.gap-1.rounded-full:hover{
-        transform: translateY(-1px);
-        box-shadow: var(--shadow-2);
-      }
-
-      /* ===== PAGINATION ===== */
-      button[aria-label="Précédent"], button[aria-label="Suivant"]{
-        background: linear-gradient(180deg, #fff, #f6f7fb);
-        box-shadow: 0 1px 0 rgba(0,0,0,.05), 0 6px 16px rgba(2,6,23,.10);
-        transition: transform .15s var(--ease-pop), box-shadow .2s var(--ease-pop);
-      }
-      button[aria-label="Précédent"]:hover, button[aria-label="Suivant"]:hover{
-        transform: translateY(-1px);
-        box-shadow: var(--shadow-2);
-      }
-
-      /* ===== BARRE DE RECHERCHE : halo focus ===== */
-      .flex.items-center.gap-2.rounded-xl.border.bg-white.px-3.py-2.shadow-sm:has(input:focus){
-        box-shadow: var(--shadow-2), var(--ring-edu);
-        animation: softTilt .25s ease both;
-      }
-
-      /* Cadre spécial pour les lignes de type Garderie */
-tbody tr:has(td:nth-child(3) .bg-amber-100){
-  --accent: rgba(245,158,11,.55);
-  --accent-soft: rgba(245,158,11,.12);
-  isolation: isolate;               /* pour que ::after reste au-dessus du fond */
-}
-tbody tr:has(td:nth-child(3) .bg-amber-100)::after{
-  content:"";
-  position:absolute;
-  inset: 4px 6px;                   /* marge intérieure du cadre */
-  border-radius: 14px;
-  pointer-events: none;
-  box-shadow:
-    0 0 0 2px var(--accent) inset,  /* bord coloré */
-    0 12px 26px var(--accent-soft); /* glow */
+:root{
+  --c-text:#0f172a;          /* slate-900 */
+  --c-muted:#64748b;         /* slate-500 */
+  --c-line:#e5e7eb;          /* gray-200 */
+  --c-hover:#f8fafc;         /* slate-50 */
+  --c-bg:#ffffff;
+  --r:12px;
 }
 
-/* (Option) fais pareil pour Crèche / École si tu veux une cohérence visuelle : */
-tbody tr:has(td:nth-child(3) .bg-purple-100)::after{
-  content:""; position:absolute; inset:4px 6px; border-radius:14px; pointer-events:none;
-  box-shadow: 0 0 0 2px rgba(168,85,247,.50) inset, 0 12px 26px rgba(168,85,247,.12);
-}
-tbody tr:has(td:nth-child(3) .bg-emerald-100)::after{
-  content:""; position:absolute; inset:4px 6px; border-radius:14px; pointer-events:none;
-  box-shadow: 0 0 0 2px rgba(16,185,129,.50) inset, 0 12px 26px rgba(16,185,129,.12);
-}
-  /* === Taille des lignes (padding vertical) === */
-
-/* === Effet "carte 3D" pour chaque ligne === */
-tbody tr{
-  position: relative;              /* nécessaire pour ::after */
-  transition: transform .22s var(--ease-pop), box-shadow .22s var(--ease-pop);
-}
-tbody tr > *{ 
-  position: relative; z-index: 1;  /* le contenu reste au-dessus du décor */
-}
-
-/* Ombre + léger fond arrondi à l’intérieur de la ligne */
-tbody tr::after{
-  content:"";
-  position: absolute;
-  inset: 2px 8px;                  /* marges internes pour le cadre/ombre */
-  border-radius: 14px;
-  pointer-events: none;
-  background: rgba(255,255,255,.55);
-  box-shadow: 0 6px 18px rgba(2,6,23,.10);   /* ombre de base */
-  z-index: 0;
-  transition: transform .22s var(--ease-pop), box-shadow .22s var(--ease-pop);
-}
-
-/* Survol : lève la ligne et accentue l’ombre */
-tbody tr:hover{
-  transform: translateY(-2px);
-}
-tbody tr:hover::after{
-  box-shadow: 0 14px 36px rgba(2,6,23,.18), inset 0 0 0 1px rgba(2,6,23,.06);
-}
-
-/* (Option) Appuie visuel quand on clique */
-tbody tr:active{ transform: translateY(0); }
-tbody tr:active::after{ box-shadow: 0 6px 18px rgba(2,6,23,.12); }
-
-/* Ombre permanente pour CHAQUE LIGNE */
-tbody tr{
-  position: relative;
-}
-
-tbody tr::before{
-  content: "";
-  position: absolute;
-  /* un peu de marge horizontale pour que l'ombre respire */
-  left: 2px; right: 2px; top: 0; bottom: 0;
-  border-radius: 14px;
-  background: #fff;                 /* fond de la “carte” */
-  box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
-              rgba(0, 0, 0, 0.3)    0px 30px 60px -30px,
-              rgba(10, 37, 64, .35) 0px -2px 6px 0px inset;
-  z-index: 0;                       /* derrière le contenu */
-}
-
-/* le contenu reste au-dessus de la carte */
-tbody tr > *{
-  position: relative;
-  z-index: 1;
-  background: transparent;
-  border: 0;                        /* évite un contour parasite */
-}
-
-/* (option) même style pour l'en-tête */
+/* En-tête */
 thead tr{
-  position: relative;
+  border-bottom:1px solid var(--c-line);
 }
-thead tr::before{
-  content: "";
-  position: absolute;
-  left: 0px; right: 0px; top: 0; bottom: 0;
-  border-radius: 12px;
-  background: rgba(248,249,251,.9);
-  box-shadow: rgba(50, 50, 93, 0.18) 0px 30px 60px -20px,
-              rgba(0, 0, 0, 0.25)   0px 18px 36px -22px,
-              rgba(10, 37, 64, .25) 0px -1px 4px 0px inset;
-  z-index: 0;
+thead th{
+  padding:12px 16px;
+  text-align:left;
+  font:600 11px/1.2 ui-sans-serif,system-ui;
+  color:var(--c-muted);
+  text-transform:uppercase;
+  letter-spacing:.02em;
 }
-thead th{ position: relative; z-index: 1; }
-/* ===== Support-like Pagination ===== */
-.ukp-wrap{
-  display:flex; align-items:center; justify-content:space-between;
-  gap:12px; padding:12px 16px; margin-top:4px;
-}
-.ukp-info{ font:700 12px/1.2 ui-sans-serif; color:#64748b; }
 
-.ukp-actions{ display:flex; align-items:center; gap:6px; }
+/* Cellules */
+tbody td{
+  padding:12px 16px;
+  vertical-align:middle;
+  color:#1f2937;            /* gray-800 */
+}
 
-/* bouton générique */
-.pg-btn{
-  min-width:36px; height:36px; padding:0 10px;
+/* Lignes */
+tbody tr{
+  background:var(--c-bg);
+  border-bottom:1px solid var(--c-line);
+}
+tbody tr:hover{
+  background:var(--c-hover);
+}
+
+/* Boutons icônes “ghost” */
+.icon-btn{
   display:inline-flex; align-items:center; justify-content:center;
-  border-radius:12px; border:1px solid rgba(2,6,23,.10);
-  background:linear-gradient(180deg,#fff,#f6f7fb);
-  font:800 13px ui-sans-serif;
-  box-shadow:0 1px 0 rgba(0,0,0,.05), 0 10px 18px rgba(2,6,23,.10);
-  transition:transform .15s var(--ease-pop), box-shadow .2s var(--ease-pop), background .2s;
+  width:34px; height:34px;
+  border-radius:8px;
+  border:1px solid transparent;
+  background:transparent;
+  color:#334155;            /* slate-700 */
+  transition:background .15s ease, border-color .15s ease, color .15s ease, transform .15s ease;
 }
-.pg-btn:hover{ transform:translateY(-1px); box-shadow:var(--shadow-2); }
-.pg-btn:disabled{ opacity:.45; transform:none; box-shadow:none; cursor:not-allowed; }
+.icon-btn:hover{
+  background:#f1f5f9;       /* slate-100 */
+  border-color:#e2e8f0;     /* slate-200 */
+}
+.icon-btn:active{ transform:translateY(1px); }
+.icon-btn.danger{ color:#b91c1c; }             /* red-700 */
+.icon-btn.danger:hover{ background:#fee2e2; border-color:#fecaca; }
 
-/* numéro actif = gradient support */
+/* Petites chips sobres pour actions rapides */
+.chip{
+  display:inline-flex; align-items:center; gap:.35rem;
+  height:30px; padding:0 10px;
+  border-radius:999px; font:600 12px/1 ui-sans-serif;
+  border:1px solid;
+}
+.chip.subtle{ background:transparent; }
+.chip.success{ color:#065f46; border-color:#a7f3d0; }   /* emerald */
+.chip.warning{ color:#7c2d12; border-color:#fed7aa; }   /* orange */
+.chip.danger{  color:#7f1d1d; border-color:#fecaca; }   /* red */
+
+/* Badges “Type” et “Statut” existants : adoucir l’ombre */
+td .rounded-full.border.shadow-xl,
+td .rounded-full.border.shadow-sm{
+  box-shadow:none !important;
+}
+
+/* Pagination (ta version) : juste un léger clean visuel */
+.ukp-wrap{ padding:10px 12px; border-top:1px solid var(--c-line); }
+.pg-btn{ border-radius:10px; }
 .pg-btn.num.active{
-  color:#fff; border-color:transparent;
   background:linear-gradient(135deg,#4f46e5,#06b6d4);
-  box-shadow:0 10px 24px rgba(79,70,229,.35);
+  color:#fff;
 }
 
-/* ellipses (… ) */
-.pg-ellipsis{
-  min-width:36px; height:36px; display:inline-grid; place-items:center;
-  font:800 13px ui-sans-serif; color:#94a3b8;
+/* ---- Pagination : thème dark ---- */
+.dark .ukp-actions .pg-btn {
+  /* fond sombre semi-transparent + bordure sombre */
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 1px 0 rgba(0,0,0,.25), 0 10px 18px rgba(0,0,0,.20) !important;
 }
 
-/* accessibilité focus */
-.pg-btn:focus-visible{
-  outline:none;
-  box-shadow:var(--shadow-2), 0 0 0 4px rgba(99,102,241,.18);
+.dark .ukp-actions .pg-btn:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 12px 24px rgba(0,0,0,.28) !important;
 }
 
+.dark .ukp-actions .pg-btn:disabled {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: rgba(255,255,255,.6) !important;
+  box-shadow: none !important;
+  opacity: .55 !important;
+}
+
+/* Numéro actif en dark : gradient lisible */
+.dark .ukp-actions .pg-btn.num.active {
+  color: #fff !important;
+  background: linear-gradient(135deg, #4f46e5, #06b6d4) !important;
+  border-color: transparent !important;
+  box-shadow: 0 10px 24px rgba(79,70,229,.35) !important;
+}
+
+/* Ellipses */
+.dark .ukp-actions .pg-ellipsis {
+  color: #cbd5e1 !important; /* slate-300 */
+}
 
     `;
     document.head.appendChild(s);
   }, []);
   return null;
 };
+
 
 
 export default ClientsPage;

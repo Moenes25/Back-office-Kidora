@@ -722,7 +722,7 @@ const onRowAction = (id, action) => {
         {/* Tableau */}
         <div className="relative overflow-x-auto overflow-visible">
 
-          <table className="min-w-full text-sm border-separate [border-spacing:0_8px]">
+          <table className="no-ukp min-w-full text-sm border-separate [border-spacing:0_8px]">
           <thead>
   <tr className="bg-slate-50/60 text-xs uppercase text-slate-400">
    

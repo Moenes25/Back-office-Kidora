@@ -1365,45 +1365,73 @@ const availability = (() => {
           Aucune donnée pour les {typeLabel[tableFilter]} pour le moment.
         </div>
       ) : (
-        <table className="w-full text-left border-collapse   text-slate-800 dark:text-black">
-          <thead>
-            <tr className="text-xs font-semibold uppercase tracking-wide text-gray-500 bg-gradient-to-r from-gray-50 to-gray-100 ">
-              <th className="py-3 px-3">Nom</th>
-              <th className="py-3 px-3">Ville</th>
-              <th className="py-3 px-3">Enfants</th>
-              <th className="py-3 px-3">Licence</th>
-              <th className="py-3 px-3">Revenus</th>
-            </tr>
-          </thead>
-          <tbody>
-  {visibleRows.map((c, i) => (
-    <tr
-      key={`${c.nom}-${start + i}`}
-      className="hover:bg-gray-50 transition-all border-b last:border-0 animate-[fadeIn_.35s_ease-out_both]"
-      style={{ animationDelay: `${i * 90}ms` }}
-    >
-      <td className="py-3 px-3 font-bold">{c.nom}</td>
-      <td className="py-3 px-3">{c.ville}</td>
-      <td className="py-3 px-3">{c.enfants}</td>
-      <td className="py-3 px-3">
-        <span
-          className={`px-3 py-1 rounded-full text-xs font-semibold ${
-            c.licence === "Active"
-              ? "bg-green-100 text-green-700"
-              : c.licence === "En alerte"
-              ? "bg-yellow-100 text-yellow-700"
-              : "bg-red-100 text-red-700"
-          }`}
-        >
-          {c.licence}
-        </span>
-      </td>
-      <td className="py-3 px-3 font-medium">{c.revenue}</td>
+<table className="w-full text-left border-collapse text-slate-800 dark:text-white dark:!bg-navy-800 dark:shadow-none">
+  <thead>
+    <tr className="text-xs font-semibold uppercase tracking-wide text-gray-500 bg-gradient-to-r from-gray-50 to-gray-100 dark:bg-transparent">
+      <th className="py-3 px-3 border-b border-slate-200 dark:border-white/15 dark:bg-navy-800">
+        Nom
+      </th>
+      <th className="py-3 px-3 border-b border-slate-200 dark:border-white/15 dark:bg-navy-800">
+        Ville
+      </th>
+      <th className="py-3 px-3 border-b border-slate-200 dark:border-white/15 dark:bg-navy-800">
+        Enfants
+      </th>
+      <th className="py-3 px-3 border-b border-slate-200 dark:border-white/15 dark:bg-navy-800">
+        Licence
+      </th>
+      <th className="py-3 px-3 border-b border-slate-200 dark:border-white/15 dark:bg-navy-800 ">
+        Revenus
+      </th>
     </tr>
-  ))}
-</tbody>
+  </thead>
 
-        </table>
+  <tbody>
+    {visibleRows.map((c, i) => (
+      <tr
+        key={`${c.nom}-${start + i}`}
+        className="
+          group transition-all border-b last:border-0
+          border-slate-200 dark:border-white/10
+          hover:bg-gray-50
+          dark:hover:bg-white/90 
+          dark:hover:text-gray-900
+          animate-[fadeIn_.35s_ease-out_both]
+        "
+        style={{ animationDelay: `${i * 90}ms` }}
+      >
+        {/* les td hériteront de la couleur au hover en dark */}
+        <td className="py-3 px-3 font-bold transition-colors dark:bg-navy-800 dark:text-white ">
+          {c.nom}
+        </td>
+        <td className="py-3 px-3 transition-colors dark:bg-navy-800 dark:text-white ">
+          {c.ville}
+        </td>
+        <td className="py-3 px-3 transition-colors dark:bg-navy-800 dark:text-white tabular-nums ">
+          {c.enfants}
+        </td>
+        <td className="py-3 px-3 dark:bg-navy-800 dark:text-white">
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+              c.licence === "Active"
+                ? "bg-green-100 text-green-700 dark:bg-emerald-400/10 dark:text-emerald-300"
+                : c.licence === "En alerte"
+                ? "bg-yellow-100 text-yellow-700 dark:bg-amber-400/10 dark:text-amber-300"
+                : "bg-red-100 text-red-700 dark:bg-rose-400/10 dark:text-rose-300"
+            }`}
+          >
+            {c.licence}
+          </span>
+        </td>
+        <td className="py-3 px-3 font-medium transition-colors  dark:bg-navy-800 dark:text-white">
+          {c.revenue}
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+
         
       )}
          {/* Pagination */}

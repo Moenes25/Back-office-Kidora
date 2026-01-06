@@ -376,7 +376,7 @@ const TicketIcon = (props) => (
       <div className="mt-4 overflow-x-auto rounded-2xl border border-white/30 bg-white/70 p-2 shadow-[0_30px_80px_rgba(2,6,23,.12)] backdrop-blur-xl">
 
   {/* -------- TABLE -------- */}
-  <table className="uk-table w-full min-w-[980px] border-separate [border-spacing:0_12px] text-left">
+  <table className="uk-table no-ukp w-full min-w-[980px] border-separate [border-spacing:0_12px] text-left">
           <thead  className="
       sticky top-0 z-10 bg-gray-100/90 backdrop-blur
       text-[11px] uppercase tracking-wide text-gray-700
