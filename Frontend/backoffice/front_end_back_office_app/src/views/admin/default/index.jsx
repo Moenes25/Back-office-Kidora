@@ -14,8 +14,22 @@ import AIIndicatorsPanel from "components/ai/AIIndicatorsPanel";
 
 import { getTotalEtablissements , getChiffreAffairesTotal,getAlertsData ,  getNextExpirationsByType , getTopEtablissements}  from "services/dashboardService";
 
-// en haut du fichier
-import { FiPlus, FiCalendar, FiLifeBuoy, FiFilePlus, FiCpu, FiUsers, FiKey, FiShield } from "react-icons/fi";
+// ==== imports d’icônes (remplace tes imports actuels) ====
+import {
+  FiZap,          // Accès rapide (éclair = action rapide)
+  FiUsers,        // bouton "Gérer les admins"
+  FiCalendar,     // Planning
+  FiLifeBuoy,     // Tickets / support
+  FiCpu,          // Analyse IA
+  FiSend,         // Envoyer facture
+} from "react-icons/fi";
+
+import {
+  MdBusiness,            // Ajouter une entreprise
+  MdAdminPanelSettings,  // entête "Gestion des admins"
+  MdPayments,            // entête "Paiements"
+} from "react-icons/md";
+
 import { useNavigate } from "react-router-dom"; // si tu utilises react-router
 
 
@@ -747,7 +761,7 @@ function SectionCard({ icon, title, children, footer }) {
       shadow-[0_14px_38px_rgba(2,6,23,.12)] ring-1 ring-black/5
     ">
       {/* header */}
-      <div className="flex items-center gap-2 bg-[#3b5edb] text-white px-4 py-2 text-sm font-semibold">
+      <div className="flex items-center gap-2 bg-[#3b5edb] text-white px-4 py-3 text-sm font-semibold">
         <span className="inline-grid h-5 w-5 place-items-center rounded-md bg-white/15">{icon}</span>
         <span>{title}</span>
       </div>
@@ -1058,75 +1072,76 @@ const availability = (() => {
 
 
 <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-      {/* 1) Accès rapide */}
-      <SectionCard icon={<FiPlus />} title="Accès rapide">
-        <div className="space-y-2">
-          <QuickBtn
-            icon={<FiPlus />}
-            label="Ajouter une entreprise"
-            onClick={() => navigate("/admin/Entreprises")}  // ← path EXACT (casse incluse)
-          />
-          <QuickBtn
-            icon={<FiCalendar />}
-            label="Planning"
-            onClick={() => navigate("/admin/calendrier")}
-          />
-          <QuickBtn
-            icon={<FiLifeBuoy />}
-            label="Gérer tickets"
-            onClick={() => navigate("/admin/support")}
-          />
-          <QuickBtn
-            icon={<FiCpu />}
-            label="Analyse IA"
-            onClick={() => navigate("/admin/ia")}
-          />
-        </div>
-      </SectionCard>
-
-      {/* 2) Gestion des admins */}
-      <SectionCard
-        icon={<FiShield />}
-        title="Gestion des admins"
-        footer={
-          <PrimaryAction
-            icon={<FiUsers />}
-            label="Gérer les admins"
-           onClick={() => navigate("/admin/profile", { state: { section: "admin" } })}
-          />
-        }
-      >
-        <BulletList
-          items={[
-            "Liste des administrateurs",
-            "Créer / Modifier un admin",
-            "Rôles & permissions",
-            "Historique des connexions",
-          ]}
-        />
-      </SectionCard>
-
-      {/* 3) Finances */}
-      <SectionCard
-        icon={<FiFilePlus />}
-        title="Paiements"
-        footer={
-          <PrimaryAction
-            icon={<FiFilePlus />}
-            label="Envoyer Facture"
-            onClick={() => navigate("/admin/paiements")}
-          />
-        }
-      >
-        <BulletList
-          items={[
-            "Suivi des paiements",
-            "Relancer abonnement",
-            "Facturation",
-          ]}
-        />
-      </SectionCard>
+  {/* 1) Accès rapide */}
+  <SectionCard icon={<FiZap className="h-4 w-4" />} title="Accès rapide">
+    <div className="space-y-2">
+      <QuickBtn
+        icon={<MdBusiness className="h-5 w-5" />}
+        label="Ajouter une entreprise"
+        onClick={() => navigate("/admin/Entreprises")}
+      />
+      <QuickBtn
+        icon={<FiCalendar className="h-5 w-5" />}
+        label="Planning"
+        onClick={() => navigate("/admin/calendrier")}
+      />
+      <QuickBtn
+        icon={<FiLifeBuoy className="h-5 w-5" />}
+        label="Gérer tickets"
+        onClick={() => navigate("/admin/support")}
+      />
+      <QuickBtn
+        icon={<FiCpu className="h-5 w-5" />}
+        label="Analyse IA"
+        onClick={() => navigate("/admin/ia")}
+      />
     </div>
+  </SectionCard>
+
+  {/* 2) Gestion des admins */}
+  <SectionCard
+    icon={<MdAdminPanelSettings className="h-4 w-4" />}
+    title="Gestion des admins"
+    footer={
+      <PrimaryAction
+        icon={<FiUsers className="h-5 w-5" />}
+        label="Gérer les admins"
+        onClick={() => navigate("/admin/profile", { state: { section: "admin" } })}
+      />
+    }
+  >
+    <BulletList
+      items={[
+        "Liste des administrateurs",
+        "Créer / Modifier un admin",
+        "Rôles & permissions",
+        "Historique des connexions",
+      ]}
+    />
+  </SectionCard>
+
+  {/* 3) Paiements */}
+  <SectionCard
+    icon={<MdPayments className="h-4 w-4" />}
+    title="Paiements"
+    footer={
+      <PrimaryAction
+        icon={<FiSend className="h-5 w-5" />}
+        label="Envoyer Facture"
+        onClick={() => navigate("/admin/paiements")}
+      />
+    }
+  >
+    <BulletList
+      items={[
+        "Suivi des paiements",
+        "Relancer abonnement",
+        "Facturation",
+      ]}
+    />
+  </SectionCard>
+</div>
+
 
 
 
