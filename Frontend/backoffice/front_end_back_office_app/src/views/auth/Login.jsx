@@ -247,7 +247,7 @@ export default function Login() {
     type="button"
     aria-label={showPwd ? "Hide password" : "Show password"}
     onClick={() => setShowPwd((v) => !v)}
-    className="absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded p-2 text-gray-600 transition hover:bg-white/60"
+    className="absolute right-2 top-8 z-20 -translate-y-1/2 rounded p-2 text-gray-600 transition hover:bg-white/60"
     style={{ lineHeight: 0 }}
   >
     {showPwd ? <FaEyeSlash /> : <FaEye />}

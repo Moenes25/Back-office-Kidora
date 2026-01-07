@@ -4,6 +4,7 @@ import ReactECharts from 'echarts-for-react';
 import { LuLineChart, LuPieChart, LuBarChart3 } from 'react-icons/lu';
 import { getCroissanceData, getRepartitionAnnuelle  } from 'services/dashboardService';
 
+
 // --- Constantes FR & données
 const MONTHS_FR = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'];
 const TYPE_LABELS = ['Garderies', 'Crèches', 'Écoles'];

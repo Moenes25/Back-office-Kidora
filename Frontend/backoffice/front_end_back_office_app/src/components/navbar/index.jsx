@@ -1,6 +1,9 @@
+// src/components/navbar/Navbar.jsx
+"use client";
+
 import React from "react";
-import { FiAlignJustify } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import { FiAlignJustify } from "react-icons/fi";
 import SearchBar from "./components/SearchBar";
 import ThemeToggle from "./components/ThemeToggel";
 import NotificationsDropdown from "./components/NotificationsDropdown";
@@ -12,10 +15,7 @@ const Navbar = ({ onOpenSidenav, brandText }) => {
   React.useEffect(() => {
     const root = document.documentElement;
     const stored = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)"
-    ).matches;
-
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const wantDark = stored ? stored === "dark" : prefersDark;
     setDarkmode(wantDark);
     root.classList.toggle("dark", wantDark);
@@ -30,48 +30,64 @@ const Navbar = ({ onOpenSidenav, brandText }) => {
   };
 
   return (
-<nav className="nav-animated sticky top-2 z-40 mb-2 flex h-12 md:h-14 w-full
-  items-center justify-between rounded-xl
-  bg-[linear-gradient(115deg,#6d28d9_0%,#7c3aed_30%,#8b5cf6_60%,#a78bfa_100%)]
-  px-3 py-1 md:px-4 md:py-1.5 text-white shadow-xl">
+    <nav
+      className="
+        sticky top-2 z-40 mb-3 flex h-14 w-full items-center justify-between
+        rounded-2xl px-3 md:px-4 text-white
+        shadow-[0_12px_40px_rgba(79,70,229,.35)]
+        bg-[radial-gradient(1100px_140px_at_-5%_-40%,#7c3aed_0%,transparent_55%),radial-gradient(900px_140px_at_120%_-40%,#10b981_0%,transparent_55%),linear-gradient(115deg,#6d28d9_0%,#7c3aed_30%,#8b5cf6_60%,#a78bfa_100%)]
+        dark:shadow-[0_12px_40px_rgba(0,0,0,.5)]
+      "
+    >
+      {/* Burger + Brand */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onOpenSidenav}
+          className="grid h-9 w-9 place-items-center rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 active:scale-95 transition md:hidden"
+          title="Menu"
+          aria-label="Ouvrir le menu"
+        >
+          <FiAlignJustify className="h-5 w-5" />
+        </button>
 
-  <div className="ml-2">
-    <p className="text-base  text-lg md:text-xl lg:text-2xl font-semibold leading-tight capitalizeb text-white  dark:text-black ">
-      <Link to="#" className="font-bold hover:opacity-90">{brandText}</Link>
-    </p>
-  </div>
+        <div className="hidden sm:block">
+          <p className="text-lg md:text-xl font-semibold tracking-tight">
+            <Link to="#" className="hover:opacity-90">
+              {brandText}
+            </Link>
+          </p>
+        </div>
+      </div>
 
-  <div
-    className="relative flex items-center rounded-full bg-white pl-4 pr-2 py-1
-               lg:max-w-[380px] h-10 backdrop-blur-sm dark:bg-navy-800/70
-               overflow-visible"
-    style={{
-      boxShadow:
-        'rgba(50,50,93,.25) 0px 50px 100px -20px, rgba(0,0,0,.3) 0px 30px 60px -30px, rgba(10,37,64,.35) 0px -2px 6px 0px inset'
-    }}
-  >
-    <span className="cursor-pointer text-gray-600 xl:hidden" onClick={onOpenSidenav}>
-      <FiAlignJustify className="h-5 w-5" />
-    </span>
+      {/* Pod “glass” : Search + actions */}
+      <div
+        className="
+          group relative flex items-center gap-3
+          w-full max-w-[500px] h-11
+          rounded-full pl-3 pr-2
+          bg-white/70 text-slate-800 backdrop-blur-xl
+          dark:bg-slate-900/70 dark:text-slate-100 dark:ring-white/10
+          shadow-[inset_0_1px_0_rgba(255,255,255,.6),0_8px_26px_rgba(2,6,23,.18)]
+        "
+      >
+        <div className="flex-1 min-w-0">
+          <SearchBar />
+        </div>
 
-    <div className="flex-1">
-      <SearchBar />
-    </div>
+        <div className="flex items-center gap-2">
+          <ThemeToggle darkmode={darkmode} toggleTheme={toggleTheme} />
+          <NotificationsDropdown />
+          <ProfileDropdown className="h-9 w-9" />
+        </div>
 
-    {/* espacements égaux */}
-    <div className="flex items-center gap-3">
-      <ThemeToggle darkmode={darkmode} toggleTheme={toggleTheme} className="shrink-0" />
-      <NotificationsDropdown className="h-8 w-8 shrink-0" />
-      {/* tire l’avatar vers le bord */}
-      <ProfileDropdown className="h-9 w-9 -mr-1 md:-mr-2 shrink-0" />
-    </div>
-  </div>
-</nav>
-
-
-
-
-
+        {/* halo subtil au survol */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -inset-px rounded-full opacity-0 group-hover:opacity-100 transition"
+          style={{ boxShadow: "0 0 0 2px rgba(99,102,241,.15), 0 16px 48px rgba(2,6,23,.18)" }}
+        />
+      </div>
+    </nav>
   );
 };
 

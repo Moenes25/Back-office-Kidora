@@ -140,6 +140,67 @@ export const getRepartitionAnnuelle = async (annee) => {
 
 
 
+/* ====== IA: Evolution mensuelle (courbe) ====== */
+export async function getIaEvolutionMensuelle() {
+  try {
+    const res = await api.get("/analytics/evolution-mensuelle");
+    const data = res.data || [];
+
+    // On accepte plusieurs conventions de clés pour être robustes
+    const moisMap = {
+      janvier: "Jan", février: "Fév", mars: "Mar", avril: "Avr", mai: "Mai", juin: "Juin",
+      juillet: "Juil", août: "Aoû", septembre: "Sep", octobre: "Oct", novembre: "Nov", décembre: "Déc"
+    };
+
+    const labels = data.map(d => {
+      const raw = (d.mois || d.month || "").toString().toLowerCase();
+      return moisMap[raw] || d.mois || d.month || "";
+    });
+
+    const Garderies = data.map(d =>
+      d.nombreGarderies ?? d.garderies ?? d.Garderies ?? 0
+    );
+    const Crèches = data.map(d =>
+      d.nombreCreches ?? d.crèches ?? d.creches ?? d.Crèches ?? 0
+    );
+    const Écoles = data.map(d =>
+      d.nombreEcoles ?? d.ecoles ?? d.Écoles ?? d.Ecoles ?? 0
+    );
+
+    return { labels, Garderies, Crèches, Écoles };
+  } catch (e) {
+    console.error("IA Evolution mensuelle (courbe) error:", e);
+    return { labels: [], Garderies: [], Crèches: [], Écoles: [] };
+  }
+}
+
+/* ====== IA: Répartition par type (donut) ====== */
+export async function getIaRepartitionParType(params = {}) {
+  try {
+    // si l’IA n’accepte pas 'annee', retire params
+    const res = await api.get("/analytics/repartition/type", { params });
+    const raw = res.data || [];
+
+    // On mappe vers l’ordre: Garderies / Crèches / Écoles
+    // Le backend peut renvoyer [{type:"GARDERIE", nombre: 12}, ...]
+    const norm = { GARDERIE: 0, CRECHE: 1, CRÈCHE: 1, ECOLE: 2, ÉCOLE: 2 };
+    const out = [0, 0, 0];
+
+    raw.forEach(it => {
+      const t = (it.type || it.label || "").toString().toUpperCase();
+      const i = norm[t];
+      if (i != null) out[i] = Number(it.nombre ?? it.count ?? 0);
+    });
+
+    return out; // [garderies, creches, ecoles]
+  } catch (e) {
+    console.error("IA Répartition par type (donut) error:", e);
+    return [0, 0, 0];
+  }
+}
+
+
+
 
 
 export async function getNextExpirationsByType() {

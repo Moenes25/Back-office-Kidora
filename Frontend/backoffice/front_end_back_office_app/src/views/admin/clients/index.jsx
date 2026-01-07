@@ -60,7 +60,7 @@ const MOCK = [
     subscriptionDate: "2023-10-05",
     plan: "Premium / Annuel",
     status: "En retard de paiement",
-       educateurs: 10, 
+    educateurs: 10, 
    parents: 180,     
     enfants: 305, 
     history: [
@@ -1260,14 +1260,14 @@ const deleteClient = async (row) => {
                   
 
                   {selected.phone && (
-                    <div className="rounded-xl bg-gray-50 px-3 py-2 text-sm font-medium flex items-center gap-2">
-                      <FiPhone /> <a className="hover:underline" href={`tel:${selected.phone}`}>{selected.phone}</a>
+                    <div className="rounded-xl bg-gray-50 px-3 py-2 text-sm font-medium flex items-center gap-2 dark:text-gray-800">
+                      <FiPhone /> <a className="hover:underline dark:text-gray-800" href={`tel:${selected.phone}`}>{selected.phone}</a>
                     </div>
                   )}
 
                   {selected.email && (
-                    <div className="rounded-xl bg-gray-50 px-3 py-2 text-sm font-medium flex items-center gap-2">
-                      <FiMail /> <a className="hover:underline" href={`mailto:${selected.email}`}>{selected.email}</a>
+                    <div className="rounded-xl bg-gray-50 px-3 py-2 text-sm font-medium flex items-center gap-2 dark:text-gray-800">
+                      <FiMail /> <a className="hover:underline dark:text-gray-800" href={`mailto:${selected.email}`}>{selected.email}</a>
                     </div>
                   )}
 
@@ -1293,7 +1293,7 @@ const deleteClient = async (row) => {
                       <a
                         href={selected.url_localisation}
                         target="_blank" rel="noreferrer"
-                        className="inline-flex items-center gap-2 rounded-lg border border-black/10 bg-white px-3 py-2 text-sm font-semibold shadow-sm hover:bg-gray-50"
+                        className="inline-flex items-center gap-2 rounded-lg border border-black/10 bg-white px-3 py-2 text-sm font-semibold shadow-sm hover:bg-gray-50 dark:text-gray-800"
                       >
                         <FiMapPin /> Ouvrir la localisation
                       </a>
@@ -1366,7 +1366,7 @@ const deleteClient = async (row) => {
                   </button>
                   <button
                     onClick={printSelected}
-                    className="ml-auto inline-flex items-center gap-2 rounded-xl border border-black/10 bg-white px-3 py-2 text-sm font-semibold shadow-sm hover:bg-gray-50"
+                    className="dark:text-gray-800 ml-auto inline-flex items-center gap-2 rounded-xl border border-black/10 bg-white px-3 py-2 text-sm font-semibold shadow-sm hover:bg-gray-50"
                   >
                     <FiPrinter /> Export PDF
                   </button>

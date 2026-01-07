@@ -486,3 +486,17 @@ input:checked.defaultCheckbox::before {
     transform: translateX(100%);
   }
 }
+
+
+
+/* Edge / IE : cacher l'œil et le bouton clear */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+  width: 0;
+  height: 0;
+}
+/* Désactive d'éventuels décors internes WebKit */
+input[type="password"]::-webkit-textfield-decoration-container {
+  display: none;
+}
