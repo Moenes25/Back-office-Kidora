@@ -270,6 +270,21 @@ export default function Login() {
         </span>
       )}
     </div>
+    {/* message clair "strong / weak" */}
+{password && (
+  pwdScore >= 3 ? (
+    <div className="mt-2 flex items-center gap-2 text-xs font-semibold text-emerald-600">
+      <FaCheckCircle />
+      Password is strong
+    </div>
+  ) : (
+    <div className="mt-2 flex items-center gap-2 text-xs font-semibold text-red-500">
+      <FaExclamationTriangle />
+      Password must be strong (8+ chars, uppercase, number & symbol)
+    </div>
+  )
+)}
+
     {pwdScore < 3 && password && (
       <div className="mt-2 text-[11px] text-gray-500">
         Try adding: <span className="font-semibold">{pwdTips.join(" • ")}</span>

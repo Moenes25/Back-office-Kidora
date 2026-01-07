@@ -5,6 +5,7 @@ import * as echarts from "echarts";
 import { useMotionValue, useTransform, animate, motion } from "framer-motion";
 import { FiActivity, FiUsers, FiPieChart, FiBarChart2, FiTrendingUp } from "react-icons/fi";
 import { FiBriefcase, FiEdit3, FiHeart } from "react-icons/fi";
+import DashboardCharts from "components/DashboardCharts";
 
 /* ───────────────────────── helpers ───────────────────────── */
 

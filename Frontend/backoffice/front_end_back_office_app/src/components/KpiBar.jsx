@@ -3,6 +3,11 @@ import React, { useMemo, useState, useEffect } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { LuLineChart, LuPieChart, LuBarChart3 } from 'react-icons/lu';
 import { getCroissanceData, getRepartitionAnnuelle  } from 'services/dashboardService';
+import {
+  getRepartitionParType,
+  getRepartitionParStatut,
+  getEvolutionMensuelle
+} from "services/dashboardService";
 
 
 // --- Constantes FR & données
@@ -141,32 +146,98 @@ function ChartCard({ title, icon, right, children, className = "" }) {
  * 1) Courbe
  * ============================ */
 function TechLine({ height = 300 }) {
-  const [chartData, setChartData] = useState({ labels: [], Garderies: [], Crèches: [], Écoles: [] });
+  const [chartData, setChartData] = useState([]);
 
-  useEffect(() => { getCroissanceData().then(setChartData); }, []);
+  useEffect(() => {
+    getEvolutionMensuelle().then((data) => {
+      setChartData(data || []);
+    });
+  }, []);
+
+  // Formatter les mois en "Fév 2025" au lieu de "2025-02"
+  const formatMonth = (dateStr) => {
+    const mois = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+    const [year, month] = dateStr.split('-');
+    return `${mois[parseInt(month, 10) - 1]} ${year}`;
+  };
 
   const option = useMemo(() => ({
-    animationDuration: 900,
-    grid: { left: 10, right: 10, bottom: 40, top: 20, containLabel: true },
-    tooltip: { trigger: 'axis' },
-    legend: { bottom: 0, textStyle: { fontWeight: 700 } },
-    xAxis: { type: 'category', boundaryGap: false, data: chartData.labels },
-    yAxis: { type: 'value', splitLine: { lineStyle: { type: 'dashed', color: 'rgba(0,0,0,.12)' } } },
-    series: [
-      { name: 'Garderies', type: 'line', stack: 'total', smooth: true, showSymbol: false,
-        areaStyle: { opacity: .35 }, lineStyle: { width: 0 }, itemStyle: { color: '#60a5fa' },
-        data: chartData.Garderies },
-      { name: 'Crèches',   type: 'line', stack: 'total', smooth: true, showSymbol: false,
-        areaStyle: { opacity: .35 }, lineStyle: { width: 0 }, itemStyle: { color: '#a78bfa' },
-        data: chartData.Crèches },
-      { name: 'Écoles',    type: 'line', stack: 'total', smooth: true, showSymbol: false,
-        areaStyle: { opacity: .35 }, lineStyle: { width: 0 }, itemStyle: { color: '#34d399' },
-        data: chartData.Écoles },
-    ]
-  }), [chartData]);
+  animationDuration: 900,
+  grid: {
+    left: 50,
+    right: 20,
+    bottom: 60,
+    top: 40,
+    containLabel: true
+  },
+  tooltip: { trigger: 'axis' },
+  legend: {
+    bottom: 0,
+    textStyle: { fontWeight: 700 }
+  },
+
+  // ✅ AXE X — MOIS
+  xAxis: {
+    type: 'category',
+    name: 'Mois',
+    nameLocation: 'middle',
+    nameGap: 40,
+    nameTextStyle: {
+      fontSize: 13,
+      fontWeight: 'bold',
+      color: '#334155'
+    },
+    axisLabel: {
+      fontSize: 12
+    },
+    data: chartData.map(item => formatMonth(item.mois)),
+  },
+
+  // ✅ AXE Y — NOMBRE D’ABONNEMENTS
+  yAxis: {
+    type: 'value',
+    name: "Nombre d’abonnements",
+    nameLocation: 'middle',
+    nameGap: 50,
+    nameTextStyle: {
+      fontSize: 13,
+      fontWeight: 'bold',
+      color: '#334155'
+    },
+    splitLine: {
+      lineStyle: {
+        type: 'dashed',
+        color: 'rgba(0,0,0,.12)'
+      }
+    }
+  },
+
+  series: [
+    {
+      name: "Nombre d’abonnements mensuels",
+      type: 'line',
+      data: chartData.map(item => item.nombre_abonnements),
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 8,
+      lineStyle: {
+        color: '#e74c3c',
+        width: 2
+      },
+      itemStyle: {
+        color: '#e74c3c',
+        borderColor: '#fff',
+        borderWidth: 2
+      }
+    }
+  ],
+}), [chartData]);
+
 
   return <ReactECharts option={option} style={{ height }} notMerge />;
 }
+
+
 
 
 
@@ -189,64 +260,79 @@ function YearSelect({ value, onChange, years }) {
  * 2) Donut avec % inside + centre propre
  * ============================ */
 
-function TechDonut({ year, height = 300 }) {
-  const [totals, setTotals] = useState([0,0,0]);
-  const totalAll = totals.reduce((a,b)=>a+b,0);
+function TechDonut({ height = 300 }) {
+  const [data, setData] = useState([]);
 
   useEffect(() => {
-    (async () => {
-      const data = await getRepartitionAnnuelle(year);
-      const map = { GARDERIE: 0, CRECHE: 1, ECOLE: 2 };
-      const ordered = [0,0,0];
-      data.forEach(it => { const i = map[it.type?.toUpperCase()]; if (i!=null) ordered[i] = it.nombre; });
-      setTotals(ordered);
-    })();
-  }, [year]);
+    getRepartitionParType().then((res) => {
+      setData(res || []);
+    });
+  }, []);
 
-  // ⬇️ centre X/Y unique pour la série ET le texte, avec Y légèrement au-dessus
-  const CX = '60%';
-  const CY = '46%'; // était '50%'
-
-const option = useMemo(() => ({
-  animationDuration: 900,
-  tooltip: { trigger: 'item', formatter: p => `${p.name}: ${p.value} (${p.percent}%)` },
-  legend: { left: 0, top: 8, orient: 'vertical', align: 'left',
-    itemWidth: 12, itemHeight: 12, itemGap: 6, textStyle: { fontSize: 11 }
-  },
-
-  // ⬇️ on utilise "title" pour afficher le total en haut
-  /*title: {
-    show: true,
-    left: '60%',   // aligné avec le donut
-    top: 0,
-    text: String(totalAll),
-    subtext: 'Total',
-    itemGap: 2,
-    textAlign: 'center',
-    textStyle: { fontSize: 28, fontWeight: 900, color: '#0f172a' },
-    subtextStyle: { fontSize: 12, color: '#64748b' }
-  },*/
-
-  series: [{
-    name: 'Répartition',
-    type: 'pie',
-    roseType: 'radius',
-    radius: ['30%','80%'],
-    center: ['60%','50%'],
-    label: { show: true, formatter: '{b}\n{d}%', color: '#334155', fontWeight: 700 },
-    labelLine: { length: 8, length2: 6, smooth: true },
-    avoidLabelOverlap: true,
-    labelLayout: { moveOverlap: 'shiftY', edgeDistance: 10 },
-    itemStyle: { borderColor: '#fff', borderWidth: 2 },
-    data: TYPE_LABELS.map((name, i) => ({ name, value: totals[i], itemStyle: { color: TYPE_COLORS[i] } }))
-  }]
-}), [totals, totalAll]);
+  const option = useMemo(() => ({
+    animationDuration: 900,
+    tooltip: { trigger: 'item', formatter: p => `${p.name}: ${p.value} (${p.percent}%)` },
+    legend: {
+      left: 0, top: 8, orient: 'vertical',
+      itemWidth: 12, itemHeight: 12, itemGap: 6,
+      textStyle: { fontSize: 11 },
+    },
+    series: [{
+      name: 'Répartition',
+      type: 'pie',
+      roseType: 'radius',
+      radius: ['30%', '80%'],
+      center: ['60%', '50%'],
+      label: { show: true, formatter: '{b}\n{d}%', color: '#334155', fontWeight: 700 },
+      itemStyle: { borderColor: '#fff', borderWidth: 2 },
+      data: data.map((item, i) => ({
+        name: item.type || `Type ${i + 1}`,
+        value: item.count,
+        itemStyle: { color: TYPE_COLORS[i % TYPE_COLORS.length] },
+      })),
+    }],
+  }), [data]);
 
   return <ReactECharts option={option} style={{ height }} notMerge />;
 }
 
 
 
+
+function StatutDonut({ height = 300 }) {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    getRepartitionParStatut().then((res) => {
+      setData(res || []);
+    });
+  }, []);
+
+  const option = useMemo(() => ({
+    animationDuration: 900,
+    tooltip: { trigger: 'item', formatter: p => `${p.name}: ${p.value} (${p.percent}%)` },
+    legend: {
+      left: 0, top: 8, orient: 'vertical',
+      itemWidth: 12, itemHeight: 12, itemGap: 6,
+      textStyle: { fontSize: 11 },
+    },
+    series: [{
+      name: 'Statut',
+      type: 'pie',
+      radius: ['30%', '80%'],
+      center: ['60%', '50%'],
+      label: { show: true, formatter: '{b}\n{d}%', color: '#334155', fontWeight: 700 },
+      itemStyle: { borderColor: '#fff', borderWidth: 2 },
+      data: data.map((item, i) => ({
+        name: item.statut || `Statut ${i + 1}`,
+        value: item.count,
+        itemStyle: { color: TYPE_COLORS[i % TYPE_COLORS.length] },
+      })),
+    }],
+  }), [data]);
+
+  return <ReactECharts option={option} style={{ height }} notMerge />;
+}
 
 
 
@@ -302,37 +388,36 @@ function TechPolarBars({ height = 300 }) {
  * KpiBar
  * ============================ */
 export default function KpiBar() {
-  const [year, setYear] = useState('2024');
-  const years = Object.keys(DONUT_BY_YEAR);
-
   return (
     <>
       <VisualFX />
       <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 md:grid-rows-2 md:auto-rows-[260px]">
-        {/* 1) grande ligne, span 2 rangées à gauche */}
+        {/* 1) Evolution mensuelle */}
         <ChartCard
-          className="md:row-span-2" title="Croissance des inscriptions" icon={<LuLineChart className="h-5 w-5" />}
+          className="md:row-span-2"
+          title="Évolution mensuelle du parc abonnés"
+          icon={<LuLineChart className="h-5 w-5" />}
         >
-         <TechLine height="100%" />
+          <TechLine height="100%" />
         </ChartCard>
 
-        {/* 2) donut en haut à droite */}
+        {/* 2) Répartition par type */}
         <ChartCard
-          title="Répartition annuelle"
+          title="Répartition des établissements par type"
           icon={<LuPieChart className="h-5 w-5" />}
-          right={<YearSelect value={year} onChange={setYear} years={years} />}
         >
-          <TechDonut year={year}  height={160}  />
+          <TechDonut height={160} />
         </ChartCard>
 
-        {/* 3) radar en bas à droite */}
+        {/* 3) Répartition par Statut */}
         <ChartCard
-          title="Tickets par jour"
-          icon={<LuBarChart3 className="h-5 w-5" />}
+          title="Répartition des abonnements par statut"
+          icon={<LuPieChart className="h-5 w-5" />}
         >
-          <TechPolarBars height="100%" />
+          <StatutDonut height="100%" />
         </ChartCard>
       </div>
     </>
   );
 }
+

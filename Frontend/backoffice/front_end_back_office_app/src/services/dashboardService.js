@@ -326,3 +326,61 @@ export async function getTopEtablissements() {
     return [];
   }
 }
+
+
+
+
+
+
+// 📊 Repartition par type
+export const getRepartitionParType = async () => {
+  try {
+    const response = await api.get("/analytics/repartition/type");
+    return response.data;
+  } catch (error) {
+    console.error("Erreur repartition par type :", {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+    return null;
+  }
+};
+
+
+// 📊 Repartition par statut
+export const getRepartitionParStatut = async () => {
+  try {
+    const response = await api.get("/analytics/repartition/statut");
+    return response.data;
+  } catch (error) {
+    console.error("Erreur repartition par statut :", error);
+    return null;
+  }
+};
+
+// 📈 Évolution mensuelle
+export const getEvolutionMensuelle = async () => {
+  try {
+    const response = await api.get("/analytics/evolution-mensuelle");
+    return response.data;
+  } catch (error) {
+    console.error("Erreur évolution mensuelle :", error);
+    return null;
+  }
+};
+
+
+export const getDashboardStats = async () => {
+  try {
+    const response = await api.get("/analytics/dashboard");
+    return response.data;
+  } catch (error) {
+    console.error("Erreur dashboard stats :", {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+    return null;
+  }
+};
