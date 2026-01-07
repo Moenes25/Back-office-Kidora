@@ -283,12 +283,12 @@ const TicketIcon = (props) => (
       {/* Toolbar */}
       <div className="mt-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="group flex items-center gap-2 rounded-2xl border border-white/20 bg-white/70 px-3 py-2 text-sm shadow-[0_10px_30px_rgba(2,6,23,.10)] backdrop-blur-xl">
+          <div className="group flex items-center gap-2 rounded-2xl border border-white/20 bg-white/70 px-3 py-2 text-sm shadow-[0_10px_30px_rgba(2,6,23,.10)] backdrop-blur-xl dark:bg-navy-800 dark:text-white">
             <FiSearch className="opacity-60" />
             <input
               value={q} onChange={(e)=>setQ(e.target.value)}
               placeholder="Rechercher un ticket"
-              className="w-72 bg-transparent outline-none placeholder:text-gray-400"
+              className="w-72 bg-transparent outline-none placeholder:text-gray-400 dark:bg-navy-800 dark:text-white"
             />
           </div>
           <button
@@ -322,7 +322,7 @@ const TicketIcon = (props) => (
 <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
   <span className="text-gray-600">Afficher&nbsp;:</span>
   {VUES.map((v) => (
-    <label key={v} className="inline-flex cursor-pointer items-center gap-2">
+    <label key={v} className="inline-flex cursor-pointer items-center gap-2 dark:text-white">
       <input
         type="radio"
         name="vue"
@@ -373,10 +373,10 @@ const TicketIcon = (props) => (
       </AnimatePresence>
 
       {/* Tableau (cartes 3D par ligne) */}
-      <div className="mt-4 overflow-x-auto rounded-2xl border border-white/30 bg-white/70 p-2 shadow-[0_30px_80px_rgba(2,6,23,.12)] backdrop-blur-xl">
+      <div className="mt-4 overflow-x-auto rounded-2xl border border-white/30 bg-white/70 p-2 shadow-[0_30px_80px_rgba(2,6,23,.12)] backdrop-blur-xl dark:text-white dark:bg-navy-800 dark:shadow-none">
 
   {/* -------- TABLE -------- */}
-  <table className="uk-table no-ukp w-full min-w-[980px] border-separate [border-spacing:0_12px] text-left">
+  <table className="uk-table no-ukp w-full min-w-[980px] border-separate [border-spacing:0_12px] text-left dark:text-white dark:bg-navy-800 dark:shadow-none">
           <thead  className="
       sticky top-0 z-10 bg-gray-100/90 backdrop-blur
       text-[11px] uppercase tracking-wide text-gray-700
@@ -395,18 +395,18 @@ const TicketIcon = (props) => (
   return (
     <Row3D key={`${r.id}-${absoluteIndex}`}>
       <td className="px-4 py-4 font-mono text-xs text-gray-600 hidden">{r.id}</td>
-      <td className="px-4 py-4">{r.demandeur}</td>
-      <td className="px-4 py-4 text-slate-800">{r.sujet}</td>
-      <td className="px-4 py-4"><BadgePriorite p={r.priorite} /></td>
-      <td className="px-4 py-4">
+      <td className="px-4 py-4 dark:bg-navy-800 dark:text-white">{r.demandeur}</td>
+      <td className="px-4 py-4 text-slate-800 dark:bg-navy-800 dark:text-white">{r.sujet}</td>
+      <td className="px-4 py-4 dark:bg-navy-800 dark:text-white"><BadgePriorite p={r.priorite} /></td>
+      <td className="px-4 py-4 dark:bg-navy-800 dark:text-white">
         <div className="flex items-center gap-2">
           <img className="h-7 w-7 rounded-full shadow" src={AGENTS[r.agent]} alt={r.agent} />
           {r.agent}
         </div>
       </td>
-      <td className="px-4 py-4 whitespace-nowrap">{r.date}</td>
-      <td className="px-4 py-4"><BadgeStatut s={r.statut} /></td>
-      <td className="px-4 py-4">
+      <td className="px-4 py-4 whitespace-nowrap dark:bg-navy-800 dark:text-white">{r.date}</td>
+      <td className="px-4 py-4 dark:bg-navy-800 dark:text-white"><BadgeStatut s={r.statut} /></td>
+      <td className="px-4 py-4 dark:bg-navy-800 dark:text-white">
         <div className="flex items-center justify-end gap-1">
           <MenuActions
             onResolve={() => setStatut(absoluteIndex, "Résolu")}
@@ -438,9 +438,9 @@ const TicketIcon = (props) => (
 
     <div className="flex items-center gap-1">
       <button onClick={()=>setPage(1)} disabled={page===1}
-              className="h-9 w-9 rounded-lg border border-black/10 bg-white text-sm shadow-sm disabled:opacity-40">«</button>
+              className="h-9 w-9 rounded-lg border border-black/10 bg-white text-sm shadow-sm disabled:opacity-40 dark:text-slate-500">«</button>
       <button onClick={()=>setPage(p=>Math.max(1,p-1))} disabled={page===1}
-              className="h-9 w-9 rounded-lg border border-black/10 bg-white text-sm shadow-sm disabled:opacity-40">‹</button>
+              className="h-9 w-9 rounded-lg border border-black/10 bg-white text-sm shadow-sm disabled:opacity-40 dark:text-slate-500">‹</button>
 
       {Array.from({length: Math.min(5, pageCount)}, (_,i) => {
         let startWin = Math.max(1, Math.min(page-2, pageCount-4));
@@ -449,7 +449,7 @@ const TicketIcon = (props) => (
         return (
           <button key={n} onClick={()=>setPage(n)}
             className={[
-              "h-9 w-9 rounded-lg border text-sm font-semibold shadow-sm",
+              "h-9 w-9 rounded-lg border text-sm font-semibold shadow-sm dark:text-slate-500",
               n===page ? "bg-indigo-600 text-white border-indigo-600" : "bg-white border-black/10"
             ].join(" ")}
           >{n}</button>
@@ -457,9 +457,9 @@ const TicketIcon = (props) => (
       })}
 
       <button onClick={()=>setPage(p=>Math.min(pageCount,p+1))} disabled={page===pageCount}
-              className="h-9 w-9 rounded-lg border border-black/10 bg-white text-sm shadow-sm disabled:opacity-40">›</button>
+              className="dark:text-slate-500 h-9 w-9 rounded-lg border border-black/10 bg-white text-sm shadow-sm disabled:opacity-40">›</button>
       <button onClick={()=>setPage(pageCount)} disabled={page===pageCount}
-              className="h-9 w-9 rounded-lg border border-black/10 bg-white text-sm shadow-sm disabled:opacity-40">»</button>
+              className="dark:text-slate-500 h-9 w-9 rounded-lg border border-black/10 bg-white text-sm shadow-sm disabled:opacity-40">»</button>
     </div>
   </div>
 
@@ -585,15 +585,15 @@ function MenuActions({ onResolve, onArchive, onDelete }) {
             className="absolute right-0 mt-2 w-48 overflow-hidden rounded-2xl border border-white/30 bg-white/95 shadow-2xl backdrop-blur"
           >
             <button onClick={()=>{setOpen(false); onResolve?.();}}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50">
+                    className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 dark:text-slate-500">
               <FiCheckCircle className="text-emerald-600" /> Marquer “résolu”
             </button>
             <button onClick={()=>{setOpen(false); onArchive?.();}}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50">
+                    className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 dark:text-slate-500">
               <FiArchive className="text-slate-600" /> Archiver
             </button>
             <button onClick={()=>{setOpen(false); onDelete?.();}}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-700 hover:bg-rose-50">
+                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-700 hover:bg-rose-50 dark:text-slate-500">
               <FiTrash2 /> Supprimer
             </button>
           </motion.div>

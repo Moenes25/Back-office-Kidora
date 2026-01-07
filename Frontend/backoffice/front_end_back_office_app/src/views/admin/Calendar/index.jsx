@@ -1038,16 +1038,16 @@ const countsThisWeek = React.useMemo(() => {
       {/* Header / barre d’actions */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="text-2xl font-extrabold bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
+          <div className="text-2xl font-extrabold bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent dark:text-slate-100">
             {selectedMonth} {selectedYear}
           </div>
           <div className="mt-1 flex items-center gap-2 text-sm">
-            <button onClick={prevWeek} className="rounded-lg border border-black/10 px-2 py-1 hover:bg-gray-50">‹</button>
+            <button onClick={prevWeek} className=" dark:text-slate-100 dark:hover:text-purple-700 rounded-lg border border-black/10 px-2 py-1 hover:bg-gray-50">‹</button>
            <div className="relative inline-flex flex-col items-center">
   {/* Bouton Aujourd’hui */}
   <button
     onClick={goToday}
-    className="rounded-lg border border-black/10 px-3 py-1 font-semibold hover:bg-gray-50"
+    className="rounded-lg border border-black/10 px-3 py-1 font-semibold hover:bg-gray-50 dark:text-slate-100 dark:hover:text-purple-700"
   >
     Aujourd’hui
   </button>
@@ -1056,7 +1056,7 @@ const countsThisWeek = React.useMemo(() => {
   <button
     ref={todayArrowRef}
     onClick={() => setTodayPopupOpen(o => !o)}
-    className="mt-0.5 flex h-4 w-6 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100"
+    className=" dark:text-slate-100 dark:hover:text-purple-700 mt-0.5 flex h-4 w-6 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100"
     aria-label="Ouvrir le mini calendrier"
   >
     <svg
@@ -1084,7 +1084,7 @@ const countsThisWeek = React.useMemo(() => {
   />
 </div>
 
-            <button onClick={nextWeek} className="rounded-lg border border-black/10 px-2 py-1 hover:bg-gray-50">›</button>
+            <button onClick={nextWeek} className="dark:text-slate-100 dark:hover:text-purple-700 rounded-lg border border-black/10 px-2 py-1 hover:bg-gray-50">›</button>
           </div>
         </div>
 

@@ -103,13 +103,13 @@ function PaymentsToolbar({ q, setQ, onToggleFilters, onExportCSV, onExportPDF })
   return (
    <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
       <div className="flex flex-wrap items-center gap-2">
-        <label className="group flex items-center gap-2 rounded-2xl border border-white/20 bg-white/70 px-3 py-2 text-sm shadow-[0_10px_30px_rgba(2,6,23,.10)] backdrop-blur-xl">
+        <label className="group flex items-center gap-2 rounded-2xl border border-white/20 bg-white/70 px-3 py-2 text-sm shadow-[0_10px_30px_rgba(2,6,23,.10)] backdrop-blur-xl dark:bg-navy-800 dark:text-white">
           <FiSearch className="opacity-60" />
           <input
             value={q}
             onChange={(e)=>setQ(e.target.value)}
             placeholder="Rechercher (id, établissement, email, abonnement, gouvernorat)…"
-            className="w-72 bg-transparent outline-none placeholder:text-gray-400"
+            className="w-72 bg-transparent outline-none placeholder:text-gray-400 dark:bg-navy-800 dark:text-white"
           />
         </label>
 

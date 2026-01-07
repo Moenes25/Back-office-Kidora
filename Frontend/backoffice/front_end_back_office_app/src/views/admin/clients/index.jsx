@@ -443,7 +443,7 @@ function SupportPagination({ page, pageCount, total, onPage }) {
 
       <div className="ukp-actions">
         <button
-          className="pg-btn dark:text-"
+          className="pg-btn "
           onClick={() => onPage(1)}
           disabled={page === 1}
           aria-label="Première"
