@@ -56,6 +56,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/reset-password").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/api/auth/update-profile/**").permitAll()
+
+                        // ✅ RENDRE PUBLICS les endpoints Analytics pour le front (3000) → backend (8086)
+                         .requestMatchers("/api/analytics/**").permitAll()
                         // Only SUPER_ADMIN can access 
                         .requestMatchers("/api/superadmin/update-password")
                         .hasRole("SUPER_ADMIN")
