@@ -72,7 +72,8 @@ function AlertCard({
       onMouseMove={onMove}
       onMouseLeave={onLeave}
       className={[
-        "relative overflow-hidden rounded-3xl bg-white/90 backdrop-blur-xl border border-black/5",
+        "relative overflow-hidden rounded-3xl bg-white/90 dark:bg-navy-800 backdrop-blur-xl",
+         "border border-black/5 dark:border-white/10",
         "transform-gpu transition-transform duration-300 [transform-style:preserve-3d] perspective-[1200px]",
         "hover:scale-[1.01] focus:outline-none focus-visible:ring-2 focus-visible:ring-black/10",
         className,
@@ -94,10 +95,10 @@ function AlertCard({
       </div>
 
       {/* ===== Body : on NE répète plus icône + titre ===== */}
-      <div className="p-3">
+      <div className="p-3 bg-transparent dark:bg-transparent dark:text-white">
         {/* Bloc valeur */}
      
-<div className="flex justify-center mt-2">
+<div className="flex justify-center mt-2 dark:text-white">
   <div className="text-center">
     <p className={`${compact ? "text-xl" : "text-3xl"} font-black leading-none`}>
       {count}
@@ -113,7 +114,7 @@ function AlertCard({
         <div className="mt-2 h-px w-full bg-gradient-to-r from-black/0 via-black/10 to-black/0" />
 
         {/* Liste */}
-        <ul className="mt-3 space-y-2 text-sm leading-5">
+        <ul className="mt-3 space-y-2 text-sm leading-5 ">
           {currentItems.map((row, i) => (
             <li key={i} className="flex items-center justify-between">
               <span className="flex min-w-0 items-center gap-2">

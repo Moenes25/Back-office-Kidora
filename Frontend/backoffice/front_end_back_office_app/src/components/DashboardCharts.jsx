@@ -1,23 +1,42 @@
 import React, { useEffect, useState, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
-import { getDashboardStats } from "services/dashboardService";
-
-
+import { getDashboardStats, getEtablissementsSansAbonnement } from "services/dashboardService";
 import * as echarts from "echarts";
-import { useMotionValue, useTransform, animate, motion } from "framer-motion";
+import { motion } from "framer-motion";
 
+/* -------- helpers thème -------- */
+const isDarkMode = () =>
+  typeof document !== "undefined" &&
+  document.documentElement.classList.contains("dark");
 
+const uiColors = () => {
+  const dark = isDarkMode();
+  return {
+    text: dark ? "#ffffff" : "#0f172a",         // ← texte principal (white/black)
+    sub: dark ? "#cbd5e1" : "#475569",          // ← texte secondaire (labels)
+    axis: dark ? "#475569" : "#cbd5e1",
+    grid: dark ? "#334155" : "#e5e7eb",
+    tooltipBg: dark ? "rgba(15,23,42,.96)" : "rgba(255,255,255,.98)",
+    tooltipBorder: dark ? "rgba(255,255,255,.08)" : "rgba(15,23,42,.08)",
+  };
+};
 
-
+/* -------- Card -------- */
 function ChartCard({ title, children }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative rounded-2xl p-5 bg-white shadow-[0_14px_48px_rgba(2,6,23,.1)] border border-slate-100"
+      transition={{ duration: 0.5 }}
+      className="
+        relative rounded-2xl p-5
+        bg-white dark:bg-navy-800
+        shadow-md border border-slate-100 dark:border-slate-800
+        text-slate-900 dark:text-white     /* ← héritage de couleur pour toute la carte */
+      "
     >
       <div className="mb-3">
-        <h3 className="text-lg font-bold text-slate-700">{title}</h3>
+        <h3 className="text-lg font-bold"> {title} </h3> {/* ← couleur héritée */}
       </div>
       <div>{children}</div>
     </motion.div>
@@ -26,183 +45,121 @@ function ChartCard({ title, children }) {
 
 export default function DashboardCharts() {
   const [stats, setStats] = useState(null);
+  const [sansAbonnement, setSansAbonnement] = useState(0);
 
   useEffect(() => {
-    getDashboardStats().then((data) => {
-      if (data) setStats(data);
-    });
+    getDashboardStats().then((data) => data && setStats(data));
+    getEtablissementsSansAbonnement().then((count) => setSansAbonnement(count));
   }, []);
 
-const pieOption = useMemo(() => {
-  if (!stats) return {};
+  /* -------- Donut -------- */
+  const donutOption = useMemo(() => {
+    if (!stats) return {};
+    const { text, sub, axis, grid, tooltipBg, tooltipBorder } = uiColors();
 
-  return {
-    tooltip: {
-      trigger: "item",
-      backgroundColor: "#fff",
-      borderColor: "#e2e8f0",
-      textStyle: { color: "#1e293b" },
-    },
-    legend: {
-      bottom: 0,
-      textStyle: { color: "#64748b", fontWeight: 600 },
-    },
-    series: [
-      {
-        name: "Abonnement",
-        type: "pie",
-        radius: ["45%", "70%"],
-        avoidLabelOverlap: false,
-        label: {
-          show: true,
-          formatter: '{b}\n{d}%',
-          fontSize: 12,
-          fontWeight: "bold",
-        },
-        itemStyle: {
-          borderColor: "#fff",
-          borderWidth: 2,
-        },
-        emphasis: {
-          scale: true,
-          scaleSize: 10,
-          itemStyle: { shadowBlur: 15, shadowColor: "rgba(0,0,0,0.2)" },
-        },
-        color: ["#0ea5e9", "#facc15"], // bleu / jaune
-        data: [
-          { value: stats.etablissements_avec_abonnement, name: "Avec abonnement" },
-          { value: stats.etablissements_sans_abonnement, name: "Sans abonnement" },
-        ],
+    const avec = Math.max(0, stats.total_etablissements - sansAbonnement);
+    const sans = Math.max(0, sansAbonnement);
+
+    return {
+      backgroundColor: "transparent",
+      tooltip: {
+        trigger: "item",
+        backgroundColor: tooltipBg,
+        borderColor: tooltipBorder,
+        textStyle: { color: text },
       },
-    ],
-  };
-}, [stats]);
-
-
-const barEtatOption = useMemo(() => {
-  if (!stats) return {};
-  return {
-    tooltip: { trigger: "axis" },
-    grid: { left: '4%', right: '4%', bottom: '12%', containLabel: true },
-    xAxis: {
-      type: "category",
-      data: ["Actif", "Inactif"],
-      axisLabel: { color: "#475569", fontWeight: 600 },
-      axisLine: { lineStyle: { color: "#cbd5e1" } },
-    },
-    yAxis: {
-      type: "value",
-      axisLabel: { color: "#475569" },
-      splitLine: { lineStyle: { type: "dashed", color: "#e2e8f0" } },
-    },
-    series: [
-      {
-        name: "Établissements",
-        type: "bar",
-        data: [stats.etablissements_actifs, stats.etablissements_inactifs],
-        itemStyle: {
-          borderRadius: [8, 8, 0, 0],
-          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: "#34d399" },
-            { offset: 1, color: "#10b981" },
-          ]),
-        },
-        barWidth: 40,
+      legend: {
+        bottom: 0,
+        textStyle: { color: sub, fontWeight: 600 },
+        icon: "circle",
       },
-    ],
-  };
-}, [stats]);
-
-
-const barMontantOption = useMemo(() => {
-  if (!stats) return {};
-  return {
-    tooltip: { trigger: "axis" },
-    xAxis: {
-      type: "category",
-      data: ["Montant payé", "Montant dû"],
-      axisLabel: { color: "#475569" },
-      axisLine: { lineStyle: { color: "#cbd5e1" } },
-    },
-    yAxis: {
-      type: "value",
-      axisLabel: { color: "#475569" },
-      splitLine: { lineStyle: { type: "dashed", color: "#e2e8f0" } },
-    },
-    series: [
-      {
-        name: "Montants (TND)",
-        type: "bar",
-        data: [stats.montant_total_paye, stats.montant_total_du],
-        barWidth: 40,
-        itemStyle: {
-          borderRadius: [8, 8, 0, 0],
-          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: "#f59e0b" },
-            { offset: 1, color: "#ef4444" },
-          ]),
+      color: ["#3b82f6", "#8b5cf6"],
+      series: [
+        {
+          name: "Abonnement",
+          type: "pie",
+          radius: ["60%", "80%"],
+          label: { show: false },
+          emphasis: {
+            label: {
+              show: true,
+              fontSize: 14,
+              fontWeight: "bold",
+              color: text,
+              formatter: "{b}: {d}%",
+            },
+          },
+          data: [
+            { value: avec, name: "Avec abonnement" },
+            { value: sans, name: "Sans abonnement" },
+          ],
         },
-        label: {
-          show: true,
-          position: "top",
-          fontWeight: "bold",
-          formatter: (p) => `${p.value} TND`,
-        },
+      ],
+    };
+  }, [stats, sansAbonnement]);
+
+  /* -------- Line -------- */
+  const lineOption = useMemo(() => {
+    const { text, sub, axis, grid, tooltipBg, tooltipBorder } = uiColors();
+    return {
+      backgroundColor: "transparent",
+      tooltip: { trigger: "axis", backgroundColor: tooltipBg, borderColor: tooltipBorder, textStyle: { color: text } },
+      grid: { left: "4%", right: "4%", bottom: "12%", containLabel: true },
+      xAxis: {
+        type: "category",
+        data: ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin"],
+        axisLine: { lineStyle: { color: axis } },
+        axisLabel: { color: sub },
       },
-    ],
-  };
-}, [stats]);
-
-
-const radialOption = useMemo(() => {
-  if (!stats) return {};
-  const value = Math.round(stats.taux_paiement * 100);
-
-  return {
-    series: [
-      {
-        type: 'pie',
-        radius: ['70%', '90%'],
-        avoidLabelOverlap: false,
-        label: {
-          show: true,
-          position: 'center',
-          formatter: `{c}%\nTaux de paiement`,
-          fontSize: 18,
-          fontWeight: 'bold',
-          color: '#334155',
-        },
-        data: [
-          { value, name: 'Payé', itemStyle: { color: '#10b981' } },
-          { value: 100 - value, name: 'Impayé', itemStyle: { color: '#e2e8f0' } },
-        ],
+      yAxis: {
+        type: "value",
+        axisLine: { show: false },
+        axisLabel: { color: sub },
+        splitLine: { lineStyle: { color: grid, type: "dashed" } },
       },
-    ],
-  };
-}, [stats]);
+      color: ["#3b82f6", "#8b5cf6"],
+      series: [
+        { name: "Payé", type: "line", smooth: true, data: [30, 50, 70, 90, 100, 110] },
+        { name: "Impayé", type: "line", smooth: true, data: [70, 50, 40, 30, 20, 10] },
+      ],
+    };
+  }, []);
 
-
+  /* -------- Bars -------- */
+  const barsOption = useMemo(() => {
+    if (!stats) return {};
+    const { sub, grid, tooltipBg, tooltipBorder, text } = uiColors();
+    return {
+      backgroundColor: "transparent",
+      tooltip: { trigger: "axis", backgroundColor: tooltipBg, borderColor: tooltipBorder, textStyle: { color: text } },
+      xAxis: { type: "category", data: ["Payé", "Dû"], axisLabel: { color: sub } },
+      yAxis: {
+        type: "value",
+        axisLabel: { color: sub },
+        splitLine: { lineStyle: { type: "dashed", color: grid } },
+      },
+      color: ["#3b82f6", "#8b5cf6"],
+      series: [
+        { name: "Montants", type: "bar", barWidth: 30, data: [stats.montant_total_paye, stats.montant_total_du] },
+      ],
+    };
+  }, [stats]);
 
   if (!stats) return <p>Chargement...</p>;
 
   return (
-   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  <ChartCard title="Répartition des établissements">
-    <ReactECharts option={pieOption} style={{ height: 320 }} />
-  </ChartCard>
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <ChartCard title="Répartition des établissements">
+        <ReactECharts option={donutOption} style={{ height: 280 }} />
+      </ChartCard>
 
-  <ChartCard title="État des établissements">
-    <ReactECharts option={barEtatOption} style={{ height: 320 }} />
-  </ChartCard>
+      <ChartCard title="Évolution du paiement">
+        <ReactECharts option={lineOption} style={{ height: 280 }} />
+      </ChartCard>
 
-  <ChartCard title="Montants payés vs dus">
-    <ReactECharts option={barMontantOption} style={{ height: 320 }} />
-  </ChartCard>
-
-  <ChartCard title="Taux de paiement">
-    <ReactECharts option={radialOption} style={{ height: 320 }} />
-  </ChartCard>
-</div>
-
+      <ChartCard title="Montants payés / dus">
+        <ReactECharts option={barsOption} style={{ height: 280 }} />
+      </ChartCard>
+    </div>
   );
 }

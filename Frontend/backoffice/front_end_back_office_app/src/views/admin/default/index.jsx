@@ -758,7 +758,7 @@ function SectionCard({ icon, title, children, footer }) {
     <div className="
       h-full flex flex-col
       rounded-2xl overflow-hidden bg-white
-      shadow-[0_14px_38px_rgba(2,6,23,.12)] ring-1 ring-black/5
+      shadow-[0_14px_38px_rgba(2,6,23,.12)] ring-1 ring-black/5 dark:bg-navy-800 dark:text-white
     ">
       {/* header */}
       <div className="flex items-center gap-2 bg-[#3b5edb] text-white px-4 py-3 text-sm font-semibold">
@@ -794,7 +794,7 @@ function QuickBtn({ icon, label, onClick }) {
 // Lignes à puces (à gauche un petit point)
 function BulletList({ items }) {
   return (
-    <ul className="space-y-2 text-[13px] text-slate-700">
+    <ul className="space-y-2 text-[13px] text-slate-700 dark:text-white">
       {items.map((t, i) => (
         <li key={i} className="flex items-start gap-2">
           <span className="mt-1 h-1.5 w-1.5 rounded-full bg-slate-400" />

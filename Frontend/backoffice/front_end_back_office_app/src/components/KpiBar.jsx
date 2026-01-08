@@ -81,20 +81,36 @@ function VisualFX() {
       }
 
       /* halo interne pour le chart container */
-      .chart-shell{
-        position:relative;
-        border-radius:1rem;
-        background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.75));
-        box-shadow:
-          0 10px 30px -15px rgba(2,6,23,.35),
-          0 8px 18px -12px rgba(2,6,23,.25),
-          inset 0 1px 0 rgba(255,255,255,.6);
-      }
-      .chart-shell:before{
-        content:""; position:absolute; inset:0; border-radius:inherit;
-        background: radial-gradient(60% 40% at 50% 0%, rgba(99,102,241,.18), transparent 70%);
-        filter: blur(14px); opacity:.35; pointer-events:none;
-      }
+    .chart-shell{
+  position:relative;
+  border-radius:1rem;
+  background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.75));
+  box-shadow:
+    0 10px 30px -15px rgba(2,6,23,.35),
+    0 8px 18px -12px rgba(2,6,23,.25),
+    inset 0 1px 0 rgba(255,255,255,.6);
+}
+   .chart-shell:before{
+  content:""; position:absolute; inset:0; border-radius:inherit;
+  background: radial-gradient(60% 40% at 50% 0%, rgba(99,102,241,.18), transparent 70%);
+  filter: blur(14px); opacity:.35; pointer-events:none;
+}
+/* --- AJOUT : override dark --- */
+.dark .chart-shell{
+  background: linear-gradient(180deg, rgba(10,19,38,.92), rgba(10,19,38,.86)); /* navy */
+  box-shadow:
+    0 10px 30px -15px rgba(0,0,0,.55),
+    0 8px 18px -12px rgba(0,0,0,.45),
+    inset 0 1px 0 rgba(255,255,255,.06);
+}
+.dark .chart-shell:before{
+  background: radial-gradient(60% 40% at 50% 0%, rgba(255,255,255,.06), transparent 70%);
+  filter: blur(16px);
+  opacity:.22;
+}
+
+/* optionnel: grain/texte un peu moins “blanchi” en dark */
+.dark .grain:after{ opacity:.05; mix-blend-mode: normal; }
 
       /* parallax léger */
       .tilt{ transform: perspective(1000px) rotateX(0) rotateY(0); transition: transform .35s ease }
@@ -123,18 +139,18 @@ function VisualFX() {
 function ChartCard({ title, icon, right, children, className = "" }) {
   return (
     <div
-      className={`card-aurora grain tilt p-5 shadow-[0_28px_70px_-24px_rgba(2,6,23,.28),0_16px_40px_-24px_rgba(2,6,23,.22)] ${className} h-full flex flex-col`}
+      className={`grain tilt p-5 shadow-[0_28px_70px_-24px_rgba(2,6,23,.28),0_16px_40px_-24px_rgba(2,6,23,.22)] ${className} h-full flex flex-col dark:bg-navy-800 dark:text-white`}
     >
-      <div className="relative z-[1] mb-3 flex items-center justify-between gap-3">
+      <div className="relative z-[1] mb-3 flex items-center justify-between gap-3 ">
         <h3 className="text-lg font-extrabold flex items-center gap-2">
           <span className="text-xl">{icon}</span>
           <span>{title}</span>
         </h3>
-        {right ? <div className="shrink-0">{right}</div> : null}
+        {right ? <div className="shrink-0 ">{right}</div> : null}
       </div>
 
       {/* le chart doit prendre tout l’espace restant */}
-      <div className="chart-shell relative z-[1] p-0 flex-1 min-h-0">
+      <div className="chart-shell relative z-[1] p-0 flex-1 min-h-0 ">
         {children}
       </div>
     </div>

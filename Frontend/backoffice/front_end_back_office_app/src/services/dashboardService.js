@@ -384,3 +384,12 @@ export const getDashboardStats = async () => {
     return null;
   }
 };
+export const getEtablissementsSansAbonnement = async () => {
+  try {
+    const res = await api.get("/analytics/etablissements/sans-abonnement");
+    return res.data.count || 0;
+  } catch (err) {
+    console.error("Erreur sans abonnement :", err);
+    return 0;
+  }
+};
