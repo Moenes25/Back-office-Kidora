@@ -149,6 +149,13 @@ const STATUS_UI = {
     badge: "bg-emerald-50 text-emerald-700 border-emerald-200",
     dot: "bg-emerald-500",
   },
+    Inactif: {
+    ring: "ring-slate-300/60",
+    border: "border-slate-200",
+    badge: "bg-slate-100 text-slate-600 border-slate-300",
+    dot: "bg-slate-400",
+  },
+
   "En période d’essai": {
     ring: "ring-indigo-400/60",
     border: "border-indigo-200",
@@ -169,6 +176,34 @@ const STATUS_UI = {
   },
 };
 
+const STATUS_ABONNEMENT_UI = {
+  Actif: {
+    badge: "bg-cyan-50 text-cyan-700 border-cyan-200",
+    dot: "bg-cyan-500",
+  },
+  "En période d’essai": {
+    badge: "bg-violet-50 text-violet-700 border-violet-200",
+    dot: "bg-violet-500",
+  },
+  "En retard de paiement": {
+    badge: "bg-amber-50 text-amber-700 border-amber-200",
+    dot: "bg-amber-500",
+  },
+  Suspendu: {
+    badge: "bg-rose-50 text-rose-700 border-rose-200",
+    dot: "bg-rose-500",
+  },
+  Résilié: {
+    badge: "bg-gray-100 text-gray-500 border-gray-300",
+    dot: "bg-gray-400",
+  },
+  "Sans abonnement": {
+    badge: "bg-gray-50 text-gray-400 border-gray-200",
+    dot: "bg-gray-400",
+  },
+};
+
+
 const StatusBadge = ({ status }) => {
   const ui = STATUS_UI[status] || { badge: "bg-gray-50 text-gray-700 border-gray-200", dot: "bg-gray-400" };
   return (
@@ -178,6 +213,21 @@ const StatusBadge = ({ status }) => {
     </span>
   );
 };
+
+const AbonnementBadge = ({ status }) => {
+  const ui = STATUS_ABONNEMENT_UI[status] || {
+    badge: "bg-gray-50 text-gray-700 border-gray-200",
+    dot: "bg-gray-400"
+  };
+
+  return (
+    <span className={["inline-flex items-center gap-1.5 rounded-full px-2.5 py-2 text-xs font-semibold", "border shadow-xl", ui.badge].join(" ")}>
+      <span className={`h-1.5 w-1.5 rounded-full ${ui.dot}`} />
+      {status}
+    </span>
+  );
+};
+
 
 const TypeBadge = ({ type }) => {
   const t = TYPE_META[type] || { label: type, chip: "bg-gray-100 text-gray-700" };
@@ -588,9 +638,12 @@ useEffect(() => {
             etab.type === "CRECHE" ? "creches" :
             etab.type === "GARDERIE" ? "garderies" :
             etab.type === "ECOLE" ? "ecoles" : "autre",
-          status: abn ? convertStatutToLabel(abn?.statut) : "Sans abonnement",
+          //status: abn ? convertStatutToLabel(abn?.statut) : "Sans abonnement",
+          status: etab.isActive ? "Actif" : "Inactif",
+      statusAbonnement: abn ? convertStatutToLabel(abn?.statut) : "Sans abonnement",
+
           subscriptionDate: abn?.dateDebutAbonnement || "",
-          plan: abn?.formule || "",
+          //plan: abn?.formule || "",
           password: "", // pas utilisé ici
           enfants: etab.nombreEnfants ?? 0,
           parents: etab.nombreParents ?? 0,
@@ -751,7 +804,7 @@ const saveClient = async (e) => {
         dateFinAbonnement: calculateEndDate(newClient.plan),
         montantPaye: 0,
         montantDu: determinePrice(newClient.plan),
-        formule: newClient.plan,
+        //formule: newClient.plan,
         statut: determineInitialStatus(newClient.status),
       };
 
@@ -796,7 +849,7 @@ const saveClient = async (e) => {
 
 // (facultatif) export CSV des clients filtrés
 const exportCSV = () => {
-  const headers = ["ID","Nom","Type","Ville","Adresse","Téléphone","Email","URL","Date","Formule","Statut"];
+  const headers = ["ID","Nom","Type","Ville","Adresse","Téléphone","Email","URL","Date","Statut"];
   const csv = [headers, ...filtered.map(r => [
     r.id, r.name, r.type, r.city, r.address || "", r.phone || "",
     r.email || "", r.url_localisation || "", r.subscriptionDate || "",
@@ -906,15 +959,18 @@ const updateStatus = async (etabId, newStatus) => {
       montantPaye: 0,
       montantDu: determinePrice(client.plan),
       statut: mappedStatut,
-      formule: client.plan,
+      //formule: client.plan,
     };
 
     // 4. Appel à update avec le vrai ID d’abonnement
     await updateAbonnement(latest.idAbonnement, abonnementPayload);
 
     // 5. Mise à jour UI
-    setData((rows) => rows.map((r) => (r.id === etabId ? { ...r, status: newStatus } : r)));
-    setSelected((s) => (s && s.id === etabId ? { ...s, status: newStatus } : s));
+    setData((rows) => rows.map((r) =>
+  r.id === etabId ? { ...r, statusAbonnement: newStatus } : r
+));
+setSelected((s) => s && s.id === etabId ? { ...s, statusAbonnement: newStatus } : s);
+
 
     Swal.fire({
       icon: "success",
@@ -960,7 +1016,6 @@ const updateStatus = async (etabId, newStatus) => {
           <tr><td>Email</td><td>${selected.email || ""}</td></tr>
           <tr><td>URL localisation</td><td>${selected.url_localisation || ""}</td></tr>
           <tr><td>Date d'abonnement</td><td>${selected.subscriptionDate}</td></tr>
-          <tr><td>Formule</td><td>${selected.plan}</td></tr>
           <tr><td>Statut</td><td>${selected.status}</td></tr>
         </table>
         <h2>Historique</h2>
@@ -1254,8 +1309,6 @@ const deleteClient = async (row) => {
                   <div className="space-y-2">
                     <div className="text-xs text-gray-500">Abonné depuis</div>
                     <div className="font-semibold">{selected.subscriptionDate}</div>
-                    <div className="text-xs text-gray-500">Formule</div>
-                    <div className="font-semibold">{selected.plan}</div>
                   </div>
                   
 
@@ -1286,9 +1339,21 @@ const deleteClient = async (row) => {
         </span>
       </div>
     </div>
+            <div className="md:col-span-2 flex items-center gap-3">
+                    <div className="space-y-1 text-sm">
+                   <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500">État établissement :</span>
+                      <StatusBadge status={selected.status} />
+                  </div>
+                 <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500">Statut abonnement :</span>
+                     <AbonnementBadge status={selected.statusAbonnement} />
+                  </div>
+                 </div>
+             </div>
 
                   <div className="md:col-span-2 flex items-center gap-3">
-                    <StatusBadge status={selected.status} />
+
                     {selected.url_localisation && (
                       <a
                         href={selected.url_localisation}
@@ -1548,33 +1613,18 @@ const deleteClient = async (row) => {
                 />
               </label>
 
-              <label className="text-sm">
-                <span className="mb-1 block text-xs text-gray-500">Formule</span>
-                <select
-                  required
-                  value={newClient.plan}
-                  onChange={(e) => setNewClient((v) => ({ ...v, plan: e.target.value }))}
-                  className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm shadow-sm outline-none"
-                >
-                  <option value="" disabled>— Choisir une formule —</option>
-                  {PLAN_OPTIONS.map((p) => (
-                    <option key={p} value={p}>{p}</option>
-                  ))}
-                </select>
-              </label>
+          
 
               <label className="text-sm">
                 <span className="mb-1 block text-xs text-gray-500">Statut</span>
-                <select
-                  value={newClient.status}
-                  onChange={(e) => setNewClient((v) => ({ ...v, status: e.target.value }))}
-                  className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm shadow-sm outline-none"
-                >
-                  <option>Actif</option>
-                  <option>En période d’essai</option>
-                  <option>En retard de paiement</option>
-                  <option>Suspendu</option>
-                </select>
+             <select
+    value={newClient.status}
+    onChange={(e) => setNewClient((v) => ({ ...v, status: e.target.value }))}
+    className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm shadow-sm outline-none"
+  >
+    <option value="Actif">✅ Actif</option>
+    <option value="Inactif">🚫 Inactif</option>
+  </select>
               </label>
             </div>
 
