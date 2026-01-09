@@ -1150,16 +1150,28 @@ const deleteClient = async (row) => {
 <div className="mt-3 overflow-x-auto">
  <table className="no-ukp min-w-[980px] w-full border-collapse text-slate-800 dark:text-white dark:bg-navy-800 dark:shadow-none">
     {/* EN-TÊTE */}
-    <thead className="sticky top-0 z-10">
-     <tr className="bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 border-b dark:bg-transparent dark:text-white">
-        {/* <Th onClick={() => toggleSort("id")} label="ID" sortIcon={headerSortIcon("id")} /> */}
-        <Th onClick={() => toggleSort("name")}  label="Nom"    sortIcon={headerSortIcon("name")} />
-        <Th onClick={() => toggleSort("type")}  label="Type"   sortIcon={headerSortIcon("type")}  />
-        <Th onClick={() => toggleSort("city")}  label="Ville"  sortIcon={headerSortIcon("city")}  />
-        <Th onClick={() => toggleSort("status")} label="Statut" sortIcon={headerSortIcon("status")} />
-        <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500">Actions</th>
-      </tr>
-    </thead>
+<thead className="sticky top-0 z-10  dark:text-white">
+    <tr
+      className="
+        text-[11px] uppercase tracking-wide
+        text-gray-700 dark:text-white
+        [&_th]:px-4 [&_th]:py-3 [&_th]:font-semibold
+        [&_th:first-child]:rounded-l-xl [&_th:last-child]:rounded-r-xl
+
+        /* peindre les TH (clair) */
+        [&_th]:bg-white/85 supports-[backdrop-filter]:[&_th]:bg-white/70 [&_th]:backdrop-blur
+
+        /* peindre les TH (dark) */
+        dark:[&_th]:bg-navy-800/90 dark:[&_th]:backdrop-blur-none
+      "
+    >
+      <Th onClick={() => toggleSort("name")}  label="Nom"    sortIcon={headerSortIcon("name")} />
+      <Th onClick={() => toggleSort("type")}  label="Type"   sortIcon={headerSortIcon("type")}  />
+      <Th onClick={() => toggleSort("city")}  label="Ville"  sortIcon={headerSortIcon("city")}  />
+      <Th onClick={() => toggleSort("status")} label="Statut" sortIcon={headerSortIcon("status")} />
+      <th className="text-right">Actions</th>
+    </tr>
+  </thead>
 
     {/* LIGNES */}
     <tbody className="text-sm dark:bg-navy-800">

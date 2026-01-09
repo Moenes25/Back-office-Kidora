@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { FiTrendingUp, FiCheckCircle, FiAlertTriangle, FiSend } from "react-icons/fi";
+import { FiTrendingUp, FiCheckCircle, FiAlertTriangle, FiEye, FiSend, FiEdit2, FiTrash2  } from "react-icons/fi";
 import { FiSearch, FiDownload } from "react-icons/fi";
 import {
   FiDownloadCloud,
@@ -51,14 +51,14 @@ const STATS = [
 
 
 const PAYMENTS = [
-  { id:"#F202401", date:"1 juin 2025, 08:22", avatarColor:"from-fuchsia-500 to-orange-400", client:"Crèche XYZ", type:"creche",  region:"Tunis",     email:"xyzstore@mail.com",    abonnement:"Kidora – Premium / Mensuel", status:"Payée" },
-  { id:"#F202402", date:"1 juin 2025, 09:10", avatarColor:"from-sky-500 to-cyan-400",       client:"Garderie Soleil", type:"garderie", region:"Ariana",   email:"davidocon@mail.com",  abonnement:"Kidora – Standard / Annuelle",        status:"En attente" },
-  { id:"#F202403", date:"1 juin 2025, 10:05", avatarColor:"from-amber-400 to-red-400",      client:"École Horizon",   type:"ecole",   region:"Nabeul",   email:"juliaesteh@mail.com", abonnement:"Kidora – Premium / Mensuel",status:"Annulée" },
-  { id:"#F202404", date:"2 juin 2025, 11:30", avatarColor:"from-emerald-400 to-teal-500",   client:"Garderie Power Kids", type:"garderie", region:"Sfax",  email:"powerkids@mail.com",  abonnement:"Kidora – Standard / Mensuel",  status:"Payée" },
-  { id:"#F202405", date:"2 juin 2025, 14:12", avatarColor:"from-indigo-500 to-violet-500",  client:"Crèche Arc-en-ciel", type:"creche", region:"Sousse",  email:"jamesknown@mail.com", abonnement:"Kidora – Standard / Annuelle",        status:"En attente" },
-  { id:"#F202406", date:"3 juin 2025, 09:18", avatarColor:"from-rose-500 to-orange-400",    client:"Kids Academy",    type:"ecole",   region:"Monastir",email:"rocklee@mail.com",   abonnement:"Kidora – Standard / Annuelle",status:"Annulée" },
-  { id:"#F202407", date:"3 juin 2025, 11:00", avatarColor:"from-cyan-400 to-emerald-400",   client:"MiniMonde",       type:"creche",  region:"Ben Arous",email:"geovannyjr@mail.com", abonnement:"Kidora – Premium / Mensuel", status:"Payée" },
-  { id:"#F202408", date:"4 juin 2025, 08:05", avatarColor:"from-amber-400 to-lime-400",     client:"Happy Kids",      type:"garderie",region:"Kairouan", email:"bellakids@mail.com",  abonnement:"Kidora – Premium / Annuelle",status:"En attente",
+  { id:"#F202401", date:"1 juin 2025, 08:22", avatarColor:"from-fuchsia-500 to-orange-400", client:"Crèche XYZ", type:"creche",  region:"Tunis",     email:"xyzstore@mail.com",    status:"Payée" },
+  { id:"#F202402", date:"1 juin 2025, 09:10", avatarColor:"from-sky-500 to-cyan-400",       client:"Garderie Soleil", type:"garderie", region:"Ariana",   email:"davidocon@mail.com",    status:"impayée" },
+  { id:"#F202403", date:"1 juin 2025, 10:05", avatarColor:"from-amber-400 to-red-400",      client:"École Horizon",   type:"ecole",   region:"Nabeul",   email:"juliaesteh@mail.com", status:"impayée" },
+  { id:"#F202404", date:"2 juin 2025, 11:30", avatarColor:"from-emerald-400 to-teal-500",   client:"Garderie Power Kids", type:"garderie", region:"Sfax",  email:"powerkids@mail.com",  status:"Payée" },
+  { id:"#F202405", date:"2 juin 2025, 14:12", avatarColor:"from-indigo-500 to-violet-500",  client:"Crèche Arc-en-ciel", type:"creche", region:"Sousse",  email:"jamesknown@mail.com", status:"impayée" },
+  { id:"#F202406", date:"3 juin 2025, 09:18", avatarColor:"from-rose-500 to-orange-400",    client:"Kids Academy",    type:"ecole",   region:"Monastir",email:"rocklee@mail.com" ,   status :"impayée" },
+  { id:"#F202407", date:"3 juin 2025, 11:00", avatarColor:"from-cyan-400 to-emerald-400",   client:"MiniMonde",       type:"creche",  region :"Ben Arous" ,email :"geovannyjr@mail.com" , status :"Payée" },
+  { id:"#F202408", date:"4 juin 2025, 08:05", avatarColor:"from-amber-400 to-lime-400",     client:"Happy Kids",      type:"garderie",region:"Kairouan", email:"bellakids@mail.com", status:"impayée",
     lines: [
       { desc: "Nettoyage mensuel – bâtiment A", qty: 2, puHT: 120, tva: 19 },
       { desc: "Audit sécurité / RGPD",          qty: 1, puHT: 350, tva: 19 },
@@ -82,9 +82,11 @@ const TypeBadge = ({ type }) => {
 
 const STATUS_STYLES = {
   Payée: "bg-emerald-100 text-emerald-700",
-  "En attente": "bg-amber-100 text-amber-700",
-  Annulée: "bg-slate-200 text-slate-600",
+  impayée: "bg-rose-100 text-rose-700", // meilleure visibilité
 };
+
+
+
 // "1 juin 2025, 08:22" -> Date
 const FR_MONTHS = {
   janvier:0, février:1, fevrier:1, mars:2, avril:3, mai:4, juin:5,
@@ -99,7 +101,7 @@ function parseFrDate(s) {
   const month = FR_MONTHS[mo] ?? 0;
   return new Date(Number(y), month, Number(d), Number(hh), Number(mm));
 }
-function PaymentsToolbar({ q, setQ, onToggleFilters, onExportCSV, onExportPDF }) {
+function PaymentsToolbar({ q, setQ, onToggleFilters, onExportCSV, onExportPDF, setEditRow }) {
   return (
    <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
       <div className="flex flex-wrap items-center gap-2">
@@ -135,6 +137,15 @@ function PaymentsToolbar({ q, setQ, onToggleFilters, onExportCSV, onExportPDF })
           <FiDownload /> Export CSV
         </button>
       </div>
+      {/* 👉 Ajoute ce bouton ici pour qu’il s’aligne */}
+  <div className="flex justify-end">
+    <button
+      onClick={() => setEditRow({})}
+      className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 px-4 py-2 text-sm font-bold text-white shadow hover:brightness-110"
+    >
+     Ajouter facture
+    </button>
+  </div>
     </div>
   );
 }
@@ -164,8 +175,7 @@ function PaymentsFilterDrawer({
               >
                 <option value="Tous">Tous</option>
                 <option value="Payée">Payée</option>
-                <option value="En attente">En attente</option>
-                <option value="Annulée">Annulée</option>
+                <option value="impayée">impayée</option>
               </select>
             </label>
 
@@ -260,12 +270,17 @@ const StatCard = ({ stat, index }) => {
 
 
 
-const StatusPill = ({ status }) => (
-  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${STATUS_STYLES[status]}`}>
-    <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-current" />
-    {status}
-  </span>
-);
+const StatusPill = ({ status }) => {
+  const isPaid = String(status).toLowerCase() === "payée".toLowerCase();
+  const cls = isPaid ? STATUS_STYLES["Payée"] : STATUS_STYLES["impayée"];
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${cls}`}>
+      {isPaid ? <FiCheckCircle /> : <FiAlertTriangle />}
+      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+      {status}
+    </span>
+  );
+};
 
 const AvatarBubble = ({ name, color }) => {
   const initial = name?.[0] ?? "?";
@@ -275,8 +290,7 @@ const AvatarBubble = ({ name, color }) => {
         {initial}
       </div>
       <div className="leading-tight">
-        <p className="text-sm font-semibold text-slate-800">{name}</p>
-        <p className="text-[11px] text-slate-400">Responsable facturation</p>
+        <p className="text-sm font-semibold text-slate-800 dark:text-white">{name}</p>
       </div>
     </div>
   );
@@ -290,6 +304,27 @@ function useInView(ref, rootMargin = "0px") {
     return () => io.disconnect();
   }, [ref, rootMargin]);
   return inView;
+}
+function IconBtnStylesOnce() {
+  React.useEffect(() => {
+    const id = "payments-icon-btn-css";
+    if (document.getElementById(id)) return;
+    const s = document.createElement("style");
+    s.id = id;
+    s.textContent = `
+.icon-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:34px;height:34px;border-radius:8px;border:1px solid transparent;
+  background:transparent;color:#334155;transition:background .15s,border-color .15s,color .15s,transform .15s;
+}
+.icon-btn:hover{ background:#f1f5f9; border-color:#e2e8f0; }
+.icon-btn:active{ transform:translateY(1px); }
+.icon-btn.danger{ color:#b91c1c; }
+.icon-btn.danger:hover{ background:#fee2e2; border-color:#fecaca; }
+`;
+    document.head.appendChild(s);
+  }, []);
+  return null;
 }
 
 function AnimatedNumber({ value, duration = 800, format = (n)=>n.toLocaleString(), startOnView = true }) {
@@ -423,6 +458,116 @@ function SupportPagination({ page, pageCount, total, onPage }) {
     </div>
   );
 }
+const FactureModal = ({ row = {}, onClose, onSave }) => {
+
+  const STATIC_CLIENTS = [
+  {
+    id: 1,
+    nom: "Crèche XYZ",
+    email: "xyz@mail.com",
+    region: "Tunis",
+    type: "creche",
+  },
+  {
+    id: 2,
+    nom: "École Horizon",
+    email: "ecolehorizon@mail.com",
+    region: "Nabeul",
+    type: "ecole",
+  },
+  {
+    id: 3,
+    nom: "Garderie Soleil",
+    email: "soleil@garderie.com",
+    region: "Ariana",
+    type: "garderie",
+  },
+];
+
+  const [form, setForm] = useState({
+    id: row.id || `#F${Date.now()}`,
+    date: row.date || new Date().toLocaleString("fr-FR"),
+    client: row.client || "",
+    email: row.email || "",
+    region: row.region || "",
+    type: row.type || "creche",
+    status: row.status || "impayée",
+    abonnement: row.abonnement || "",
+    avatarColor: row.avatarColor || "from-emerald-400 to-teal-500"
+  });
+
+
+const [clients] = useState(STATIC_CLIENTS);
+
+
+
+const handleChange = (e) => {
+  const { name, value } = e.target;
+
+  if (name === "client") {
+    const selectedClient = clients.find((c) => c.nom === value);
+    if (selectedClient) {
+      setForm((prev) => ({
+        ...prev,
+        client: selectedClient.nom,
+        email: selectedClient.email,
+        region: selectedClient.region,
+        type: selectedClient.type,
+      }));
+    }
+  } else {
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+};
+
+
+  const handleSubmit = () => {
+    if (!form.client || !form.email) return alert("Champs obligatoires !");
+    onSave(form);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+      <div className="bg-white w-full max-w-md rounded-2xl p-6 shadow-xl border">
+        <h3 className="text-lg font-bold mb-4">{row?.id ? "Modifier" : "Nouvelle"} facture</h3>
+
+        <div className="space-y-3 text-sm">
+     <select
+  name="client"
+  value={form.client}
+  onChange={handleChange}
+  className="w-full rounded-xl border p-2"
+>
+  <option value="">-- Sélectionnez un établissement --</option>
+  {clients.map((c) => (
+    <option key={c.id} value={c.nom}>
+      {c.nom}
+    </option>
+  ))}
+</select>
+
+   <div className="flex gap-2">
+         
+            <select name="status" value={form.status} onChange={handleChange} className="w-full rounded-xl border p-2">
+              <option value="Payée">Payée</option>
+              <option value="impayée">Impayée</option>
+            </select>
+          </div>
+
+        </div>
+
+        <div className="mt-4 flex justify-end gap-2">
+          <button onClick={onClose} className="rounded-xl border px-3 py-1.5 text-sm">Annuler</button>
+          <button onClick={handleSubmit} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 /* ============================ Page ============================ */
 export default function PaymentsPage() {
@@ -439,6 +584,7 @@ const [sortAsc, setSortAsc] = useState(false);   // par défaut: date récente e
   const [selected, setSelected] = useState(new Set());
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 4;
+  const [editRow, setEditRow] = useState(null); // ajout ou édition
 
   /* --- refs pour fermer les menus au click extérieur --- */
   const filterRef = useRef(null);
@@ -463,8 +609,7 @@ const [sortAsc, setSortAsc] = useState(false);   // par défaut: date récente e
   !s ||
   r.id.toLowerCase().includes(s) ||
   r.client.toLowerCase().includes(s) ||
-  r.email.toLowerCase().includes(s) ||
-  (r.abonnement||"").toLowerCase().includes(s);
+  r.email.toLowerCase().includes(s) ;
 
     return okStatus && okSearch;
   });
@@ -526,10 +671,10 @@ const [sortAsc, setSortAsc] = useState(false);   // par défaut: date récente e
   };
 
 const exportCSV = () => {
- const header = ["id", "date", "etablissement", "type", "gouvernorat", "email", "abonnement", "status"];
+ const header = ["id", "date", "etablissement", "type", "gouvernorat", "email",  "status"];
   const lines = [header.join(",")].concat(
     filtered.map((r) =>
-      [r.id, r.date, `"${r.client}"`, TYPE_META[r.type]?.label || "", r.region || "", r.email, `"${r.abonnement}"`, r.status]
+      [r.id, r.date, `"${r.client}"`, TYPE_META[r.type]?.label || "", r.region || "", r.email, r.status]
         .map((v) => String(v ?? "").replace(/[\n\r]/g, " "))
         .join(",")
     )
@@ -591,7 +736,6 @@ const exportCSV = () => {
     ]);
     const h2 = card(M+colW+16, colW, "Détails", [
       `Date : ${row.date}`,
-      `Abonnement : ${row.abonnement}`,
       `Statut : ${row.status}`
     ]);
     y += Math.max(h1,h2) + 24;
@@ -657,7 +801,7 @@ const onRowAction = (id, action) => {
     setViewRow(row || null);
     return;
   }
-  if (action === "resend") alert(`Relancer ${id}`);
+  if (action === "Envoyer") alert(`Envoyer ${id}`);
   if (action === "delete") {
     setRows((r) => r.filter((x) => x.id !== id));
     setSelected((s) => {
@@ -673,7 +817,10 @@ const onRowAction = (id, action) => {
   return (
     <div className="space-y-6">
               {/* Stat cards */}
+              <IconBtnStylesOnce />
+
 <KPIStyles />
+<PaginationStylesOnce /> 
 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
   {STATS.map((s, i) => <StatCard key={s.id} stat={s} index={i} />)}
 </div>
@@ -689,6 +836,7 @@ const onRowAction = (id, action) => {
     onToggleFilters={()=>setOpenFilters(v=>!v)}
     onExportCSV={exportCSV}
     onExportPDF={exportPDF}
+    setEditRow={setEditRow}
   />
 
   <PaymentsFilterDrawer
@@ -698,6 +846,7 @@ const onRowAction = (id, action) => {
     sortKey={sortKey} setSortKey={setSortKey}
     sortAsc={sortAsc} setSortAsc={setSortAsc}
   />
+
 </div>
 
 
@@ -706,13 +855,18 @@ const onRowAction = (id, action) => {
 
 
       {/* Liste paiements */}
-      <div className="rounded-3xl border border-slate-100 bg-white shadow-[0_18px_48px_rgba(15,23,42,.10)] overflow-visible">
+      <div className="rounded-3xl border border-slate-100 bg-white shadow-[0_18px_48px_rgba(15,23,42,.10)] overflow-visible dark:text-white dark:bg-navy-800 ">
 
         {/* Top bar */}
-        <div className="flex items-center rounded-3xl justify-between gap-4 border-b border-slate-100 px-5 py-4 bg-gradient-to-r from-slate-50 via-white to-slate-50">
-         <div className="px-5">
-  <p className="text-sm font-semibold text-slate-800">Historique des paiements</p>
-  <p className="text-[11px] text-slate-400">Liste des factures clients, services rendus, statut & tri avancé.</p>
+        <div className="flex items-center rounded-3xl justify-between gap-4 border-b border-slate-100
+  px-5 py-4
+  bg-gradient-to-r from-slate-50 via-white to-slate-50
+  dark:border-white/10
+  dark:bg-none dark:bg-navy-800
+  dark:text-white">
+         <div className="px-5 ">
+  <p className="text-sm font-semibold text-slate-800 dark:text-white">Historique des paiements</p>
+  <p className="text-[11px] text-slate-400 dark:text-white">Liste des factures clients, services rendus, statut & tri avancé.</p>
 </div>
 
 
@@ -720,21 +874,20 @@ const onRowAction = (id, action) => {
         </div>
 
         {/* Tableau */}
-        <div className="relative overflow-x-auto overflow-visible">
+        <div className="relative overflow-x-auto overflow-visible dark:text-white dark:bg-navy-800 ">
 
-          <table className="no-ukp min-w-full text-sm border-separate [border-spacing:0_8px]">
+          <table className="no-ukp min-w-full text-sm border-separate [border-spacing:0_8px]  dark:text-white dark:bg-navy-800 dark:shadow-none">
           <thead>
-  <tr className="bg-slate-50/60 text-xs uppercase text-slate-400">
+  <tr className="bg-slate-50/60 text-xs uppercase text-slate-400 dark:text-white dark:bg-navy-700/90 ">
    
-    <th className="px-3 py-3 text-left font-semibold hidden">ID facture</th>
-    <th className="px-3 py-3 text-left font-semibold">Date</th>
-    <th className="px-3 py-3 text-left font-semibold">Établissement</th> {/* ex-Client */}
-    <th className="px-3 py-3 text-left font-semibold">Type</th>
-    <th className="px-3 py-3 text-left font-semibold">Gouvernorat</th>
-    <th className="px-3 py-3 text-left font-semibold">Email</th>
-    <th className="px-3 py-3 text-left font-semibold">Abonnement</th>
-    <th className="px-3 py-3 text-left font-semibold">Statut</th>
-    <th className="px-3 py-3 text-right font-semibold">Actions</th>
+    <th className="px-3 py-3 text-left font-semibold hidden dark:text-white dark:bg-navy-700/90 ">ID facture</th>
+    <th className="px-3 py-3 text-left font-semibold dark:text-white dark:bg-navy-700/90 ">Date</th>
+    <th className="px-3 py-3 text-left font-semibold dark:text-white dark:bg-navy-700/90 ">Établissement</th> {/* ex-Client */}
+    <th className="px-3 py-3 text-left font-semibold dark:text-white dark:bg-navy-700/90 ">Type</th>
+    <th className="px-3 py-3 text-left font-semibold dark:text-white dark:bg-navy-700/90 ">Gouvernorat</th>
+    <th className="px-3 py-3 text-left font-semibold dark:text-white dark:bg-navy-700/90 ">Email</th>
+    <th className="px-3 py-3 text-left font-semibold dark:text-white dark:bg-navy-700/90 ">Statut</th>
+    <th className="px-3 py-3 text-right font-semibold dark:text-white dark:bg-navy-700/90 ">Actions</th>
   </tr>
 </thead>
 
@@ -746,50 +899,80 @@ const onRowAction = (id, action) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.03 * idx }}
       transitionEnd={{ transform: "none" }}
-      className={`transition hover:bg-slate-50/70 relative ${idx % 2 === 0 ? "bg-white" : "bg-slate-50/40"} ${openRowMenu === row.id ? "z-[60]" : ""}`}
+      className={`transition hover:bg-slate-50/70 dark:text-white dark:bg-navy-800  relative ${idx % 2 === 0 ? "bg-white" : "bg-slate-50/40"} ${openRowMenu === row.id ? "z-[60]" : ""}`}
       style={openRowMenu === row.id ? { transform: "none" } : undefined}
     >
    
 
-      <td className="px-3 py-3 text-xs font-mono text-slate-500 hidden">{row.id}</td>
-      <td className="px-3 py-3 text-xs text-slate-500">{row.date}</td>
+      <td className="px-3 py-3 text-xs font-mono text-slate-500 hidden dark:text-white dark:bg-navy-800">{row.id}</td>
+      <td className="px-3 py-3 text-xs text-slate-500 dark:text-white dark:bg-navy-800">{row.date}</td>
 
       {/* Établissement (avatar + sous-ligne “Responsable facturation” peut rester) */}
-      <td className="px-3 py-3">
+      <td className="px-3 py-3 dark:text-white dark:bg-navy-800 ">
         <AvatarBubble name={row.client} color={row.avatarColor} />
       </td>
 
       {/* Type d’établissement */}
-      <td className="px-3 py-3">
+      <td className="px-3 py-3 dark:text-white dark:bg-navy-800 ">
         <TypeBadge type={row.type} />
       </td>
 
       {/* Gouvernorat */}
-      <td className="px-3 py-3 text-xs text-slate-600">{row.region}</td>
+      <td className="px-3 py-3 text-xs text-slate-600 dark:text-white dark:bg-navy-800 ">{row.region}</td>
 
-      <td className="px-3 py-3 text-xs text-slate-500">{row.email}</td>
-      <td className="px-3 py-3 text-xs text-slate-600">{row.abonnement}</td>
+      <td className="px-3 py-3 text-xs text-slate-500 dark:text-white dark:bg-navy-800 ">{row.email}</td>
 
-      <td className="px-3 py-3"><StatusPill status={row.status} /></td>
+      <td className="px-3 py-3 dark:text-white dark:bg-navy-800 "><StatusPill status={row.status} /></td>
 
-      <td className="relative px-3 py-3 text-right" data-row-menu>
-        <button
-          type="button"
-          data-row-menu
-          onClick={() => setOpenRowMenu(v => v === row.id ? null : row.id)}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 shadow-sm hover:text-slate-700 hover:border-slate-300 hover:shadow-[0_10px_24px_rgba(15,23,42,.20)] active:scale-95 transition"
-        >
-          <FiMoreVertical />
-        </button>
+    <td className="px-3 py-3 text-right dark:text-white dark:bg-navy-800 ">
+  <div className="inline-flex items-center gap-1.5">
+    <button
+      className="icon-btn dark:text-white"
+      title="Voir"
+      onClick={() => onRowAction(row.id, "view")}
+      aria-label="Voir"
+    >
+      <FiEye />
+    </button>
 
-        {openRowMenu === row.id && (
-          <div data-row-menu className="absolute right-2 top-12 z-[70] w-40 rounded-xl border border-slate-200 bg-white p-1 text-sm shadow-lg">
-            <button className="w-full rounded-lg px-3 py-2 text-left hover:bg-slate-50" onClick={() => onRowAction(row.id, "view")}>Voir</button>
-            <button className="w-full rounded-lg px-3 py-2 text-left hover:bg-slate-50" onClick={() => onRowAction(row.id, "resend")}>Relancer</button>
-            <button className="w-full rounded-lg px-3 py-2 text-left text-rose-600 hover:bg-rose-50" onClick={() => onRowAction(row.id, "delete")}>Supprimer</button>
-          </div>
-        )}
-      </td>
+    <button
+      className="icon-btn dark:text-white"
+      title="Modifier"
+      onClick={() => setEditRow(row)}
+      aria-label="Modifier"
+    >
+      <FiEdit2 />
+    </button>
+
+    <button
+      className="icon-btn dark:text-white"
+      title="Envoyer"
+      onClick={() => onRowAction(row.id, "send")}
+      aria-label="Envoyer"
+    >
+      <FiSend />
+    </button>
+
+    <button
+      className="icon-btn dark:text-white"
+      title="Exporter PDF"
+      onClick={() => exportPDF(row)}
+      aria-label="Exporter PDF"
+    >
+      <FiDownload />
+    </button>
+
+    <button
+      className="icon-btn danger dark:text-white"
+      title="Supprimer"
+      onClick={() => onRowAction(row.id, "delete")}
+      aria-label="Supprimer"
+    >
+      <FiTrash2 />
+    </button>
+  </div>
+</td>
+
     </motion.tr>
   ))}
 
@@ -819,7 +1002,23 @@ const onRowAction = (id, action) => {
     row={viewRow}
     onClose={() => setViewRow(null)}
   />
+  
 )}
+{editRow && (
+  <FactureModal
+    row={editRow}
+    onClose={() => setEditRow(null)}
+    onSave={(newRow) => {
+      setRows((prev) => {
+        const exists = prev.find((r) => r.id === newRow.id);
+        return exists
+          ? prev.map((r) => (r.id === newRow.id ? newRow : r))
+          : [...prev, newRow];
+      });
+    }}
+  />
+)}
+
 
     </div>
   );
@@ -836,7 +1035,8 @@ function PaginationStylesOnce() {
 .ukp-actions{display:flex;align-items:center;gap:6px}
 .pg-btn{
   min-width:36px;height:36px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;
-  border-radius:12px;border:1px solid rgba(2,6,23,.10);background:linear-gradient(180deg,#fff,#f6f7fb);
+  border-radius:12px;border:1px solid rgba(2,6,23,.10);
+  background:linear-gradient(180deg,#fff,#f6f7fb);
   font:800 13px ui-sans-serif;box-shadow:0 1px 0 rgba(0,0,0,.05),0 10px 18px rgba(2,6,23,.10);
   transition:transform .15s cubic-bezier(.2,.8,.2,1),box-shadow .2s,background .2s
 }
@@ -848,11 +1048,28 @@ function PaginationStylesOnce() {
 }
 .pg-ellipsis{min-width:36px;height:36px;display:inline-grid;place-items:center;font:800 13px ui-sans-serif;color:#94a3b8}
 .pg-btn:focus-visible{outline:none;box-shadow:0 8px 24px rgba(2,6,23,.12),0 0 0 4px rgba(99,102,241,.18)}
+
+/* ------- DARK MODE ------- */
+.dark .ukp-info{color:#cbd5e1}
+.dark .pg-btn{
+  color:#e2e8f0;
+  border-color:rgba(255,255,255,.08);
+  background:linear-gradient(180deg,#0b1220,#0f1b2d); /* navy */
+  box-shadow:0 1px 0 rgba(0,0,0,.6),0 10px 18px rgba(0,0,0,.45);
+}
+.dark .pg-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.6)}
+.dark .pg-btn.num.active{
+  color:#fff;border-color:transparent;
+  background:linear-gradient(135deg,#2563eb,#06b6d4);
+  box-shadow:0 10px 24px rgba(2,132,199,.35)
+}
+.dark .pg-ellipsis{color:#64748b}
 `;
     document.head.appendChild(s);
   }, []);
   return null;
 }
+
 function PaymentDetailModal({ row, onClose }) {
   // fallback si pas de lignes
   const lines = Array.isArray(row?.lines) && row.lines.length
@@ -926,7 +1143,6 @@ function PaymentDetailModal({ row, onClose }) {
           <div class="card">
             <h3>Détails</h3>
             <div class="kv">Date : ${row.date}</div>
-            <div class="kv">Abonnement : ${row.abonnement || "—"}</div>
             <div class="kv">Statut : ${row.status}</div>
           </div>
         </div>

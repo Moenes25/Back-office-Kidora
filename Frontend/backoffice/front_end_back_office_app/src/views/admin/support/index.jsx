@@ -3,7 +3,7 @@ import React, { useMemo, useState, useRef } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
 import {
   FiSearch, FiFilter, FiDownload, FiPlus, FiMoreVertical,
-  FiTrash2, FiCheckCircle, FiClock, FiArchive
+  FiTrash2, FiCheckCircle, FiClock, FiArchive,  FiChevronLeft, FiChevronRight  
 } from "react-icons/fi";
 import WidgetKids from "components/widget/Widget";
 
@@ -174,6 +174,106 @@ const BadgeStatut = ({ s }) => {
     </span>
   );
 };
+// --- Helpers pagination (style "Support") ---
+// fenêtre: [1] … [curr-1] [curr] [curr+1] … [last]
+function makePageWindow(curr, total, span = 1) {
+  const pages = new Set([1, total]);
+  for (let i = curr - span; i <= curr + span; i++) if (i >= 1 && i <= total) pages.add(i);
+  const arr = [...pages].sort((a,b)=>a-b);
+  const out = [];
+  for (let i = 0; i < arr.length; i++) {
+    out.push(arr[i]);
+    if (i < arr.length - 1 && arr[i+1] !== arr[i] + 1) out.push("…");
+  }
+  return out;
+}
+
+function SupportPagination({ page, pageCount, total, onPage }) {
+  const items = makePageWindow(page, pageCount, 1);
+  return (
+    <div className="ukp-wrap">
+      <div className="ukp-info">
+        Page <span className="font-semibold">{page}</span> / {pageCount} • {total} tickets
+      </div>
+
+      <div className="ukp-actions">
+        <button className="pg-btn" onClick={() => onPage(1)} disabled={page === 1} aria-label="Première">
+          «
+        </button>
+        <button className="pg-btn" onClick={() => onPage(Math.max(1, page - 1))} disabled={page === 1} aria-label="Précédent">
+          <FiChevronLeft />
+        </button>
+
+        {items.map((it, i) =>
+          it === "…" ? (
+            <span key={`e${i}`} className="pg-ellipsis">…</span>
+          ) : (
+            <button
+              key={it}
+              onClick={() => onPage(it)}
+              className={`pg-btn num ${it === page ? "active" : ""}`}
+              aria-current={it === page ? "page" : undefined}
+            >
+              {it}
+            </button>
+          )
+        )}
+
+        <button className="pg-btn" onClick={() => onPage(Math.min(pageCount, page + 1))} disabled={page === pageCount} aria-label="Suivant">
+          <FiChevronRight />
+        </button>
+        <button className="pg-btn" onClick={() => onPage(pageCount)} disabled={page === pageCount} aria-label="Dernière">
+          »
+        </button>
+      </div>
+    </div>
+  );
+}
+function PaginationStylesOnce() {
+  React.useEffect(() => {
+    const ID = "support-pagination-css";
+    if (document.getElementById(ID)) return;
+    const s = document.createElement("style");
+    s.id = ID;
+    s.textContent = `
+.ukp-wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;margin-top:4px}
+.ukp-info{font:700 12px/1.2 ui-sans-serif;color:#64748b}
+.ukp-actions{display:flex;align-items:center;gap:6px}
+.pg-btn{
+  min-width:36px;height:36px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;
+  border-radius:12px;border:1px solid rgba(2,6,23,.10);background:linear-gradient(180deg,#fff,#f6f7fb);
+  font:800 13px ui-sans-serif;box-shadow:0 1px 0 rgba(0,0,0,.05),0 10px 18px rgba(2,6,23,.10);
+  transition:transform .15s cubic-bezier(.2,.8,.2,1),box-shadow .2s,background .2s
+}
+.pg-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(2,6,23,.12)}
+.pg-btn:disabled{opacity:.45;transform:none;box-shadow:none;cursor:not-allowed}
+.pg-btn.num.active{
+  color:#fff;border-color:transparent;background:linear-gradient(135deg,#4f46e5,#06b6d4);
+  box-shadow:0 10px 24px rgba(79,70,229,.35)
+}
+.pg-ellipsis{min-width:36px;height:36px;display:inline-grid;place-items:center;font:800 13px ui-sans-serif;color:#94a3b8}
+.pg-btn:focus-visible{outline:none;box-shadow:0 8px 24px rgba(2,6,23,.12),0 0 0 4px rgba(99,102,241,.18)}
+
+/* ------- DARK MODE ------- */
+.dark .ukp-info{color:#cbd5e1}
+.dark .pg-btn{
+  color:#e2e8f0;
+  border-color:rgba(255,255,255,.08);
+  background:linear-gradient(180deg,#0b1220,#0f1b2d);
+  box-shadow:0 1px 0 rgba(0,0,0,.6),0 10px 18px rgba(0,0,0,.45);
+}
+.dark .pg-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.6)}
+.dark .pg-btn.num.active{
+  color:#fff;border-color:transparent;background:linear-gradient(135deg,#2563eb,#06b6d4);
+  box-shadow:0 10px 24px rgba(2,132,199,.35)
+}
+.dark .pg-ellipsis{color:#64748b}
+`;
+    document.head.appendChild(s);
+  }, []);
+  return null;
+}
+
 
 /* -------------------- Page -------------------- */
 export default function TicketsSupportFR_3D() {
@@ -377,15 +477,13 @@ const TicketIcon = (props) => (
 
   {/* -------- TABLE -------- */}
   <table className="uk-table no-ukp w-full min-w-[980px] border-separate [border-spacing:0_12px] text-left dark:text-white dark:bg-navy-800 dark:shadow-none">
-          <thead  className="
-      sticky top-0 z-10 bg-gray-100/90 backdrop-blur
-      text-[11px] uppercase tracking-wide text-gray-700
-      [&_th]:px-4 [&_th]:py-3 [&_th]:font-semibold
-      [&_th:first-child]:rounded-l-xl [&_th:last-child]:rounded-r-xl
-    ">
+  <thead className="sticky top-0 z-10 text-[11px] uppercase tracking-wide
+  bg-gray-100/90 text-gray-700 backdrop-blur
+  dark:bg-navy-700/90 dark:text-white">
+
             <tr>
               {["Demandeur","Sujet","Priorité","Agent","Date","Statut","Actions"].map((h)=>(
-                <th key={h} className="px-4 py-3">{h}</th>
+                <th key={h} className="px-4 py-3 dark:bg-navy-700/90">{h}</th>
               ))}
             </tr>
           </thead>
@@ -407,7 +505,7 @@ const TicketIcon = (props) => (
       <td className="px-4 py-4 whitespace-nowrap dark:bg-navy-800 dark:text-white">{r.date}</td>
       <td className="px-4 py-4 dark:bg-navy-800 dark:text-white"><BadgeStatut s={r.statut} /></td>
       <td className="px-4 py-4 dark:bg-navy-800 dark:text-white">
-        <div className="flex items-center justify-end gap-1">
+        <div className="flex items-center justify-end gap-1 dark:bg-navy-800 dark:text-white">
           <MenuActions
             onResolve={() => setStatut(absoluteIndex, "Résolu")}
             onArchive={() => setStatut(absoluteIndex, "Archivé")}
@@ -429,39 +527,13 @@ const TicketIcon = (props) => (
           </tbody>
         </table>
          {/* -------- PAGINATION (frère du <table>) -------- */}
-  <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-2 pb-2">
-    <div className="text-xs text-gray-600">
-      {filtered.length === 0
-        ? "0 résultat"
-        : `${start + 1}–${Math.min(start + PAGE_SIZE, filtered.length)} sur ${filtered.length} ticket(s)`}
-    </div>
+<SupportPagination
+  page={page}
+  pageCount={pageCount}
+  total={filtered.length}
+  onPage={(n) => setPage(n)}
+/>
 
-    <div className="flex items-center gap-1">
-      <button onClick={()=>setPage(1)} disabled={page===1}
-              className="h-9 w-9 rounded-lg border border-black/10 bg-white text-sm shadow-sm disabled:opacity-40 dark:text-slate-500">«</button>
-      <button onClick={()=>setPage(p=>Math.max(1,p-1))} disabled={page===1}
-              className="h-9 w-9 rounded-lg border border-black/10 bg-white text-sm shadow-sm disabled:opacity-40 dark:text-slate-500">‹</button>
-
-      {Array.from({length: Math.min(5, pageCount)}, (_,i) => {
-        let startWin = Math.max(1, Math.min(page-2, pageCount-4));
-        if (pageCount <= 5) startWin = 1;
-        const n = startWin + i;
-        return (
-          <button key={n} onClick={()=>setPage(n)}
-            className={[
-              "h-9 w-9 rounded-lg border text-sm font-semibold shadow-sm dark:text-slate-500",
-              n===page ? "bg-indigo-600 text-white border-indigo-600" : "bg-white border-black/10"
-            ].join(" ")}
-          >{n}</button>
-        );
-      })}
-
-      <button onClick={()=>setPage(p=>Math.min(pageCount,p+1))} disabled={page===pageCount}
-              className="dark:text-slate-500 h-9 w-9 rounded-lg border border-black/10 bg-white text-sm shadow-sm disabled:opacity-40">›</button>
-      <button onClick={()=>setPage(pageCount)} disabled={page===pageCount}
-              className="dark:text-slate-500 h-9 w-9 rounded-lg border border-black/10 bg-white text-sm shadow-sm disabled:opacity-40">»</button>
-    </div>
-  </div>
 
       </div>
 
@@ -538,6 +610,8 @@ const TicketIcon = (props) => (
 
       {/* style helpers */}
       <StyleOnce />
+      <PaginationStylesOnce />
+
     </div>
   );
 }
@@ -571,7 +645,7 @@ function MenuActions({ onResolve, onArchive, onDelete }) {
     <div className="relative">
       <button
         onClick={()=>setOpen(o=>!o)}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-black/10 bg-white text-slate-700 shadow-sm"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-black/10 bg-white text-slate-700 shadow-sm dark:bg-navy-800 dark:text-white"
         title="Actions"
       >
         <FiMoreVertical />

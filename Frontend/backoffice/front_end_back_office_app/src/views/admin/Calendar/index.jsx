@@ -22,7 +22,12 @@ import WidgetKids from "components/widget/Widget";
 /* ----------------------------- utils dates ----------------------------- */
 const dayNames = ["DIM", "LUN", "MAR", "MER", "JEU", "VEN", "SAM"];
 const monthNames = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
-
+  const fieldCls =
+  "dk-input rounded-xl px-3 py-2 border focus:outline-none " +
+  "focus:ring-2 focus:ring-indigo-300 " +
+  "border-black/10 text-slate-900 placeholder-slate-400 bg-white " +
+  "dark:border-white/10 dark:text-slate-100 dark:placeholder-slate-400 dark:bg-navy-700 " +
+  "dark:focus:ring-indigo-500/30";
 const startOfWeek = (d) => {
   const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const day = x.getDay();           // 0..6 (0 = dim)
@@ -163,7 +168,7 @@ useEffect(() => {
     <div className="fixed inset-0 z-[60] flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-[560px] max-w-[92vw] rounded-3xl bg-white p-6 shadow-2xl
-                      [transform:translateZ(0)] animate-[pop_.28s_cubic-bezier(.2,0,0,1)_both]">
+                      [transform:translateZ(0)] animate-[pop_.28s_cubic-bezier(.2,0,0,1)_both] dark:bg-navy-800 dark:text-slate-100 dark:border dark:border-white/10">
         <div className="mb-3 flex items-center justify-between">
            <h3 className="text-xl font-extrabold">
   {initial ? "Éditer un évènement" : "Ajouter un évènement"}
@@ -175,7 +180,7 @@ useEffect(() => {
           <label className="grid gap-1 text-sm">
             <span className="font-semibold">Titre</span>
             <input
-              className="rounded-xl border border-black/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              className={fieldCls}
               value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
               placeholder="Ex: Sortie sciences"
@@ -188,7 +193,7 @@ useEffect(() => {
 <label className="grid gap-1 text-sm">
   <span className="font-semibold">Type</span>
   <select
-    className="rounded-xl border border-black/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+    className={fieldCls}
     value={form.type}
     onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
   >
@@ -205,7 +210,7 @@ useEffect(() => {
   <span className="font-semibold">Nom</span>
   <div className="flex items-center gap-2">
     <select
-      className="flex-1 rounded-xl border border-black/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+     className={fieldCls}
       value={form.org}
       onChange={(e) => {
         const value = e.target.value;
@@ -245,7 +250,7 @@ useEffect(() => {
     <span className="font-semibold">Date</span>
     <input
       type="date"
-      className="rounded-xl border border-black/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+      className={fieldCls}
       value={form.date}
       onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
     />
@@ -259,7 +264,7 @@ useEffect(() => {
               <span className="font-semibold">Début</span>
               <input
                 type="time"
-                className="rounded-xl border border-black/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                className={fieldCls}
                 value={form.start}
                 onChange={(e) => setForm((f) => ({ ...f, start: e.target.value }))}
               />
@@ -268,7 +273,7 @@ useEffect(() => {
               <span className="font-semibold">Fin</span>
               <input
                 type="time"
-                className="rounded-xl border border-black/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                className={fieldCls}
                 value={form.end}
                 onChange={(e) => setForm((f) => ({ ...f, end: e.target.value }))}
               />
@@ -279,7 +284,7 @@ useEffect(() => {
             <span className="font-semibold">Description (optionnel)</span>
             <textarea
               rows={3}
-              className="resize-none rounded-xl border border-black/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              className={fieldCls}
               value={form.desc}
               onChange={(e) => setForm((f) => ({ ...f, desc: e.target.value }))}
               placeholder="Détails, lieu, matériel…"
@@ -324,20 +329,20 @@ function SuggestionPopup({ open, onClose, onPick }) {
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" onClick={onClose} />
-      <div className="relative w-[420px] max-w-[92vw] rounded-2xl bg-white p-5 shadow-2xl animate-[pop_.22s_ease-out_both]">
+      <div className="relative w-[420px] max-w-[92vw] rounded-2xl bg-white p-5 shadow-2xl animate-[pop_.22s_ease-out_both] dark:bg-navy-800 dark:text-slate-100 dark:border dark:border-white/10">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-lg font-extrabold">Suggestion IA </h3>
           <button onClick={onClose} className="rounded-lg px-2 py-1 text-sm text-gray-500 hover:bg-gray-100">✕</button>
         </div>
 
-        <p className="mb-4 text-sm text-slate-600">
+        <p className="mb-4 text-sm text-slate-600 dark:text-white ">
           Choisis un <strong>type d’établissement</strong> pour pré-remplir un évènement :
         </p>
 
         <div className="grid grid-cols-1 gap-2">
           <button
             onClick={() => onPick("creches")}
-            className="flex items-center justify-between rounded-xl border border-black/10 bg-white px-4 py-3 text-left hover:bg-violet-50"
+            className="flex items-center justify-between rounded-xl border border-black/10 bg-white px-4 py-3 text-left hover:bg-violet-50 dark:bg-navy-700 dark:text-white"
           >
             <span className="font-semibold">Crèche</span>
             <span className="rounded-full bg-[#a78bfa]/15 px-2.5 py-0.5 text-xs font-bold text-[#6d28d9]">crèches</span>
@@ -345,7 +350,7 @@ function SuggestionPopup({ open, onClose, onPick }) {
 
           <button
             onClick={() => onPick("garderies")}
-            className="flex items-center justify-between rounded-xl border border-black/10 bg-white px-4 py-3 text-left hover:bg-amber-50"
+            className="dark:bg-navy-700 dark:text-white flex items-center justify-between rounded-xl border border-black/10 bg-white px-4 py-3 text-left hover:bg-amber-50"
           >
             <span className="font-semibold">Garderie</span>
             <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700">garderies</span>
@@ -353,7 +358,7 @@ function SuggestionPopup({ open, onClose, onPick }) {
 
           <button
             onClick={() => onPick("ecoles")}
-            className="flex items-center justify-between rounded-xl border border-black/10 bg-white px-4 py-3 text-left hover:bg-emerald-50"
+            className="dark:bg-navy-700 dark:text-white flex items-center justify-between rounded-xl border border-black/10 bg-white px-4 py-3 text-left hover:bg-emerald-50"
           >
             <span className="font-semibold">École</span>
             <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-700">écoles</span>
@@ -361,7 +366,7 @@ function SuggestionPopup({ open, onClose, onPick }) {
         </div>
 
         {/* mini note */}
-        <p className="mt-4 text-xs text-slate-500">
+        <p className="mt-4 text-xs text-slate-500 dark:text-white ">
           (Étape suivante : brancher un modèle IA pour générer titre/horaires automatiquement.)
         </p>
 
@@ -391,15 +396,16 @@ function EventCard({ ev, onEdit }) {
 
   // évite l’effet “bord qui décale” : ligne décorative fine, décalée d’1px et overflow-hidden
   return (
-    <button
-      onClick={() => onEdit(ev)}
-      className={[
-        "group relative w-full rounded-2xl border border-black/5 bg-white p-3 text-left overflow-hidden",
-        "shadow-[0_12px_30px_-18px_rgba(2,6,23,.25)] transition",
-        "hover:-translate-y-0.5 hover:shadow-[0_22px_45px_-18px_rgba(2,6,23,.28)]",
-        "ring-1", c.ring
-      ].join(" ")}
-    >
+   <button
+  onClick={() => onEdit(ev)}
+  className={[
+    "group relative w-full rounded-2xl p-3 text-left overflow-hidden ring-1",
+    "border border-black/5 bg-white shadow-[0_12px_30px_-18px_rgba(2,6,23,.25)]",
+    "hover:-translate-y-0.5 hover:shadow-[0_22px_45px_-18px_rgba(2,6,23,.28)]",
+    "dark:bg-navy-800 dark:border-white/10 dark:shadow-none", // <-- clé
+    c.ring
+  ].join(" ")}
+>
       {/* halo subtil au survol */}
       <span
         aria-hidden
@@ -410,7 +416,7 @@ function EventCard({ ev, onEdit }) {
       {/* ligne décorative gauche (fine et décalée pour ne pas “manger” la carte) */}
       <span
         aria-hidden
-        className={"absolute left-1 top-0 h-full w-[4px] rounded-l-2xl bg-gradient-to-b " + c.accent}
+       className={"absolute left-1 top-0 h-full w-[4px] rounded-l-2xl bg-gradient-to-b " + c.accent}
       />
      
 
@@ -426,21 +432,21 @@ function EventCard({ ev, onEdit }) {
 
  
 </div>
- {ev.date && (
+  {/* pastilles/gris clair -> versions dark */}
+  {ev.date && (
     <div className="mb-2">
-    <span
-      className="truncate rounded-full border border-black/10 bg-gray-50 px-2 py-0.5 text-[11px] text-gray-600 max-w-[120px]"
-      title={fmtDateShort(ev.date)}
-    >
-      {fmtDateShort(ev.date)}
-    </span>
+      <span className="truncate rounded-full border px-2 py-0.5 text-[11px]
+                       border-black/10 bg-gray-50 text-gray-600
+                       dark:border-white/10 dark:bg-navy-700 dark:text-slate-300">
+        {fmtDateShort(ev.date)}
+      </span>
     </div>
   )}
-
-{/* Heures (sous l'en-tête) */}
-{(ev.start || ev.end) && (
-  <div className="mb-2">
-    <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full border border-black/10 bg-gray-50 px-0 py-0.5 text-[11px] font-semibold text-gray-600">
+  {(ev.start || ev.end) && (
+    <div className="mb-2">
+      <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-1 py-0.5 text-[11px] font-semibold
+                       border-black/10 bg-gray-50 text-gray-600
+                       dark:border-white/10 dark:bg-navy-700 dark:text-slate-300">
       {/* petite icône horloge optionnelle */}
       <svg width="12" height="12" viewBox="0 0 24 24" className="opacity-60">
         <path fill="currentColor" d="M12 2a10 10 0 1 0 .001 20.001A10 10 0 0 0 12 2m1 10.59l3.3 1.9l-.5.86L11 13V7h1z"/>
@@ -465,15 +471,13 @@ function EventCard({ ev, onEdit }) {
 
 
       {/* Titre */}
-      <div className="text-[15px] font-extrabold leading-snug tracking-tight text-slate-900">
-        {ev.title}
-      </div>
-
-      {/* Description (optionnelle) */}
-      {ev.desc && (
-        <div className="mt-1 text-[12px] leading-5 text-slate-500 line-clamp-3">
-          {ev.desc}
-        </div>
+        <div className="text-[15px] font-extrabold leading-snug tracking-tight text-slate-900 dark:text-slate-100">
+    {ev.title}
+  </div>
+  {ev.desc && (
+    <div className="mt-1 text-[12px] leading-5 text-slate-500 dark:text-slate-400 line-clamp-3">
+      {ev.desc}
+    </div>
       )}
 
       {/* Invités / puces en bas */}
@@ -621,24 +625,27 @@ function MiniCalendarPopover({ open, onClose, value, onPick, eventsByDate }) {
 
   return (
     <div className="absolute top-full mt-2 ml-20 z-[60]">
-      <div className="rounded-2xl bg-white p-4 shadow-2xl border border-black/10 w-[280px]">
+      <div className="w-[280px] rounded-2xl border bg-white p-4 shadow-2xl border-black/10
+                  dark:bg-navy-800 dark:border-white/10">
 
         {/* HEADER AVEC FLÈCHES */}
         <div className="mb-2 flex items-center justify-between">
           <button
             onClick={prevMonth}
-            className="rounded-lg p-1 hover:bg-gray-100 text-gray-600"
+           className="rounded-lg p-1 text-gray-600 hover:bg-gray-100
+                         dark:text-slate-300 dark:hover:bg-navy-700"
           >
             ‹
           </button>
 
-          <div className="text-sm font-extrabold">
+          <div className="text-sm font-extrabold dark:text-slate-100">
             {monthNames[value.getMonth()]} {value.getFullYear()}
           </div>
 
           <button
             onClick={nextMonth}
-            className="rounded-lg p-1 hover:bg-gray-100 text-gray-600"
+           className="relative h-9 rounded-lg text-sm font-semibold hover:bg-indigo-50
+                         dark:text-slate-100 dark:hover:bg-navy-700"
           >
             ›
           </button>
@@ -1001,7 +1008,7 @@ const countsThisWeek = React.useMemo(() => {
 
 
   return (
-    <div className="p-6 relative">
+   <div className="relative p-6 dark:bg-navy-900 dark:text-slate-100">
 
       <KPIStyles />
 
@@ -1090,7 +1097,8 @@ const countsThisWeek = React.useMemo(() => {
 
         {/* Sélecteur de type stylé (3 pastilles) */}
         <div className="flex items-center gap-3">
-         <div className="flex items-center gap-1 rounded-2xl border border-black/10 bg-white px-1 py-1 shadow-sm">
+     <div className="flex items-center gap-1 rounded-2xl border bg-white px-1 py-1 shadow-sm
+                border-black/10 dark:bg-navy-800 dark:border-white/10 dark:shadow-none">
 
             {TYPES.map((t) => {
               const active = t === filterType;
@@ -1136,7 +1144,9 @@ const countsThisWeek = React.useMemo(() => {
       </div>
 
       {/* Grille hebdo */}
-     <div className="rounded-3xl border border-black/10 bg-white p-3 shadow-[0_24px_70px_-25px_rgba(2,6,23,.25)]">
+    <div className="rounded-3xl border border-black/10 bg-white p-3 shadow-[0_24px_70px_-25px_rgba(2,6,23,.25)]
+            dark:bg-navy-800 dark:border-white/10">
+
         {/* entêtes jours */}
         <div className="grid grid-cols-7 gap-3 px-1">
           {days.map((d, i) => {
@@ -1144,12 +1154,18 @@ const countsThisWeek = React.useMemo(() => {
             return (
               <div key={i} className="pb-2">
                 <div className={[
-                  "flex h-16 flex-col items-center justify-center rounded-2xl border border-black/10 text-center",
-                  isToday ? "bg-gradient-to-br from-indigo-50 to-sky-50 ring-1 ring-indigo-200" : "bg-white",
-                ].join(" ")}>
-                  <div className="text-[11px] font-bold uppercase tracking-wide text-gray-500">{dayNames[d.getDay()]}</div>
-                  <div className={["text-xl font-black", isToday ? "text-indigo-600" : ""].join(" ")}>{d.getDate()}</div>
-                </div>
+  "flex h-16 flex-col items-center justify-center rounded-2xl border text-center",
+  "border-black/10 bg-white",
+  "dark:bg-navy-700/60 dark:border-white/10"
+].join(" ")}>
+  <div className="text-[11px] font-bold uppercase tracking-wide text-gray-500 dark:text-slate-300">
+    {dayNames[d.getDay()]}
+  </div>
+  <div className={["text-xl font-black", isToday ? "text-indigo-600 dark:text-indigo-400" : "dark:text-slate-100"].join(" ")}>
+    {d.getDate()}
+  </div>
+</div>
+
               </div>
             );
           })}
@@ -1168,20 +1184,22 @@ const countsThisWeek = React.useMemo(() => {
             return (
               <div key={i}
                    className={[
-                     "min-h-[520px] rounded-2xl p-2",
-                     "bg-white/60 backdrop-blur-sm border border-black/5 shadow-inner",
-                     "relative overflow-hidden",
-                   ].join(" ")}>
-                {/* bande douce en haut de chaque colonne (couleur du type) */}
-                <span className={"absolute left-0 right-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r " + meta.accent} />
+    "min-h-[520px] rounded-2xl p-2 relative overflow-hidden",
+    "bg-white/60 backdrop-blur-sm border border-black/5 shadow-inner",
+    "dark:bg-navy-800/70 dark:border-white/10 dark:shadow-none"
+  ].join(" ")}
+>
+  <span className={"absolute left-0 right-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r " + meta.accent} />
 
                 {/* bouton + en haut */}
-                <button
-                  onClick={() => openNew(iso)}
-                  className="mb-2 grid h-10 w-full place-items-center rounded-xl border border-dashed border-black/10 bg-white text-sm text-gray-500 hover:bg-gray-50"
-                >
-                  +
-                </button>
+             <button
+    onClick={()=>openNew(iso)}
+    className="mb-2 grid h-10 w-full place-items-center rounded-xl border border-dashed
+               border-black/10 bg-white text-sm text-gray-600 hover:bg-gray-50
+               dark:border-white/10 dark:bg-navy-700 dark:text-slate-200 dark:hover:bg-navy-600"
+  >
+    +
+  </button>
 
                 <div className="space-y-3">
                   {dayEvents.map((ev) => (
@@ -1226,3 +1244,11 @@ const countsThisWeek = React.useMemo(() => {
     </div>
   );
 }
+{/* à la fin du fichier (comme tes styles KPI) */}
+<style>{`
+  .dk-input{
+    border-radius:12px;border:1px solid rgba(255,255,255,.08);padding:10px 12px;
+    background:#0f1b2d;color:#e2e8f0
+  }
+  .dk-input:focus{outline:none;box-shadow:0 0 0 4px rgba(99,102,241,.22)}
+`}</style>
