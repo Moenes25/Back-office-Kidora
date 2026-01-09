@@ -98,52 +98,76 @@ export default function DashboardCharts() {
     };
   }, [stats, sansAbonnement]);
 
-  /* -------- Line -------- */
-  const lineOption = useMemo(() => {
-    const { text, sub, axis, grid, tooltipBg, tooltipBorder } = uiColors();
-    return {
-      backgroundColor: "transparent",
-      tooltip: { trigger: "axis", backgroundColor: tooltipBg, borderColor: tooltipBorder, textStyle: { color: text } },
-      grid: { left: "4%", right: "4%", bottom: "12%", containLabel: true },
-      xAxis: {
-        type: "category",
-        data: ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin"],
-        axisLine: { lineStyle: { color: axis } },
-        axisLabel: { color: sub },
-      },
-      yAxis: {
-        type: "value",
-        axisLine: { show: false },
-        axisLabel: { color: sub },
-        splitLine: { lineStyle: { color: grid, type: "dashed" } },
-      },
-      color: ["#3b82f6", "#8b5cf6"],
-      series: [
-        { name: "Payé", type: "line", smooth: true, data: [30, 50, 70, 90, 100, 110] },
-        { name: "Impayé", type: "line", smooth: true, data: [70, 50, 40, 30, 20, 10] },
-      ],
-    };
-  }, []);
+/* -------- Line (avec labels d’axes) -------- */
+const lineOption = useMemo(() => {
+  const { text, sub, axis, grid, tooltipBg, tooltipBorder } = uiColors();
+  return {
+    backgroundColor: "transparent",
+    tooltip: { trigger: "axis", backgroundColor: tooltipBg, borderColor: tooltipBorder, textStyle: { color: text } },
+    grid: { left: 56, right: 16, bottom: 60, top: 30 }, // un peu plus d’espace pour les noms d’axes
+    xAxis: {
+      type: "category",
+      data: ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin"],
+      axisLine: { lineStyle: { color: axis } },
+      axisLabel: { color: sub },
+      name: "Mois",
+      nameLocation: "middle",
+      nameGap: 40,
+      nameTextStyle: { color: sub, fontWeight: 700 },
+    },
+    yAxis: {
+      type: "value",
+      axisLine: { show: false },
+      axisLabel: { color: sub },
+      splitLine: { lineStyle: { color: grid, type: "dashed" } },
+      name: "Montants",
+      nameLocation: "middle",
+      nameGap: 45,
+      nameTextStyle: { color: sub, fontWeight: 700 },
+    },
+    color: ["#3b82f6", "#8b5cf6"],
+    series: [
+      { name: "Payé", type: "line", smooth: true, data: [30, 50, 70, 90, 100, 110] },
+      { name: "Impayé", type: "line", smooth: true, data: [70, 50, 40, 30, 20, 10] },
+    ],
+  };
+}, []);
 
-  /* -------- Bars -------- */
-  const barsOption = useMemo(() => {
-    if (!stats) return {};
-    const { sub, grid, tooltipBg, tooltipBorder, text } = uiColors();
-    return {
-      backgroundColor: "transparent",
-      tooltip: { trigger: "axis", backgroundColor: tooltipBg, borderColor: tooltipBorder, textStyle: { color: text } },
-      xAxis: { type: "category", data: ["Payé", "Dû"], axisLabel: { color: sub } },
-      yAxis: {
-        type: "value",
-        axisLabel: { color: sub },
-        splitLine: { lineStyle: { type: "dashed", color: grid } },
-      },
-      color: ["#3b82f6", "#8b5cf6"],
-      series: [
-        { name: "Montants", type: "bar", barWidth: 30, data: [stats.montant_total_paye, stats.montant_total_du] },
-      ],
-    };
-  }, [stats]);
+
+/* -------- Bars (avec labels d’axes) -------- */
+const barsOption = useMemo(() => {
+  if (!stats) return {};
+  const { sub, grid, tooltipBg, tooltipBorder, text, axis } = uiColors();
+  return {
+    backgroundColor: "transparent",
+    tooltip: { trigger: "axis", backgroundColor: tooltipBg, borderColor: tooltipBorder, textStyle: { color: text } },
+    grid: { left: 56, right: 16, bottom: 56, top: 24 },
+    xAxis: {
+      type: "category",
+      data: ["Payé", "Dû"],
+      axisLabel: { color: sub },
+      axisLine: { lineStyle: { color: axis } },
+      name: "Catégories",
+      nameLocation: "middle",
+      nameGap: 36,
+      nameTextStyle: { color: sub, fontWeight: 700 },
+    },
+    yAxis: {
+      type: "value",
+      axisLabel: { color: sub, formatter: (v) => v.toLocaleString("fr-FR") },
+      splitLine: { lineStyle: { type: "dashed", color: grid } },
+      name: "TND",
+      nameLocation: "middle",
+      nameGap: 45,
+      nameTextStyle: { color: sub, fontWeight: 700 },
+    },
+    color: ["#3b82f6", "#8b5cf6"],
+    series: [
+      { name: "Montants", type: "bar", barWidth: 30, data: [stats.montant_total_paye, stats.montant_total_du] },
+    ],
+  };
+}, [stats]);
+
 
   if (!stats) return <p>Chargement...</p>;
 
