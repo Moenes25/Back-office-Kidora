@@ -27,5 +27,8 @@ public class Enfants {
 
     @DBRef
     private Users parent; // référence vers le parent
+    @DBRef
+    private Users admin; // référence vers l'admin
+
 
 }

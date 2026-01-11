@@ -25,15 +25,21 @@ public class JwtFilter  extends OncePerRequestFilter{
     private final JwtUtils jwtUtils;
     private static final List<String> PUBLIC_URLS = List.of(
             "/api/client/register",
-            "/api/client/login"
+            "/api/client/login",
+            "/v3/api-docs",
+            "/v3/api-docs/",
+            "/v3/api-docs/**",
+            "/swagger-ui",
+            "/swagger-ui/",
+            "/swagger-ui/**",
+            "/swagger-ui.html"
     );
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String path = request.getRequestURI();
 
-        // Ignorer les endpoints publics
-        if (PUBLIC_URLS.contains(path)) {
+        if (PUBLIC_URLS.stream().anyMatch(path::startsWith)) {
             filterChain.doFilter(request, response);
             return;
         }

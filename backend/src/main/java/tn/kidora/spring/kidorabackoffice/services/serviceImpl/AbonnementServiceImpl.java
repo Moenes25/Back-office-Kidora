@@ -7,15 +7,19 @@ import org.springframework.stereotype.Service;
 
 import tn.kidora.spring.kidorabackoffice.dto.AbonnementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.AbonnementResponseDTO;
+import tn.kidora.spring.kidorabackoffice.dto.FactureRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.PaiementHistoriqueDto;
 import tn.kidora.spring.kidorabackoffice.entities.Abonnement;
 import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
+import tn.kidora.spring.kidorabackoffice.entities.MethodePaiement;
 import tn.kidora.spring.kidorabackoffice.entities.StatutPaiement;
 import tn.kidora.spring.kidorabackoffice.repositories.AbonnementRepository;
 import tn.kidora.spring.kidorabackoffice.repositories.Etablissement_Repository;
 import tn.kidora.spring.kidorabackoffice.services.AbonnementService;
+import tn.kidora.spring.kidorabackoffice.services.FactureService;
 import tn.kidora.spring.kidorabackoffice.utils.mapper.AbonnementMapper;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +29,7 @@ public class AbonnementServiceImpl implements  AbonnementService{
 Etablissement_Repository etablissementRepository;
 AbonnementRepository abonnementRepository;
 AbonnementMapper abonnementMapper;
+FactureService  factureService;
     @Override
     public ResponseEntity<AbonnementResponseDTO> addAbonnement(AbonnementRequestDTO dto) {
         if (dto.getEtablissementId() == null) {
@@ -39,19 +44,20 @@ AbonnementMapper abonnementMapper;
         abonnement.setMontantPaye(dto.getMontantPaye());
         abonnement.setMontantDu(dto.getMontantDu());
         abonnement.setStatut(dto.getStatut());
+        abonnement.setFormule(dto.getFormule());
         abonnement.setEtablissement(etab);
 
         Abonnement saved = abonnementRepository.save(abonnement);
+       /* FactureRequestDTO factureRequest = new FactureRequestDTO();
+        factureRequest.setAbonnementId(saved.getIdAbonnement());
+        factureRequest.setMethode(MethodePaiement.ESPECES); // ou PAYPAL, etc.
+        factureRequest.setReference("FAC-" + LocalDate.now().getYear() + "-" + System.currentTimeMillis());
 
-        // AbonnementResponseDTO response = new AbonnementResponseDTO();
-        // response.setIdAbonnement(saved.getIdAbonnement());
-        // response.setDateDebutAbonnement(saved.getDateDebutAbonnement());
-        // response.setDateFinAbonnement(saved.getDateFinAbonnement());
-        // response.setMontantPaye(saved.getMontantPaye());
-        // response.setMontantDu(saved.getMontantDu());
-        // response.setStatut(saved.getStatut());
-        // response.setEtablissement(null);
-        AbonnementResponseDTO response =abonnementMapper.toResponseDTO(saved);
+        factureService.creerFacture(factureRequest);
+        System.out.println("✅ Facture créée automatiquement pour l’abonnement " + saved.getIdAbonnement());
+
+
+       */ AbonnementResponseDTO response =abonnementMapper.toResponseDTO(saved);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -156,7 +162,7 @@ return  ResponseEntity.ok(response);
         return abonnementRepository.getRepartitionParTypeEtablissement(annee);
     }
 
-    @Override
+   /* @Override
     public List<PaiementHistoriqueDto> getHistoriquePaiements() {
         List<Abonnement> abonnements = abonnementRepository.findAll();
 
@@ -176,5 +182,5 @@ return  ResponseEntity.ok(response);
             dto.setStatutFacture(abo.getStatutFacture());
             return dto;
         }).toList();
-    }
+    }*/
 }

@@ -7,12 +7,13 @@ import tn.kidora.spring.kidorabackoffice.entities.Client.Users;
 import tn.kidora.spring.kidorabackoffice.entities.User;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ClientRepo extends MongoRepository<Users,String> {
     boolean existsByEmail(String email);
-    Users findByEmail(String email);
-    List<Users> findByRole(RoleUsers role);
 
+    List<Users> findByRole(RoleUsers role);
+    Optional<Users> findByEmail(String email);
     String Id(String id);
 }

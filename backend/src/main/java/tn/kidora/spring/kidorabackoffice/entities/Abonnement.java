@@ -24,12 +24,12 @@ public class Abonnement {
     private Double montantDu;
 
     private StatutPaiement statut;
-    private String formule ;
+    private FormuleAbonnement formule ;
     // Informations de facture (1 facture pour cet abonnement)
-    private String referenceFacture;
-    private LocalDate dateFacture;
-    private StatutFacture statutFacture;
-    private boolean envoyee;
+   // private String referenceFacture;
+   // private LocalDate dateFacture;
+  //  private StatutFacture statutFacture;
+    //private boolean envoyee;
 
 
     @DocumentReference

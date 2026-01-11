@@ -71,6 +71,15 @@ public class Constants {
     public static final String ANALYTICS_REPARTITION_STATUT = "/repartition/statut";
     public static final String ANALYTICS_EVOLUTION_MENSUELLE = "/evolution-mensuelle";
 
+    //----------------------Factures------------------------
+    public static final String FACTURE = "/factures";
+    public static final String ADD_FACTURE = "/add/facture";
+    public static final String FACTURE_TOTAL = "/total";
+    public static final String FACTURE_TOTAL_PAYEES = "/total/payees";
+    public static final String FACTURE_TOTAL_IMPAYEES = "/total/impayees";
+    public static final String FACTURE_ALL = "/all";
+    public static final String FACTURE_BY_ID = "/{id}";
+
 
 
 

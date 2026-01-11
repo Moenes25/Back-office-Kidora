@@ -49,7 +49,12 @@ public class SecurityConfig {
                Constants.APP_ROOT+Constants.ETABLISSEMENT+"/create-test-etablissement",
                 Constants.APP_ROOT+Constants.ABONNEMENT+"/create-test-abonnement",
                 Constants.APP_ROOT+Constants.EVENEMENT+"/create-test-evenement",
-                Constants.APP_ROOT + Constants.ABONNEMENT+"/repartition-annuelle"
+                Constants.APP_ROOT + Constants.ABONNEMENT+"/repartition-annuelle",
+                               "/swagger-ui/**",
+                               "/swagger-ui.html",
+                               "/v3/api-docs/**",
+                               "/swagger-resources/**",
+                               "/webjars/**"
                ).permitAll()
                                .requestMatchers(Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.SAVE,
                                                 Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.UPDATE,
@@ -58,7 +63,7 @@ public class SecurityConfig {
                                                 ).hasAnyRole("ADMIN_GENERAL","SUPER_ADMIN")
   
                               .requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.REGISTER).hasRole("SUPER_ADMIN")
-                              .anyRequest().permitAll())
+                              .anyRequest().authenticated())
                      
                      
              .addFilterBefore(new JwtFilter(customUserDetailsService, jwtUtils), UsernamePasswordAuthenticationFilter.class)

@@ -16,7 +16,7 @@ public interface AbonnementService {
     ResponseEntity<List<AbonnementResponseDTO>> getAbonnementsByEtablissement(String etablissementId);
     ResponseEntity<List<AbonnementResponseDTO>> getByStatut(String statut);
     List<Map<String, Object>> getRepartitionAnnuelle(int annee);
-    List<PaiementHistoriqueDto> getHistoriquePaiements();
+   // List<PaiementHistoriqueDto> getHistoriquePaiements();
     
 
 

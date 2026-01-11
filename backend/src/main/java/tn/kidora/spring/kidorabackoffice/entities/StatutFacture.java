@@ -1,8 +1,7 @@
 package tn.kidora.spring.kidorabackoffice.entities;
 
-public enum StatutFacture {
-    EN_ATTENTE,   // à payer
+public enum StatutFacture {// à payer
     PAYEE,
     IMPAYEE,
-    ANNULEE
+    EN_COURS
 }
