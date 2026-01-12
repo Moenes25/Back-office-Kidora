@@ -18,11 +18,15 @@ const NeonPanel = ({ title, subtitle, children }) =>
     const cardBg = { background: "linear-gradient(180deg,rgba(8,47,73,.55),rgba(2,6,23,.65))" };
      /* =========================== KPIs ============================== */
       function useTicker(base, wobble = 0.03) { const [v, setV] = useState(base); useEffect(() => { const id = setInterval(() => { setV((x) => +(x * (1 + (Math.random() * 2 - 1) * wobble)).toFixed(2)); }, 1500); return () => clearInterval(id); }, [wobble]); return v; } 
-     function KpiSpark({
+function KpiSpark({
   label,
   unit = "",
-  color = "#22d3ee",
-  gradient = "linear-gradient(135deg,#6366f1,#06b6d4)", // ⬅️ même API que KPI
+  // color = couleur de la LIGNE (spark)
+  color = "#fff",
+  // gradient = fond de la carte ; si absent on prend `bgColor`
+  gradient,
+  // bgColor = fond uni si tu ne veux pas de gradient
+  bgColor,
 }) {
   const [data, setData] = React.useState(() =>
     Array.from({ length: 40 }, () => 0)
@@ -51,12 +55,19 @@ const NeonPanel = ({ title, subtitle, children }) =>
           data,
           smooth: true,
           showSymbol: false,
-          lineStyle: { width: 2, color, shadowBlur: 12, shadowColor: echarts.color.parse(color) },
+          lineStyle: {
+            width: 2,
+            color,                                  // ✅ couleur de la courbe
+            shadowBlur: 10,
+            shadowColor: "rgba(0,0,0,.25)",
+          },
+          // léger remplissage sous la courbe, dans la même teinte
           areaStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: echarts.color.modifyHSL(color, 0, 0, 0.75) },
-              { offset: 1, color: "rgba(0,0,0,0)" },
-            ]),
+            color:
+              new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: `${color}cc` }, // ~80% opacité
+                { offset: 1, color: `${color}00` }, // 0% opacité
+              ]),
           },
           animationDuration: 600,
           animationDurationUpdate: 600,
@@ -66,39 +77,38 @@ const NeonPanel = ({ title, subtitle, children }) =>
     [data, color]
   );
 
+  // ✅ fond de la carte = gradient OU couleur unie
+  const cardStyle = {
+    background: gradient ? gradient : (bgColor ?? "#111827"),
+  };
+
   return (
     <div
       className="
-        relative overflow-hidden rounded-2xl border border-white/50 bg-white/70 backdrop-blur-md
-        shadow-[0_14px_48px_rgba(2,6,23,.12)] min-h-[120px] p-3
+        relative overflow-hidden rounded-2xl
+        min-h-[120px] p-3 shadow-[0_14px_48px_rgba(2,6,23,.12)]
+        text-white
       "
+      style={cardStyle}
     >
-      {/* film de couleur (même que KPI du calendar) */}
-      <div className="absolute inset-0 opacity-25 z-0" style={{ background: gradient }} />
+      {/* pas de film, pas de blur */}
+      <div className="flex items-baseline justify-between">
+        <span className="text-white/80 text-xs">{label}</span>
+        <span className="text-white/60 text-xs">{unit}</span>
+      </div>
 
-      {/* petits effets comme dans KPI */}
-      <div className="pointer-events-none absolute -top-6 -right-6 h-28 w-28 rounded-full bg-white/60 blur-2xl kpi-float z-0" />
-      <div className="pointer-events-none absolute -left-1/3 -top-1/2 h-[220%] w-1/3 rotate-[14deg] bg-white/40 blur-md kpi-shine z-0" />
+      <div className="mt-1 text-2xl font-extrabold tracking-tight">
+        {value}
+        <span className="ml-1 text-sm text-white/70">{unit}</span>
+      </div>
 
-      {/* contenu */}
-      <div className="relative z-10">
-        <div className="flex items-baseline justify-between">
-          <span className="text-slate-600 text-xs">{label}</span>
-          <span className="text-slate-500 text-xs">{unit}</span>
-        </div>
-
-        <div className="mt-1 text-2xl font-extrabold tracking-tight text-slate-900">
-          {value}
-          <span className="ml-1 text-sm text-slate-500">{unit}</span>
-        </div>
-
-        <div className="mt-2 h-10">
-          <ReactECharts option={option} style={{ height: 40 }} notMerge />
-        </div>
+      <div className="mt-2 h-10">
+        <ReactECharts option={option} style={{ height: 40 }} notMerge />
       </div>
     </div>
   );
 }
+
 function KPIStyles() {
   return (
     <style>{`
@@ -451,17 +461,38 @@ export default function AnalyseIA() {
   return (
     <div className="space-y-5">
       {/* KPI Row */} 
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5"> 
-    <KpiSpark label="Requêtes / s" color="#22d3ee"
-  gradient="linear-gradient(135deg,#6366f1,#06b6d4)" />
-<KpiSpark label="Latence p95 (ms)" unit="ms" color="#60a5fa"
-  gradient="linear-gradient(135deg,#60a5fa,#3b82f6)" />
-<KpiSpark label="Erreurs (%)" unit="%" color="#fb7185"
-  gradient="linear-gradient(135deg,#f59e0b,#ef4444)" />
-<KpiSpark label="Utilisateurs actifs" color="#34d399"
-  gradient="linear-gradient(135deg,#10b981,#22d3ee)" />
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+  {/* fond uni indigo, spark blanc */}
+  <KpiSpark
+    label="Requêtes / s"
+    bgColor="#4f46e5"
+    color="#ffffff"
+  />
 
-     </div>
+  {/* fond gradient bleu, spark blanc */}
+  <KpiSpark
+    label="Latence p95 (ms)"
+    unit="ms"
+    gradient="linear-gradient(135deg,#60a5fa,#3b82f6)"
+    color="#ffffff"
+  />
+
+  {/* fond gradient orange→rouge, spark blanc */}
+  <KpiSpark
+    label="Erreurs (%)"
+    unit="%"
+    gradient="linear-gradient(135deg,#f59e0b,#ef4444)"
+    color="#ffffff"
+  />
+
+  {/* fond gradient vert→cyan, spark blanc */}
+  <KpiSpark
+    label="Utilisateurs actifs"
+    gradient="linear-gradient(135deg,#10b981,#22d3ee)"
+    color="#ffffff"
+  />
+</div>
+
      {/* 🔽 Barre d’actions export sous les KPI */}
       <div className="flex justify-end gap-3 mb-2">
      <button

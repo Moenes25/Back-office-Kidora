@@ -1244,12 +1244,12 @@ const availability = (() => {
 
   {/* Titre (légère secousse si CRITIQUE) */}
   <h3
-    className="mt-2 text-2xl font-black leading-tight bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 bg-clip-text text-transparent inline-flex items-center gap-2"
+    className="mt-2 text-md font-black leading-tight bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 bg-clip-text text-transparent inline-flex items-center gap-2"
     style={{ animation: alarm === "critical" ? "alarm-wiggle .36s ease-in-out 3" : "none" }}
   >
     {/* petite sirène si critique */}
     {alarm === "critical" && (
-      <span className="inline-grid h-6 w-6 place-items-center rounded-md bg-rose-100 text-rose-600 ">
+      <span className="inline-grid h-4 w-4 place-items-center rounded-md bg-rose-100 text-rose-600 ">
         🔔
       </span>
     )}
@@ -1350,7 +1350,7 @@ const availability = (() => {
          <div className="card-glow"></div>
 
     <div className="mb-4 flex items-center justify-between ">
-      <h3 className="relative z-10 text-lg font-extrabold">
+      <h3 className="relative z-10 text-md font-extrabold">
         🏆 Top 10 {typeLabel[tableFilter]}
       </h3>
 
@@ -1401,16 +1401,16 @@ const availability = (() => {
         style={{ animationDelay: `${i * 90}ms` }}
       >
         {/* les td hériteront de la couleur au hover en dark */}
-        <td className="py-3 px-3 font-bold transition-colors dark:bg-navy-800 dark:text-white ">
+        <td className="py-3 px-3 text-md font-bold transition-colors dark:bg-navy-800 dark:text-white ">
           {c.nom}
         </td>
-        <td className="py-3 px-3 transition-colors dark:bg-navy-800 dark:text-white ">
+        <td className="py-3 px-3 text-md  transition-colors dark:bg-navy-800 dark:text-white ">
           {c.ville}
         </td>
-        <td className="py-3 px-3 transition-colors dark:bg-navy-800 dark:text-white tabular-nums ">
+        <td className="py-3 px-3 text-md  transition-colors dark:bg-navy-800 dark:text-white tabular-nums ">
           {c.enfants}
         </td>
-        <td className="py-3 px-3 dark:bg-navy-800 dark:text-white">
+        <td className="py-3 px-3 text-md  dark:bg-navy-800 dark:text-white">
           <span
             className={`px-3 py-1 rounded-full text-xs font-semibold ${
               c.licence === "Active"
@@ -1423,7 +1423,7 @@ const availability = (() => {
             {c.licence}
           </span>
         </td>
-        <td className="py-3 px-3 font-medium transition-colors  dark:bg-navy-800 dark:text-white">
+        <td className="py-3 px-3 text-md  font-medium transition-colors  dark:bg-navy-800 dark:text-white">
           {c.revenue}
         </td>
       </tr>

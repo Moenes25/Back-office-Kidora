@@ -23,40 +23,47 @@ const FILTERS = [
 const TYPE_STYLE = {
   company: {
     dot: "bg-blue-500",
-    ring: "ring-blue-200",
+    ring: "ring-blue-200 dark:ring-blue-900/40",
     pill: "from-blue-500 to-cyan-400",
-    soft: "bg-blue-50 border-blue-200",
+  soft:
+      "bg-blue-50 border-blue-200 " +
+      "dark:!bg-blue-900/30 dark:!border-blue-800/40",
     glow: "shadow-[0_14px_40px_-22px_rgba(59,130,246,0.55)]",
   },
   admin_delete: {
     dot: "bg-red-500",
-    ring: "ring-red-200",
+    ring: "ring-red-200 dark:ring-red-900/50",
     pill: "from-red-500 to-rose-400",
-    soft: "bg-red-50 border-red-200",
+    // ⬇️ fond + bordure adaptés au dark
+    soft: "bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-800/40",
     glow: "shadow-[0_14px_40px_-22px_rgba(239,68,68,0.55)]",
   },
   admin_add: {
     dot: "bg-emerald-500",
-    ring: "ring-emerald-200",
+    ring: "ring-emerald-200 dark:ring-emerald-900/40",
     pill: "from-emerald-500 to-lime-400",
-    soft: "bg-emerald-50 border-emerald-200",
+    soft: "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800/40",
     glow: "shadow-[0_14px_40px_-22px_rgba(16,185,129,0.55)]",
   },
   edit: {
     dot: "bg-purple-500",
-    ring: "ring-purple-200",
+    ring: "ring-purple-200 dark:ring-purple-900/40",
     pill: "from-purple-500 to-indigo-400",
-    soft: "bg-purple-50 border-purple-200",
+soft:
+      "bg-purple-50 border-purple-200 " +
+      "dark:!bg-purple-900/30 dark:!border-purple-800/40",
     glow: "shadow-[0_14px_40px_-22px_rgba(168,85,247,0.55)]",
   },
 };
 
+
 const iconByType = {
-  company: <FaBuilding size={14} className="text-blue-600" />,
-  admin_delete: <FaTrashAlt size={14} className="text-red-600" />,
-  admin_add: <FaUserPlus size={14} className="text-emerald-600" />,
-  edit: <FaEdit size={14} className="text-purple-600" />,
+  company:      <FaBuilding  size={14} className="text-blue-600 dark:text-blue-300" />,
+  admin_delete: <FaTrashAlt  size={14} className="text-red-600 dark:text-red-300" />,
+  admin_add:    <FaUserPlus  size={14} className="text-emerald-600 dark:text-emerald-300" />,
+  edit:         <FaEdit      size={14} className="text-purple-600 dark:text-purple-300" />,
 };
+
 
 /* ----------------------------- MOTION ----------------------------- */
 const container = {
@@ -146,7 +153,7 @@ export default function Notifications() {
   };
 
   return (
-    <div className="relative flex h-[520px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_30px_70px_-35px_rgba(0,0,0,0.25)]">
+    <div className="relative flex h-[520px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_30px_70px_-35px_rgba(0,0,0,0.25)] dark:text-white dark:bg-navy-800 dark:border-navy-700">
       {/* BACKGROUND AURA */}
       <div className="pointer-events-none absolute -top-24 right-[-80px] h-56 w-56 rounded-full bg-purple-200/40 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 left-[-80px] h-56 w-56 rounded-full bg-indigo-200/40 blur-3xl" />
@@ -167,10 +174,10 @@ export default function Notifications() {
             )}
           </div>
           <div>
-            <h2 className="text-base font-bold text-slate-800">
+            <h2 className="text-base font-bold text-slate-800 dark:text-white">
               Notifications
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Latest updates and admin events
             </p>
           </div>
@@ -180,7 +187,7 @@ export default function Notifications() {
           onClick={markAllAsRead}
           disabled={unreadCount === 0}
           className="group flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition
-                     hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                     hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white dark:bg-navy-800"
         >
           <FaCheckDouble className="text-purple-600 transition-transform group-hover:scale-110" />
           Mark all read
@@ -195,7 +202,7 @@ export default function Notifications() {
             <button
               key={f.key}
               onClick={() => setFilter(f.key)}
-              className={`relative overflow-hidden rounded-full px-3 py-1.5 text-xs font-semibold transition
+              className={`relative overflow-hidden rounded-full px-3 py-1.5 text-xs font-semibold transition dark:text-white
                 ${active ? "text-white" : "text-slate-600 hover:bg-slate-100"}
               `}
             >
@@ -215,7 +222,7 @@ export default function Notifications() {
       {/* SCROLLABLE LIST */}
       <div className="relative flex-1 overflow-y-auto pr-1 no-scrollbar">
         {/* bottom fade */}
-        <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-10 bg-gradient-to-t from-white to-transparent" />
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-10  bg-gradient-to-t from-white to-transparent dark:from-navy-800 dark:to-transparent" />
 
         {Object.keys(groups).every((k) => groups[k].length === 0) ? (
           <div className="mt-10 flex flex-col items-center justify-center text-center">
@@ -286,16 +293,11 @@ function NotificationRow({ n, onToggleRead }) {
       whileHover={{ y: -2 }}
       className={`group relative overflow-hidden rounded-xl border p-3 ${style.soft} ${style.glow} transition`}
     >
-      {/* gradient stripe */}
-      <div
-        className={`pointer-events-none absolute left-0 top-0 h-full w-1.5 bg-gradient-to-b ${style.pill}`}
-      />
+      <div className={`pointer-events-none absolute left-0 top-0 h-full w-1.5 bg-gradient-to-b ${style.pill}`} />
 
       <div className="flex items-start gap-3">
-        {/* icon bubble */}
-        <div
-          className={`relative mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-white shadow-sm ring-4 ${style.ring}`}
-        >
+        {/* bulle icône */}
+        <div className={`relative mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-white dark:bg-navy-700 shadow-sm ring-4 ${style.ring}`}>
           {iconByType[n.type]}
           {n.unread && (
             <motion.span
@@ -306,32 +308,32 @@ function NotificationRow({ n, onToggleRead }) {
           )}
         </div>
 
-        {/* content */}
+        {/* contenu */}
         <div className="flex-1">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <p className="text-xs font-bold text-slate-800">{n.user}</p>
-              <p className="mt-0.5 text-xs text-slate-700">
+              <p className="text-xs font-bold text-slate-800 dark:text-slate-100">{n.user}</p>
+              <p className="mt-0.5 text-xs text-slate-700 dark:text-slate-300">
                 {n.action}{" "}
-                <span className="font-semibold text-slate-900">{n.target}</span>
+                <span className="font-semibold text-slate-900 dark:text-white">{n.target}</span>
               </p>
             </div>
 
             <div className="flex flex-col items-end">
-              <p className="text-[10px] font-semibold text-slate-500">{n.time}</p>
-
+              <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">{n.time}</p>
               <button
                 onClick={onToggleRead}
-                className="mt-1 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold text-slate-600 opacity-0 transition
-                           hover:bg-white group-hover:opacity-100"
+                className="mt-1 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold text-slate-600
+                           hover:bg-white transition opacity-0 group-hover:opacity-100
+                           dark:bg-white/10 dark:hover:bg-white/20 dark:text-slate-200"
               >
                 {n.unread ? "Mark read" : "Unread"}
               </button>
             </div>
           </div>
 
-          {/* subtle hint bar */}
-          <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-white/60">
+          {/* hint bar */}
+          <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-white/60 dark:bg-white/10">
             <motion.div
               initial={{ width: "30%" }}
               animate={{ width: n.unread ? "65%" : "35%" }}

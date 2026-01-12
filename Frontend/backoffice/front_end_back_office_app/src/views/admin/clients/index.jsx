@@ -1148,11 +1148,13 @@ const deleteClient = async (row) => {
           </div>
         </div>
 <div className="mt-3 overflow-x-auto">
- <table className="no-ukp min-w-[980px] w-full border-collapse text-slate-800 dark:text-white dark:bg-navy-800 dark:shadow-none">
+ <table className="no-ukp min-w-[980px] w-full  border-separate [border-spacing:0_10px] text-slate-800 dark:text-white dark:bg-navy-800 dark:shadow-none">
     {/* EN-TÊTE */}
 <thead className="sticky top-0 z-10  dark:text-white">
     <tr
       className="
+       rounded-xl ring-1 ring-slate-200 dark:ring-white/10
+        bg-white/90 supports-[backdrop-filter]:backdrop-blur
         text-[11px] uppercase tracking-wide
         text-gray-700 dark:text-white
         [&_th]:px-4 [&_th]:py-3 [&_th]:font-semibold
@@ -1163,6 +1165,8 @@ const deleteClient = async (row) => {
 
         /* peindre les TH (dark) */
         dark:[&_th]:bg-navy-800/90 dark:[&_th]:backdrop-blur-none
+         shadow-[0_8px_14px_-8px_rgba(2,6,23,.2)]
+          divide-x divide-slate-100 dark:divide-white/10
       "
     >
       <Th onClick={() => toggleSort("name")}  label="Nom"    sortIcon={headerSortIcon("name")} />
@@ -1178,10 +1182,12 @@ const deleteClient = async (row) => {
       {pageRows.map((r) => (
           <tr
      key={r.id}
-     className="border-b last:border-0 transition-colors
-                border-slate-200 dark:border-white/10
-                hover:bg-slate-50 dark:bg-navy-800
-                text-slate-800 dark:text-white"
+     className="   bg-white dark:bg-navy-800
+          rounded-xl ring-1 ring-slate-200 dark:ring-white/10
+          shadow-sm hover:shadow-md
+          transition-colors
+          hover:bg-slate-50/70 dark:hover:bg-navy-700/70
+          divide-x divide-slate-50 dark:divide-white/10"
    >
           {/* ID masqué si tu veux */}
           {/* <td className="px-4 py-3 whitespace-nowrap font-mono text-xs text-slate-500">{r.id}</td> */}
@@ -1289,7 +1295,7 @@ const deleteClient = async (row) => {
             <div className="sticky top-0 z-10 bg-white/80 dark:bg-navy-800/80 backdrop-blur border-b p-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="text-lg font-extrabold text-navy-700 dark:text-white">
+                  <h3 className="text-md font-extrabold text-navy-700 dark:text-white">
                     {selected.name} <span className="ml-2"><TypeBadge type={selected.type} /></span>
                   </h3>
                  {/*  <div className="text-xs text-gray-500">{selected.id}</div> */}
@@ -1308,19 +1314,19 @@ const deleteClient = async (row) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <div className="text-xs text-gray-500">Ville</div>
-                    <div className="font-semibold">{selected.city}</div>
+                    <div className="font-semibold text-sm">{selected.city}</div>
 
                     {selected.address && (
                       <>
                         <div className="text-xs text-gray-500">Adresse</div>
-                        <div className="font-medium">{selected.address}</div>
+                        <div className="font-medium text-sm">{selected.address}</div>
                       </>
                     )}
                   </div>
 
                   <div className="space-y-2">
                     <div className="text-xs text-gray-500">Abonné depuis</div>
-                    <div className="font-semibold">{selected.subscriptionDate}</div>
+                    <div className="font-semibold text-sm">{selected.subscriptionDate}</div>
                   </div>
                   
 
@@ -1370,7 +1376,7 @@ const deleteClient = async (row) => {
                       <a
                         href={selected.url_localisation}
                         target="_blank" rel="noreferrer"
-                        className="inline-flex items-center gap-2 rounded-lg border border-black/10 bg-white px-3 py-2 text-sm font-semibold shadow-sm hover:bg-gray-50 dark:text-gray-800"
+                        className="inline-flex items-center gap-2 rounded-lg border border-black/10 bg-white px-3 py-2 text-xs font-semibold shadow-sm hover:bg-gray-50 dark:text-gray-800"
                       >
                         <FiMapPin /> Ouvrir la localisation
                       </a>

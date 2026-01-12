@@ -10,6 +10,11 @@ import {
   FiChevronLeft,
   FiChevronRight,
 } from "react-icons/fi";
+import { QRCodeCanvas } from "qrcode.react";
+
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+
 
 
 import { FiUsers, FiActivity, FiStar } from "react-icons/fi"; 
@@ -458,31 +463,14 @@ function SupportPagination({ page, pageCount, total, onPage }) {
     </div>
   );
 }
-const FactureModal = ({ row = {}, onClose, onSave }) => {
+/* --------------------------- Modale d’édition --------------------------- */
 
+const FactureModal = ({ row = {}, onClose, onSave }) => {
   const STATIC_CLIENTS = [
-  {
-    id: 1,
-    nom: "Crèche XYZ",
-    email: "xyz@mail.com",
-    region: "Tunis",
-    type: "creche",
-  },
-  {
-    id: 2,
-    nom: "École Horizon",
-    email: "ecolehorizon@mail.com",
-    region: "Nabeul",
-    type: "ecole",
-  },
-  {
-    id: 3,
-    nom: "Garderie Soleil",
-    email: "soleil@garderie.com",
-    region: "Ariana",
-    type: "garderie",
-  },
-];
+    { id: 1, nom: "Crèche XYZ",        email: "xyz@mail.com",           region: "Tunis",    type: "creche"   },
+    { id: 2, nom: "École Horizon",     email: "ecolehorizon@mail.com",  region: "Nabeul",   type: "ecole"    },
+    { id: 3, nom: "Garderie Soleil",   email: "soleil@garderie.com",    region: "Ariana",   type: "garderie" },
+  ];
 
   const [form, setForm] = useState({
     id: row.id || `#F${Date.now()}`,
@@ -496,33 +484,19 @@ const FactureModal = ({ row = {}, onClose, onSave }) => {
     avatarColor: row.avatarColor || "from-emerald-400 to-teal-500"
   });
 
+  const [clients] = useState(STATIC_CLIENTS);
 
-const [clients] = useState(STATIC_CLIENTS);
-
-
-
-const handleChange = (e) => {
-  const { name, value } = e.target;
-
-  if (name === "client") {
-    const selectedClient = clients.find((c) => c.nom === value);
-    if (selectedClient) {
-      setForm((prev) => ({
-        ...prev,
-        client: selectedClient.nom,
-        email: selectedClient.email,
-        region: selectedClient.region,
-        type: selectedClient.type,
-      }));
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "client") {
+      const selected = clients.find((c) => c.nom === value);
+      if (selected) {
+        setForm((prev) => ({ ...prev, client: selected.nom, email: selected.email, region: selected.region, type: selected.type }));
+      }
+    } else {
+      setForm((prev) => ({ ...prev, [name]: value }));
     }
-  } else {
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  }
-};
-
+  };
 
   const handleSubmit = () => {
     if (!form.client || !form.email) return alert("Champs obligatoires !");
@@ -534,30 +508,17 @@ const handleChange = (e) => {
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/30 backdrop-blur-sm">
       <div className="bg-white w-full max-w-md rounded-2xl p-6 shadow-xl border">
         <h3 className="text-lg font-bold mb-4">{row?.id ? "Modifier" : "Nouvelle"} facture</h3>
-
         <div className="space-y-3 text-sm">
-     <select
-  name="client"
-  value={form.client}
-  onChange={handleChange}
-  className="w-full rounded-xl border p-2"
->
-  <option value="">-- Sélectionnez un établissement --</option>
-  {clients.map((c) => (
-    <option key={c.id} value={c.nom}>
-      {c.nom}
-    </option>
-  ))}
-</select>
-
-   <div className="flex gap-2">
-         
+          <select name="client" value={form.client} onChange={handleChange} className="w-full rounded-xl border p-2">
+            <option value="">-- Sélectionnez un établissement --</option>
+            {clients.map((c) => <option key={c.id} value={c.nom}>{c.nom}</option>)}
+          </select>
+          <div className="flex gap-2">
             <select name="status" value={form.status} onChange={handleChange} className="w-full rounded-xl border p-2">
               <option value="Payée">Payée</option>
               <option value="impayée">Impayée</option>
             </select>
           </div>
-
         </div>
 
         <div className="mt-4 flex justify-end gap-2">
@@ -568,6 +529,303 @@ const handleChange = (e) => {
     </div>
   );
 };
+
+/* --------------------------- INVOICE PREVIEW (créatif) --------------------------- */
+
+const InvoicePreview = React.forwardRef(function InvoicePreview(
+  { row, lines, className = "" },
+  ref
+) {
+  const { rows: calcRows, subHT, subTVA, total } = computeTotals(lines || []);
+  const typeMeta = TYPE_META[row?.type] || { label: "—", chip: "bg-gray-100 text-gray-700" };
+  const isPaid = String(row?.status).toLowerCase() === "payée";
+
+  return (
+    <section
+      ref={ref}   // 👈 IMPORTANT
+      className={[
+        "relative mx-auto max-w-[980px] rounded-2xl border border-slate-200 bg-white shadow-[0_18px_48px_rgba(15,23,42,.12)] overflow-hidden",
+        "print:shadow-none print:border-0 print:rounded-none",
+        className,
+      ].join(" ")}
+    >
+      {/* Ribbon gradient top */}
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-r from-indigo-600 via-sky-500 to-cyan-400 opacity-90" />
+      {/* subtle pattern */}
+      <div className="absolute left-0 top-0 h-32 w-32 opacity-20"
+        style={{ backgroundImage: "radial-gradient(circle at 20px 20px, white 2px, transparent 2px)" }} />
+      {/* watermark */}
+      <div className="pointer-events-none absolute right-5 bottom-8 text-[84px] font-black tracking-tight text-slate-900/5 select-none">
+        FACTURE
+      </div>
+
+      {/* header */}
+      <header className="relative z-10 grid grid-cols-[auto_1fr_auto] items-center gap-5 p-6 text-white">
+        <div className="h-12 w-12 rounded-xl bg-white/20 grid place-items-center font-extrabold shadow ring-1 ring-white/60">
+          K
+        </div>
+        <div className="leading-tight">
+          <h1 className="text-xl font-extrabold tracking-tight">Kidora — Facture</h1>
+          <p className="text-[11px] text-white/80">Généré le {new Date().toLocaleString("fr-FR")}</p>
+        </div>
+        <div className="text-right">
+          <div className="text-[11px] text-white/80">ID facture</div>
+          <div className="text-base font-extrabold">{row?.id}</div>
+        </div>
+      </header>
+ <br/>
+      {/* company + client bar */}
+      <div className="relative z-10 mx-6 -mt-6 mb-4 rounded-xl bg-white shadow-lg ring-1 ring-black/5 grid grid-cols-1 md:grid-cols-2 overflow-hidden">
+        <div className="p-4">
+          <div className="text-[11px] uppercase tracking-wide text-slate-500">Établissement</div>
+          <div className="mt-2 space-y-1 text-sm">
+            <div className="font-semibold text-slate-900">{row?.client}</div>
+            <div className="text-slate-600">{row?.email || "—"}</div>
+            <div className="text-slate-600">Gouvernorat : {row?.region || "—"}</div>
+            <div className="flex items-center gap-2">
+              <span>Type :</span>
+              <span className={"inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold " + typeMeta.chip}>
+                {typeMeta.label}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="p-4 border-t md:border-t-0 md:border-l border-slate-100 bg-gradient-to-br from-slate-50 to-white">
+          <div className="text-[11px] uppercase tracking-wide text-slate-500">Détails facture</div>
+          <div className="mt-2 text-sm grid grid-cols-2 gap-2">
+            <div>Date : <span className="font-medium">{row?.date}</span></div>
+            <div>Statut : <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${isPaid? "bg-emerald-100 text-emerald-700":"bg-rose-100 text-rose-700"}`}>{row?.status}</span></div>
+            {row?.abonnement ? <div className="col-span-2">Abonnement : <span className="font-medium">{row.abonnement}</span></div> : null}
+          </div>
+        </div>
+      </div>
+
+      {/* lines + totals */}
+      <div className="relative z-10 mx-6 mb-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <table className="w-full text-sm">
+          <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+            <tr>
+              <th className="px-3 py-2 text-left">Désignation</th>
+              <th className="px-3 py-2 text-right">Qté</th>
+              <th className="px-3 py-2 text-right">PU HT</th>
+              <th className="px-3 py-2 text-right">TVA</th>
+              <th className="px-3 py-2 text-right">Total HT</th>
+              <th className="px-3 py-2 text-right">Total TTC</th>
+            </tr>
+          </thead>
+          <tbody>
+            {calcRows.map((r, i) => (
+              <tr key={i} className="odd:bg-white even:bg-slate-50">
+                <td className="px-3 py-2">{r.desc}</td>
+                <td className="px-3 py-2 text-right">{r.qty}</td>
+                <td className="px-3 py-2 text-right">{fmtMoney(r.puHT)}</td>
+                <td className="px-3 py-2 text-right">{r.tva}%</td>
+                <td className="px-3 py-2 text-right">{fmtMoney(r.ht)}</td>
+                <td className="px-3 py-2 text-right">{fmtMoney(r.ttc)}</td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="bg-slate-50/60">
+              <td colSpan={4} className="px-3 py-2 text-right font-semibold">Sous-total HT</td>
+              <td className="px-3 py-2 text-right font-bold">{fmtMoney(subHT)}</td>
+              <td />
+            </tr>
+            <tr className="bg-slate-50/60">
+              <td colSpan={4} className="px-3 py-2 text-right font-semibold">TVA</td>
+              <td className="px-3 py-2 text-right font-bold">{fmtMoney(subTVA)}</td>
+              <td />
+            </tr>
+            <tr className="bg-slate-50/80">
+              <td colSpan={4} className="px-3 py-2 text-right font-semibold">Total TTC</td>
+              <td className="px-3 py-2 text-right text-base font-extrabold">{fmtMoney(total)}</td>
+              <td />
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      {/* payment + QR + notes */}
+      <div className="relative z-10 grid gap-4 p-6 md:grid-cols-[1fr_auto]">
+        <div className="rounded-xl border border-slate-200 p-4 bg-slate-50/50">
+          <div className="text-[11px] uppercase tracking-wide text-slate-500">Informations de paiement</div>
+          <div className="mt-2 text-sm">
+            <div><span className="font-semibold">IBAN :</span> TN59 1234 5678 9012 3456 7890</div>
+            <div><span className="font-semibold">Banque :</span> BNA — Agence Centre</div>
+            <div><span className="font-semibold">Réf. virement :</span> {row?.id}</div>
+          </div>
+          <div className="mt-4 text-[11px] text-slate-500">
+            Merci pour votre confiance. En cas de question, contactez <span className="font-medium">billing@kidora.tn</span>.
+          </div>
+        </div>
+
+ <div className="rounded-xl border border-slate-200 p-4 grid place-items-center">
+  <QRCodeCanvas value={row?.id || "kidora"} size={112} includeMargin />
+  <div className="mt-2 text-[11px] text-slate-500">Scannez votre Facture</div>
+</div>
+      </div>
+
+      {/* footer legal */}
+      <footer className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-2 px-6 pb-6 text-[11px] text-slate-500">
+        <span>Kidora • 10 Rue du Lac, Tunis • +216 00 000 000</span>
+        <span>MF: 1234567/A • RIB: ***** • {row?.id}</span>
+      </footer>
+
+      {/* print styles */}
+      <style>{`
+        @media print {
+          section { box-shadow: none !important; }
+          header { color: #000 !important; }
+        }
+      `}</style>
+    </section>
+ );
+});
+
+/* --------------------------- Modale d’aperçu (utilise InvoicePreview) --------------------------- */
+
+function InvoiceModal({ row, onClose }) {
+  const lines = Array.isArray(row?.lines) && row.lines.length
+    ? row.lines
+    : [{ desc: row.abonnement || "Abonnement", qty: 1, puHT: 0, tva: 0 }];
+
+  const previewRef = React.useRef(null);
+
+const handlePrint = () => {
+  if (!previewRef.current) return;
+
+  // clone du preview
+  const clone = previewRef.current.cloneNode(true);
+  clone.id = "print-clone";
+  document.body.appendChild(clone);
+
+  // Styles pour l’impression dans la même fenêtre
+  const style = document.createElement("style");
+  style.textContent = `
+    @media print {
+      body > *:not(#print-clone) { display: none !important; }
+      #print-clone { display: block !important; }
+      html, body { background: #fff !important; }
+    }
+  `;
+  document.head.appendChild(style);
+
+  // lance l’impression
+  window.print();
+
+  // nettoyage après impression
+  const cleanup = () => {
+    document.head.removeChild(style);
+    document.body.removeChild(clone);
+    window.removeEventListener("afterprint", cleanup);
+  };
+  window.addEventListener("afterprint", cleanup);
+};
+
+
+
+  // Export PDF identique au preview (capture canvas)
+const exportPDF = async () => {
+  if (!previewRef.current) return;
+
+  const node = previewRef.current;
+
+  // 1) Raster du preview en haute définition
+  const canvas = await html2canvas(node, {
+    scale: 2,
+    backgroundColor: "#ffffff",
+    useCORS: true,
+  });
+
+  // 2) Dimensions PDF
+  const pdf = new jsPDF({ unit: "pt", format: "a4" }); // 595.28 x 841.89
+  const pageW = pdf.internal.pageSize.getWidth();
+  const pageH = pdf.internal.pageSize.getHeight();
+
+  // 3) Mise à l’échelle pour coller à la largeur
+  const imgW = pageW;                          // largeur en points
+  const imgH = (canvas.height * imgW) / canvas.width; // hauteur correspondante en points
+
+  // ⚠️ On calcule la hauteur d’une page EN PIXELS
+  // px par page = canvas.width * (pageH / pageW)
+  const pxPerPage = Math.floor(canvas.width * (pageH / pageW));
+
+  let offsetPx = 0;
+  let pageIndex = 0;
+
+  while (offsetPx < canvas.height) {
+    const sliceHpx = Math.min(pxPerPage, canvas.height - offsetPx);
+
+    // on crée un canvas "page" en px
+    const pageCanvas = document.createElement("canvas");
+    pageCanvas.width  = canvas.width;
+    pageCanvas.height = sliceHpx;
+
+    const ctx = pageCanvas.getContext("2d");
+    ctx.drawImage(
+      canvas,
+      0, offsetPx,                // src x,y (px)
+      canvas.width, sliceHpx,     // src w,h (px)
+      0, 0,                       // dst x,y (px)
+      pageCanvas.width, sliceHpx  // dst w,h (px)
+    );
+
+    const pageData = pageCanvas.toDataURL("image/png");
+    if (pageIndex > 0) pdf.addPage();
+
+    // hauteur de cette tranche en POINTS
+    const sliceHpt = (sliceHpx * imgW) / canvas.width;
+
+    pdf.addImage(pageData, "PNG", 0, 0, imgW, sliceHpt);
+
+    offsetPx += sliceHpx;
+    pageIndex += 1;
+  }
+
+  pdf.save(`${row?.id || "facture"}.pdf`);
+};
+
+
+  return (
+    <AnimatePresence>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        {/* clic sur le backdrop = fermer */}
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+        <motion.div
+          initial={{ y: 12, scale: 0.98, opacity: 0 }}
+          animate={{ y: 0, scale: 1, opacity: 1 }}
+          exit={{ y: 8, scale: 0.98, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 200, damping: 20 }}
+          className="relative z-10 w-[800px] max-w-[95vw] max-h-[90vh] overflow-auto rounded-2xl bg-transparent"
+        >
+          {/* 👉 on passe le ref au preview */}
+          <InvoicePreview ref={previewRef} row={row} lines={lines} />
+
+          {/* barre d’actions (non imprimée) */}
+          <div className="mt-3 flex justify-end gap-2 print:hidden">
+            <button
+              onClick={handlePrint}
+              className="inline-flex items-center gap-2 rounded-xl border border-black/10 bg-white px-3 py-1.5 text-sm font-semibold shadow-sm"
+            >
+              Imprimer
+            </button>
+            <button
+              onClick={exportPDF}
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 px-4 py-2 text-sm font-bold text-white shadow-[0_16px_40px_rgba(37,99,235,.35)] hover:brightness-110"
+            >
+              <FiDownload /> Export PDF
+            </button>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+
+
+
 
 /* ============================ Page ============================ */
 export default function PaymentsPage() {
@@ -953,14 +1211,8 @@ const onRowAction = (id, action) => {
       <FiSend />
     </button>
 
-    <button
-      className="icon-btn dark:text-white"
-      title="Exporter PDF"
-      onClick={() => exportPDF(row)}
-      aria-label="Exporter PDF"
-    >
-      <FiDownload />
-    </button>
+  
+
 
     <button
       className="icon-btn danger dark:text-white"
@@ -998,12 +1250,11 @@ const onRowAction = (id, action) => {
 
 
       {viewRow && (
-  <PaymentDetailModal
-    row={viewRow}
-    onClose={() => setViewRow(null)}
-  />
-  
-)}
+        <InvoiceModal
+          row={viewRow}
+          onClose={() => setViewRow(null)}
+        />
+      )}
 {editRow && (
   <FactureModal
     row={editRow}
@@ -1070,335 +1321,4 @@ function PaginationStylesOnce() {
   return null;
 }
 
-function PaymentDetailModal({ row, onClose }) {
-  // fallback si pas de lignes
-  const lines = Array.isArray(row?.lines) && row.lines.length
-    ? row.lines
-    : [{ desc: row.abonnement || "Abonnement", qty: 1, puHT: 0, tva: 0 }];
-
-  const { rows: calcRows, subHT, subTVA, total } = computeTotals(lines);
-
-  // --- Impression HTML propre ---
-  const printInvoice = () => {
-    const w = window.open("", "_blank");
-    if (!w) return;
-
-    const styles = `
-      <style>
-        *{box-sizing:border-box}
-        body{font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:#0f172a;margin:0;background:#f8fafc}
-        .sheet{max-width:820px;margin:24px auto;background:#fff;border-radius:16px;padding:28px;box-shadow:0 18px 48px rgba(15,23,42,.12)}
-        .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-        .brand{display:flex;align-items:center;gap:12px}
-        .logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#06b6d4)}
-        h1{font-size:18px;margin:0}
-        .muted{color:#64748b;font-size:12px}
-        .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:10px}
-        .card{border:1px solid #e2e8f0;border-radius:12px;padding:12px}
-        .card h3{font-size:12px;color:#64748b;margin:0 0 8px 0;text-transform:uppercase;letter-spacing:.04em}
-        .kv{font-size:14px;margin:4px 0}
-        table{width:100%;border-collapse:collapse;margin-top:16px}
-        th,td{padding:10px;border-bottom:1px solid #e2e8f0;font-size:13px;text-align:left}
-        tfoot td{font-weight:800}
-        .right{text-align:right}
-        .totals{margin-top:10px}
-      </style>
-    `;
-
-    const rowsHtml = calcRows.map(r => `
-      <tr>
-        <td>${r.desc}</td>
-        <td class="right">${r.qty}</td>
-        <td class="right">${fmtMoney(r.puHT)}</td>
-        <td class="right">${r.tva}%</td>
-        <td class="right">${fmtMoney(r.ht)}</td>
-        <td class="right">${fmtMoney(r.ttc)}</td>
-      </tr>
-    `).join("");
-
-    const html = `
-      <div class="sheet">
-        <div class="header">
-          <div class="brand">
-            <div class="logo"></div>
-            <div>
-              <h1>Facture / Détails du paiement</h1>
-              <div class="muted">Généré le ${new Date().toLocaleString("fr-FR")}</div>
-            </div>
-          </div>
-          <div style="text-align:right">
-            <div class="muted">ID facture</div>
-            <div style="font-weight:800">${row.id}</div>
-          </div>
-        </div>
-
-        <div class="grid">
-          <div class="card">
-            <h3>Établissement</h3>
-            <div class="kv"><strong>${row.client}</strong></div>
-            <div class="kv">${row.email || ""}</div>
-            <div class="kv">Gouvernorat : ${row.region || "—"}</div>
-            <div class="kv">Type : ${TYPE_META[row.type]?.label || "—"}</div>
-          </div>
-          <div class="card">
-            <h3>Détails</h3>
-            <div class="kv">Date : ${row.date}</div>
-            <div class="kv">Statut : ${row.status}</div>
-          </div>
-        </div>
-
-        <table class="lines">
-          <thead>
-            <tr>
-              <th>Désignation</th>
-              <th class="right">Qté</th>
-              <th class="right">PU HT</th>
-              <th class="right">TVA</th>
-              <th class="right">Total HT</th>
-              <th class="right">Total TTC</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rowsHtml}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="4" class="right">Sous-total HT</td>
-              <td class="right">${fmtMoney(subHT)}</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td colspan="4" class="right">TVA</td>
-              <td class="right">${fmtMoney(subTVA)}</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td colspan="4" class="right">Total TTC</td>
-              <td class="right">${fmtMoney(total)}</td>
-              <td></td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-      <script>window.print(); setTimeout(()=>window.close(), 400);<\/script>
-    `;
-
-    w.document.write(`<html><head><title>${row.id}</title>${styles}</head><body>${html}</body></html>`);
-    w.document.close();
-  };
-
-  // --- Export PDF (jsPDF) ---
-  const exportPDF = async () => {
-    try {
-      const { default: jsPDF } = await import("jspdf");
-      const doc = new jsPDF({ unit: "pt", format: "a4" });
-      const left = 40, right = 555;
-      let y = 56;
-
-      // Logo + titre
-      doc.setFillColor(99,102,241);
-      doc.roundedRect(left, 40, 36, 36, 6, 6, "F");
-      doc.setFontSize(16);
-      doc.text("Facture / Détails du paiement", left + 56, y);
-      doc.setFontSize(10); doc.setTextColor(100);
-      doc.text(`Généré le ${new Date().toLocaleString("fr-FR")}`, left + 56, y += 16);
-      doc.setTextColor(0);
-      doc.setFontSize(10); doc.text("ID facture", right - 80, 50);
-      doc.setFontSize(14); doc.setFont(undefined, "bold"); doc.text(row.id, right - 80, 66);
-      doc.setFont(undefined, "normal");
-
-      // Cartes
-      const card = (x, y, w, h, title) => {
-        doc.setDrawColor(226); doc.roundedRect(x, y, w, h, 10, 10);
-        doc.setFontSize(10); doc.setTextColor(100); doc.text(title.toUpperCase(), x + 12, y + 16);
-        doc.setTextColor(0);
-      };
-      card(left, 96, 250, 120, "Établissement");
-      doc.setFontSize(12); doc.setFont(undefined, "bold"); doc.text(row.client || "", left + 12, 118);
-      doc.setFont(undefined, "normal"); doc.setFontSize(11);
-      doc.text(row.email || "", left + 12, 136);
-      doc.text(`Gouvernorat : ${row.region || "—"}`, left + 12, 154);
-      doc.text(`Type : ${TYPE_META[row.type]?.label || "—"}`, left + 12, 172);
-
-      card(left + 270, 96, 250, 120, "Détails");
-      doc.setFontSize(11);
-      doc.text(`Date : ${row.date}`, left + 282, 118);
-      doc.text(`Abonnement : ${row.abonnement || "—"}`, left + 282, 136);
-      doc.text(`Statut : ${row.status}`, left + 282, 154);
-
-      // Table lignes
-      y = 240;
-      const cols = [
-        { key: "desc", x: left,      w: 240, align: "left"  , label: "Désignation" },
-        { key: "qty",  x: left + 250,w: 40,  align: "right" , label: "Qté"        , fmt: v => String(v) },
-        { key: "puHT", x: left + 300,w: 70,  align: "right" , label: "PU HT"      , fmt: fmtMoney },
-        { key: "tva",  x: left + 380,w: 40,  align: "right" , label: "TVA"        , fmt: v => `${v}%` },
-        { key: "ht",   x: left + 430,w: 80,  align: "right" , label: "Total HT"   , fmt: fmtMoney },
-        { key: "ttc",  x: left + 520,w: 80,  align: "right" , label: "Total TTC"  , fmt: fmtMoney },
-      ];
-
-      doc.setFontSize(10); doc.setTextColor(100);
-      cols.forEach(c => doc.text(c.label, c.x + (c.align==="right"?c.w:0), y, { align: c.align }));
-      doc.setDrawColor(226); doc.line(left, y + 6, right, y + 6);
-      doc.setTextColor(0);
-      y += 26;
-
-      const lineH = 18, bottom = 780;
-      for (const r of calcRows) {
-        if (y > bottom) { doc.addPage(); y = 60; }
-        cols.forEach(c => {
-          const raw = r[c.key];
-          const val = c.fmt ? c.fmt(raw) : String(raw ?? "");
-          doc.text(val, c.x + (c.align==="right"?c.w:0), y, { align: c.align, maxWidth: c.w });
-        });
-        y += lineH;
-      }
-
-      // Totaux
-      y += 8;
-      const put = (label, val) => {
-        doc.setFontSize(10); doc.setTextColor(100); doc.text(label, left + 300, y);
-        doc.setFontSize(12); doc.setTextColor(0); doc.text(fmtMoney(val), right, y, { align: "right" });
-        y += 18;
-      };
-      put("Sous-total HT", subHT);
-      put("TVA",          subTVA);
-      doc.setFont(undefined, "bold");
-      put("Total TTC",    total);
-      doc.setFont(undefined, "normal");
-
-      doc.save(`${row.id}.pdf`);
-    } catch {
-      alert("jspdf n'est pas installé. Ajoute-le avec : npm i jspdf");
-    }
-  };
-
-  return (
-    <AnimatePresence>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-        <motion.div
-          initial={{ y: 12, scale: 0.98, opacity: 0 }}
-          animate={{ y: 0, scale: 1, opacity: 1 }}
-          exit={{ y: 8, scale: 0.98, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 200, damping: 20 }}
-          className="relative z-10 w-full max-w-3xl rounded-2xl border border-white/30 bg-white p-5 shadow-2xl"
-        >
-          {/* Header */}
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-sky-400" />
-              <div>
-                <h3 className="text-lg font-extrabold text-slate-900">{row.client}</h3>
-                <div className="text-[11px] text-slate-500">{row.id} • {row.date}</div>
-              </div>
-            </div>
-            <button onClick={onClose}
-              className="rounded-lg border border-black/10 bg-white px-2 py-1 text-xs font-semibold shadow-sm hover:bg-gray-50">
-              Fermer
-            </button>
-          </div>
-
-          {/* Deux cartes */}
-          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="rounded-xl border border-slate-200 p-3">
-              <div className="text-xs uppercase tracking-wide text-slate-500">Établissement</div>
-              <div className="mt-2 text-sm space-y-1">
-                <div><span className="font-semibold">Nom : </span>{row.client}</div>
-                <div><span className="font-semibold">Email : </span>{row.email || "—"}</div>
-                <div><span className="font-semibold">Gouvernorat : </span>{row.region || "—"}</div>
-                <div><span className="font-semibold">Type : </span>{TYPE_META[row.type]?.label || "—"}</div>
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-slate-200 p-3">
-              <div className="text-xs uppercase tracking-wide text-slate-500">Détails</div>
-              <div className="mt-2 text-sm space-y-1">
-                <div><span className="font-semibold">Date : </span>{row.date}</div>
-                <div><span className="font-semibold">Abonnement : </span>{row.abonnement || "—"}</div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">Statut :</span>
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${STATUS_STYLES[row.status]}`}>
-                    {row.status}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Lignes de facture */}
-          <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-xs uppercase text-slate-500">
-                <tr>
-                  <th className="px-3 py-2 text-left">Désignation</th>
-                  <th className="px-3 py-2 text-right">Qté</th>
-                  <th className="px-3 py-2 text-right">PU HT</th>
-                  <th className="px-3 py-2 text-right">TVA</th>
-                  <th className="px-3 py-2 text-right">Total HT</th>
-                  <th className="px-3 py-2 text-right">Total TTC</th>
-                </tr>
-              </thead>
-              <tbody>
-                {calcRows.map((r, i) => (
-                  <tr key={i} className="odd:bg-white even:bg-slate-50">
-                    <td className="px-3 py-2">{r.desc}</td>
-                    <td className="px-3 py-2 text-right">{r.qty}</td>
-                    <td className="px-3 py-2 text-right">{fmtMoney(r.puHT)}</td>
-                    <td className="px-3 py-2 text-right">{r.tva}%</td>
-                    <td className="px-3 py-2 text-right">{fmtMoney(r.ht)}</td>
-                    <td className="px-3 py-2 text-right">{fmtMoney(r.ttc)}</td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colSpan={4} className="px-3 py-2 text-right font-semibold">Sous-total HT</td>
-                  <td className="px-3 py-2 text-right font-bold">{fmtMoney(subHT)}</td>
-                  <td />
-                </tr>
-                <tr>
-                  <td colSpan={4} className="px-3 py-2 text-right font-semibold">TVA</td>
-                  <td className="px-3 py-2 text-right font-bold">{fmtMoney(subTVA)}</td>
-                  <td />
-                </tr>
-                <tr>
-                  <td colSpan={4} className="px-3 py-2 text-right font-semibold">Total TTC</td>
-                  <td className="px-3 py-2 text-right font-extrabold">{fmtMoney(total)}</td>
-                  <td />
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-
-          {/* Actions */}
-          <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
-            <button onClick={printInvoice}
-              className="inline-flex items-center gap-2 rounded-xl border border-black/10 bg-white px-3 py-2 text-sm font-semibold shadow-sm hover:bg-gray-50">
-              🖨️ Imprimer
-            </button>
-            <button
-  onClick={() =>
-    exportPDF(
-      row,
-      calcRows.map(r => ({
-        designation: r.desc,
-        qte: r.qty,
-        pu: r.puHT,
-        tva: r.tva,
-      }))
-    )
-  }
-  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 px-4 py-2 text-sm font-bold text-white shadow-[0_16px_40px_rgba(37,99,235,.35)] hover:brightness-110"
->
-  <FiDownload /> Export PDF
-</button>
-
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  );
-}
 

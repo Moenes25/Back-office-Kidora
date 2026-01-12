@@ -50,7 +50,7 @@ export default function ProfileHeader() {
       transition={{ duration: 0.3 }}
       className="relative rounded-3xl
                  bg-white/80 backdrop-blur-xl
-                 border border-slate-200
+                 border border-slate-200 dark:text-white dark:bg-navy-800 dark:border-navy-700
                  shadow-[0_20px_50px_-25px_rgba(0,0,0,0.25)]"
     >
       <div className="p-6">
@@ -78,17 +78,17 @@ export default function ProfileHeader() {
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                 {user?.nom || "Super Admin"}
               </h2>
 
               <div className="mt-1 flex items-center gap-2
-                              text-sm text-slate-500">
+                              text-sm text-slate-500 dark:text-white">
                 <FiMail />
                 {user?.email}
               </div>
 
-              <span className="mt-2 inline-flex rounded-full
+              <span className="mt-2 inline-flex rounded-full dark:text-white dark:bg-navy-600 dark:border-navy-500
                                bg-slate-100 px-3 py-0.5
                                text-xs font-semibold text-slate-600">
                 {user?.role}
@@ -106,7 +106,8 @@ export default function ProfileHeader() {
                        bg-white shadow-sm
                        border border-slate-200
                        text-slate-600
-                       hover:bg-slate-50"
+                       hover:bg-slate-50 dark:text-white dark:bg-navy-800 dark:border-navy-500"
+                       
           >
             <FiMessageCircle className="text-xl" />
 

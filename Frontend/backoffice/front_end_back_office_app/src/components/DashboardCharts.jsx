@@ -36,7 +36,7 @@ function ChartCard({ title, children }) {
       "
     >
       <div className="mb-3">
-        <h3 className="text-lg font-bold"> {title} </h3> {/* ← couleur héritée */}
+        <h3 className="text-md font-bold"> {title} </h3> {/* ← couleur héritée */}
       </div>
       <div>{children}</div>
     </motion.div>

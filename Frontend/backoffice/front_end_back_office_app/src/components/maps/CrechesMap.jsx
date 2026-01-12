@@ -186,7 +186,7 @@ const [showLocateAI, setShowLocateAI] = useState(false);
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           {/* Title */}
           <div className="relative">
-            <h2 className="flex items-center gap-3 text-2xl font-extrabold">
+            <h6 className="flex items-center gap-3 text-md font-extrabold">
               <span className="relative inline-grid place-items-center w-10 h-10 rounded-full ring-2 ring-black/10 dark:ring-white/10">
                 {/* halo coloré */}
                 <span
@@ -199,7 +199,7 @@ const [showLocateAI, setShowLocateAI] = useState(false);
                 <span className="relative text-3xl animate-earth-wobble">🌍</span>
               </span>
               Carte  <br/> des {meta.label}
-            </h2>
+            </h6>
             <div className="h-0.5 w-24 mt-1 rounded-full bg-gradient-to-r from-indigo-500 via-sky-400 to-emerald-400 animate-gradient-slide" />
             <p className="mt-1 text-gray-500 dark:text-gray-300 text-sm">
               {filteredEntities.length} {meta.label} affiché(es)

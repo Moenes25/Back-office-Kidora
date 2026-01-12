@@ -55,7 +55,7 @@ export default function SecuritySettings() {
 
   return (
     <section
-      className="rounded-3xl bg-white border border-slate-200
+      className="rounded-3xl bg-white border border-slate-200  dark:text-white dark:bg-navy-800 
                  shadow-[0_30px_70px_-35px_rgba(0,0,0,0.25)] p-8"
     >
       {/* ================= HEADER ================= */}
@@ -63,7 +63,8 @@ export default function SecuritySettings() {
   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100">
     <FaShieldAlt className="text-purple-600" />
   </div>
-  <h1 className="text-xl font-bold text-slate-800">Security Settings</h1>
+  <h1 className="text-xl font-bold text-slate-800  dark:text-white
+  ">Security Settings</h1>
 </div>
 
 
@@ -81,10 +82,12 @@ export default function SecuritySettings() {
             </div>
 
             <div>
-              <p className="font-semibold text-slate-700">
+              <p className="font-semibold text-slate-700  dark:text-white
+              ">
                 Change Password
               </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500  dark:text-white
+              ">
                 Update your account password regularly for better security
               </p>
             </div>
@@ -114,7 +117,8 @@ export default function SecuritySettings() {
               whileHover={{ scale: 1.01 }}
               className="flex items-center justify-between
                          p-4 rounded-2xl border border-slate-200
-                         hover:bg-slate-50 transition"
+                         hover:bg-slate-50 transition hover:dark:bg-navy-700
+                         "
             >
               <div className="flex items-center gap-4">
                 <div className="w-11 h-11 rounded-full bg-slate-100
@@ -123,7 +127,8 @@ export default function SecuritySettings() {
                 </div>
 
                 <div>
-                  <p className="font-semibold text-slate-700 flex items-center gap-2">
+                  <p className="font-semibold text-slate-700 flex items-center gap-2  dark:text-white
+                  ">
                     {s.device}
                     {s.current && (
                       <span className="text-[10px] px-2 py-0.5 rounded-full
@@ -132,7 +137,8 @@ export default function SecuritySettings() {
                       </span>
                     )}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500  dark:text-white
+                  ">
                     {s.location} • {s.time}
                   </p>
                 </div>

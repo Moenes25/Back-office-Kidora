@@ -107,7 +107,7 @@ useEffect(() => {
   /* ================== RENDER ================== */
   return (
     <section
-      className="rounded-3xl bg-white border border-slate-200
+      className="rounded-3xl bg-white border border-slate-200 dark:bg-navy-700 dark:text-white
                  shadow-[0_30px_70px_-35px_rgba(0,0,0,0.25)] p-8"
     >
       {/* ================= HEADER ================= */}
@@ -117,9 +117,11 @@ useEffect(() => {
     <FaUserShield className="text-purple-600" />
   </div>
   <div>
-    <h1 className="text-xl font-bold text-slate-800">Roles & Permissions</h1>
+    <h1 className="text-xl font-bold text-slate-800 dark:text-white
+    ">Roles & Permissions</h1>
     {/* Sous-titre optionnel pour harmoniser avec les autres sections */}
-    <p className="text-sm text-slate-500">Manage access and capabilities</p> 
+    <p className="text-sm text-slate-500 dark:text-white
+    ">Manage access and capabilities</p> 
   </div>
 </div>
 
@@ -203,7 +205,8 @@ useEffect(() => {
             className="rounded-2xl border border-slate-200 p-6
                        shadow-sm hover:shadow-md transition"
           >
-            <h3 className="flex items-center gap-2 mb-4 text-sm font-bold text-slate-700">
+            <h3 className="flex items-center gap-2 mb-4 text-sm font-bold text-slate-700  dark:text-white
+            ">
               {module.icon}
               {module.name.toUpperCase()}
             </h3>
@@ -238,11 +241,14 @@ function PermissionRow({ title, desc, checked, disabled, onClick }) {
       whileHover={{ scale: 1.01 }}
       className="flex items-center justify-between
                  p-3 rounded-xl border border-slate-200
-                 hover:bg-slate-50 transition"
+                 hover:bg-slate-50 transition dark:hover:text-slate-800
+                 "
     >
       <div>
-        <p className="text-sm font-semibold text-slate-700">{title}</p>
-        <p className="text-xs text-slate-500">{desc}</p>
+        <p className="text-sm font-semibold text-slate-700 dark:text-white
+        ">{title}</p>
+        <p className="text-xs text-slate-500 dark:text-white
+        ">{desc}</p>
       </div>
 
       <button

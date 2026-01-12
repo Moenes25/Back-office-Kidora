@@ -84,7 +84,7 @@ export default function ProfileInfo() {
       animate={{ opacity: 1, y: 0 }}
       className="relative overflow-hidden rounded-[28px]
                  bg-white border border-purple-200
-                 shadow-[0_40px_80px_-35px_rgba(139,92,246,0.45)]
+                 shadow-[0_40px_80px_-35px_rgba(139,92,246,0.45)]   dark:text-white dark:bg-navy-800 
                  p-8"
     >
       {/* ===== Background Glow ===== */}
@@ -98,8 +98,10 @@ export default function ProfileInfo() {
     <RiShieldUserFill className="text-purple-600" />
   </div>
   <div>
-    <h1 className="text-xl font-bold text-slate-800">Security Settings</h1>
-    <p className="text-sm text-slate-500">Manage identity & account security</p>
+    <h1 className="text-xl font-bold text-slate-800 dark:text-white
+    ">Security Settings</h1>
+    <p className="text-sm text-slate-500 dark:text-white
+    ">Manage identity & account security</p>
   </div>
 </div>
 
@@ -158,7 +160,9 @@ export default function ProfileInfo() {
         </motion.div>
 
         <div>
-          <h3 className="text-2xl font-extrabold text-slate-800">
+          <h3 className="text-md
+           font-extrabold text-slate-800 dark:text-white
+          ">
             {form.fullName}
           </h3>
 
@@ -199,10 +203,12 @@ export default function ProfileInfo() {
 const InfoCard = ({ icon, label, value, editable, name, onChange }) => (
   <motion.div
     whileHover={{ y: -6 }}
-    className="rounded-2xl bg-white border border-slate-200
-               p-5 shadow-sm hover:shadow-md transition"
+    className="rounded-2xl bg-white border border-slate-200 dark:border-navy-800
+               p-5 shadow-sm hover:shadow-md transition  dark:text-white dark:bg-navy-700
+               "
   >
-    <p className="flex items-center gap-2 text-xs text-slate-500 mb-1">
+    <p className="flex items-center gap-2 text-xs text-slate-500 mb-1 dark:text-white
+    ">
       <span className="text-purple-500">{icon}</span> {label}
     </p>
 
@@ -211,20 +217,23 @@ const InfoCard = ({ icon, label, value, editable, name, onChange }) => (
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full rounded-xl border px-3 py-2
+        className="w-full rounded-xl border px-3 py-2 
                    focus:ring-2 focus:ring-purple-400 outline-none"
       />
     ) : (
-      <p className="font-bold text-slate-800">{value}</p>
+      <p className="font-bold text-slate-800 dark:text-white text-sm
+      ">{value}</p>
     )}
   </motion.div>
 );
 
 const MetaCard = ({ icon, label, value }) => (
-  <div className="rounded-2xl bg-slate-50 border border-slate-200 p-5">
+  <div className="rounded-2xl bg-slate-50 border border-slate-200 p-5 dark:bg-navy-700
+  ">
     <p className="flex items-center gap-2 text-xs text-slate-500 mb-1">
       <span className="text-indigo-500">{icon}</span> {label}
     </p>
-    <p className="font-semibold text-slate-700">{value}</p>
+    <p className="font-semibold text-slate-700 text-sm dark:text-white
+    ">{value}</p>
   </div>
 );

@@ -65,11 +65,11 @@ export default function AdminCarousel() {
   }
 
   return (
-    <section className="relative rounded-3xl bg-white p-4 border border-slate-200 shadow-sm overflow-visible">
+    <section className="relative rounded-3xl bg-white p-4 border border-slate-200 shadow-sm overflow-visible dark:text-white dark:bg-navy-800 dark:border-navy-700">
       {/* HEADER */}
       <div className="mb-2 flex items-center gap-2">
         <FiUsers className="text-indigo-600" />
-        <h4 className="text-sm font-extrabold text-slate-800">Team Admins</h4>
+        <h4 className="text-sm font-extrabold text-slate-800 dark:text-white">Team Admins</h4>
         <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700">
           {user.role === "SUPER_ADMIN" ? "All regions" : user.region}
         </span>
@@ -81,7 +81,7 @@ export default function AdminCarousel() {
           <button
             onClick={() => scrollToIndex(activeIndex - 1)}
             aria-label="Previous admin"
-            className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 rounded-full bg-white p-1.5 shadow ring-1 ring-slate-200 hover:ring-indigo-300"
+            className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 rounded-full bg-white p-1.5 shadow ring-1 ring-slate-200 hover:ring-indigo-300 dark:text-white dark:bg-navy-600"
           >
             <FiChevronLeft />
           </button>
@@ -90,7 +90,7 @@ export default function AdminCarousel() {
           <button
             onClick={() => scrollToIndex(activeIndex + 1)}
             aria-label="Next admin"
-            className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 rounded-full bg-white p-1.5 shadow ring-1 ring-slate-200 hover:ring-indigo-300"
+            className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 rounded-full bg-white p-1.5 shadow ring-1 ring-slate-200 hover:ring-indigo-300 dark:text-white dark:bg-navy-600"
           >
             <FiChevronRight />
           </button>
@@ -114,7 +114,7 @@ export default function AdminCarousel() {
                   key={admin.id}
                   whileHover={{ scale: 1.02 }}  // <-- plus de y:-4
                   onClick={() => scrollToIndex(i)}
-                  className={`w-32 flex-shrink-0 rounded-2xl p-3 cursor-pointer text-left transition-all duration-300 snap-start bg-white ${
+                  className={`w-32 flex-shrink-0 rounded-2xl p-3 cursor-pointer text-left transition-all duration-300 snap-start dark:text-white dark:bg-navy-800 bg-white ${
                     active
                       ? "ring-2 ring-indigo-500 shadow-lg"
                       : "ring-1 ring-slate-200 hover:ring-indigo-300"
@@ -141,10 +141,10 @@ export default function AdminCarousel() {
 
                   {/* text */}
                   <div className="mt-3 text-center">
-                    <p className="truncate text-sm font-semibold text-slate-800">
+                    <p className="truncate text-sm font-semibold text-slate-800 dark:text-white">
                       {admin.name}
                     </p>
-                    <span className="inline-block mt-1 rounded-full bg-slate-100 px-2 py-[2px] text-[10px] font-medium text-slate-600">
+                    <span className="inline-block mt-1 rounded-full bg-slate-100 px-2 py-[2px] text-[10px] font-medium text-slate-600 dark:text-white dark:bg-navy-600 dark:border-navy-500">
                       {admin.role.replace("_", " ")}
                     </span>
                   </div>

@@ -246,24 +246,24 @@ input:checked.defaultCheckbox::before {
      .no-ukp  tbody tr:has(td:nth-child(3) .bg-purple-100){
         border-left: 4px solid rgba(168,85,247,.35);
       }
-    .no-ukp  tbody tr:has(td:nth-child(3) .bg-purple-100):hover{
+    /*.no-ukp  tbody tr:has(td:nth-child(3) .bg-purple-100):hover{
         box-shadow: var(--shadow-2), 0 0 0 3px rgba(168,85,247,.15) inset;
-      }
+      }*/
       /* Garderie */
     .no-ukp  tbody tr:has(td:nth-child(3) .bg-amber-100){
         border-left: 4px solid rgba(245,158,11,.35);
       }
-    .no-ukp  tbody tr:has(td:nth-child(3) .bg-amber-100):hover{
+   /* .no-ukp  tbody tr:has(td:nth-child(3) .bg-amber-100):hover{
         box-shadow: var(--shadow-2), 0 0 0 3px rgba(245,158,11,.15) inset;
-      }
+      }*/
       /* École */
    .no-ukp   tbody tr:has(td:nth-child(3) .bg-emerald-100){
         border-left: 4px solid rgba(16,185,129,.35);
         
       }
-     .no-ukp  tbody tr:has(td:nth-child(3) .bg-emerald-100):hover{
+    /* .no-ukp  tbody tr:has(td:nth-child(3) .bg-emerald-100):hover{
         box-shadow: var(--shadow-2), 0 0 0 3px rgba(16,185,129,.15) inset;
-      }
+      }*/
 
       /* ===== BADGES ===== */
     .no-ukp  td .rounded-full.border.shadow-sm{
@@ -271,7 +271,7 @@ input:checked.defaultCheckbox::before {
       }
     .no-ukp  td .rounded-full.border.shadow-sm:hover{
         transform: translateZ(2px) scale(1.04);
-        box-shadow: 0 6px 18px rgba(2,6,23,.12);
+       /* box-shadow: 0 6px 18px rgba(2,6,23,.12);*/
     
       }
 
@@ -346,10 +346,10 @@ input:checked.defaultCheckbox::before {
   inset: 4px 6px;                   /* marge intérieure du cadre */
   border-radius: 14px;
   pointer-events: none;
-  box-shadow:
-    0 0 0 2px var(--accent) inset,  /* bord coloré */
-    0 12px 26px var(--accent-soft); /* glow */
-}
+ /* box-shadow:
+    0 0 0 2px var(--accent) inset,  
+    0 12px 26px var(--accent-soft); 
+}*/}
 
 /* (Option) fais pareil pour Crèche / École si tu veux une cohérence visuelle : */
 .no-ukp tbody tr:has(td:nth-child(3) .bg-purple-100)::after{
@@ -379,7 +379,7 @@ input:checked.defaultCheckbox::before {
   border-radius: 14px;
   pointer-events: none;
   background: rgba(255,255,255,.55);
-  box-shadow: 0 6px 18px rgba(2,6,23,.10);   /* ombre de base */
+  /*box-shadow: 0 6px 18px rgba(2,6,23,.10); */
   z-index: 0;
   transition: transform .22s var(--ease-pop), box-shadow .22s var(--ease-pop);
 }
@@ -389,7 +389,7 @@ input:checked.defaultCheckbox::before {
   transform: translateY(-2px);
 }
 .no-ukp tbody tr:hover::after{
-  box-shadow: 0 14px 36px rgba(2,6,23,.18), inset 0 0 0 1px rgba(2,6,23,.06);
+ /* box-shadow: 0 14px 36px rgba(2,6,23,.18), inset 0 0 0 1px rgba(2,6,23,.06);*/
 }
 
 /* (Option) Appuie visuel quand on clique */
@@ -408,9 +408,9 @@ input:checked.defaultCheckbox::before {
   left: 2px; right: 2px; top: 0; bottom: 0;
   border-radius: 14px;
   background: #fff;                 /* fond de la “carte” */
-  box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
+  /*box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
               rgba(0, 0, 0, 0.3)    0px 30px 60px -30px,
-              rgba(10, 37, 64, .35) 0px -2px 6px 0px inset;
+              rgba(10, 37, 64, .35) 0px -2px 6px 0px inset;*/
   z-index: 0;                       /* derrière le contenu */
 }
 
@@ -432,9 +432,9 @@ input:checked.defaultCheckbox::before {
   left: 0px; right: 0px; top: 0; bottom: 0;
   border-radius: 12px;
   background: rgba(248,249,251,.9);
-  box-shadow: rgba(50, 50, 93, 0.18) 0px 30px 60px -20px,
+  /*box-shadow: rgba(50, 50, 93, 0.18) 0px 30px 60px -20px,
               rgba(0, 0, 0, 0.25)   0px 18px 36px -22px,
-              rgba(10, 37, 64, .25) 0px -1px 4px 0px inset;
+              rgba(10, 37, 64, .25) 0px -1px 4px 0px inset;*/
   z-index: 0;
 }
 .no-ukp thead th{ position: relative; z-index: 1; }
@@ -500,5 +500,4 @@ input[type="password"]::-ms-clear {
 input[type="password"]::-webkit-textfield-decoration-container {
   display: none;
 }
-
 

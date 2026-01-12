@@ -142,7 +142,7 @@ function ChartCard({ title, icon, right, children, className = "" }) {
       className={`grain tilt p-5 shadow-[0_28px_70px_-24px_rgba(2,6,23,.28),0_16px_40px_-24px_rgba(2,6,23,.22)] ${className} h-full flex flex-col dark:bg-navy-800 dark:text-white`}
     >
       <div className="relative z-[1] mb-3 flex items-center justify-between gap-3 ">
-        <h3 className="text-lg font-extrabold flex items-center gap-2">
+        <h3 className="text-md font-extrabold flex items-center gap-2">
           <span className="text-xl">{icon}</span>
           <span>{title}</span>
         </h3>

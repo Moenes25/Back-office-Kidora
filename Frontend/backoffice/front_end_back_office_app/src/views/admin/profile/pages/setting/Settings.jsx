@@ -29,19 +29,23 @@ const Settings = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         className="rounded-3xl bg-white border border-slate-200
-                   shadow-[0_25px_60px_-35px_rgba(0,0,0,0.25)] p-8"
+                   shadow-[0_25px_60px_-35px_rgba(0,0,0,0.25)] p-8 dark:bg-navy-700 dark:text-white
+                   "
       >
        <div className="flex items-center gap-3 mb-6">
   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100">
     <FaPalette className="text-purple-600" />
   </div>
-  <h1 className="text-xl font-bold text-slate-800">General Preferences</h1>
+  <h1 className="text-xl font-bold text-slate-800 dark:text-white
+  ">General Preferences</h1>
 </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6  dark:text-white
+        ">
           <PreferenceCard
             icon={<FaGlobe />}
             title="Language"
+            className="dark:text-white"
             description="Choose your preferred application language."
           >
             <Select>
@@ -70,7 +74,7 @@ const Settings = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
-        className="rounded-3xl bg-white border border-slate-200
+        className="rounded-3xl bg-white border border-slate-200 dark:bg-navy-700 dark:text-white
                    shadow-[0_25px_60px_-35px_rgba(0,0,0,0.25)] p-8"
       >
    
@@ -78,7 +82,8 @@ const Settings = () => {
   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100">
     <FaBell className="text-purple-600" />
   </div>
-  <h1 className="text-xl font-bold text-slate-800">Notifications</h1>
+  <h1 className="text-xl font-bold text-slate-800 dark:text-white
+  ">Notifications</h1>
 </div>
 
         <div className="space-y-4">
@@ -145,11 +150,13 @@ const NotificationItem = ({ icon, label }) => (
     whileHover={{ scale: 1.01 }}
     className="flex items-center justify-between
                p-4 rounded-2xl border border-slate-200
-               hover:bg-slate-50 transition"
+               hover:bg-slate-50 transition dark:hover:bg-navy-700
+               "
   >
     <div className="flex items-center gap-3">
       <span className="text-purple-500">{icon}</span>
-      <span className="font-medium text-slate-700">{label}</span>
+      <span className="font-medium text-slate-700 dark:text-white
+      ">{label}</span>
     </div>
 
     <Switch />

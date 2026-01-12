@@ -87,8 +87,10 @@ export default function AdminList() {
               <FaUsersCog className="text-purple-600 text-lg" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-800">Admins</h2>
-              <p className="text-sm text-slate-500">
+              <h2 className="text-xl font-bold text-slate-800 dark:text-white
+              ">Admins</h2>
+              <p className="text-sm text-slate-500 dark:text-white
+              ">
                 Manage administrators & permissions
               </p>
             </div>
