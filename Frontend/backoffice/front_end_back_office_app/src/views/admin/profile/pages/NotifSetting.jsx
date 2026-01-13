@@ -26,7 +26,7 @@ export default function NotificationSettings() {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
 
   return (
-    <div className="w-full space-y-8 rounded-2xl bg-white p-6 shadow-lg">
+    <div className="w-full space-y-8 rounded-2xl bg-white p-6 shadow-lg dark:bg-navy-700 dark:text-white">
       {/* HEADER */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -34,10 +34,10 @@ export default function NotificationSettings() {
             <FaBell className="text-purple-600" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-800">
+            <h1 className="text-xl font-bold text-slate-800 dark:text-white">
               Notification Settings
             </h1>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-500 dark:text-slate-300">
               Control how and when you receive alerts
             </p>
           </div>
@@ -103,8 +103,8 @@ export default function NotificationSettings() {
 /* ---------------------------------- */
 function Section({ title, children }) {
   return (
-    <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
-      <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+    <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:bg-navy-800">
+      <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
         {title}
       </h2>
 
@@ -135,17 +135,17 @@ function SettingRow({ icon, title, desc, checked, onToggle }) {
         visible: { opacity: 1, y: 0 },
       }}
       className="flex items-center justify-between rounded-xl border
-                 bg-white p-4 transition
+                 bg-white p-4 transition dark:bg-navy-700 dark:text-white
                  hover:shadow-md"
     >
       <div className="flex items-center gap-4">
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 ">
           {icon}
         </div>
 
         <div>
-          <p className="text-sm font-semibold text-slate-800">{title}</p>
-          <p className="text-xs text-slate-500">{desc}</p>
+          <p className="text-sm font-semibold text-slate-800 dark:text-white">{title}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-300">{desc}</p>
         </div>
       </div>
 

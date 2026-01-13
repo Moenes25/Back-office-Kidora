@@ -87,7 +87,7 @@ export default function ActivityFeedSection() {
   return (
     <section
       className="relative rounded-3xl bg-white border border-slate-200
-                 shadow-[0_30px_70px_-35px_rgba(0,0,0,0.25)] p-8"
+                 shadow-[0_30px_70px_-35px_rgba(0,0,0,0.25)] p-8  dark:bg-navy-800 dark:text-white dark:border-white/10"
     >
       {/* ================= HEADER ================= */}
       <div className="flex items-center justify-between mb-6">
@@ -96,8 +96,8 @@ export default function ActivityFeedSection() {
     <FaStream className="text-purple-600" />
   </div>
   <div>
-    <h2 className="text-xl font-bold text-slate-800">Activity Feed</h2>
-    <p className="text-sm text-slate-500">
+    <h2 className="text-xl font-bold text-slate-800 dark:text-white ">Activity Feed</h2>
+    <p className="text-sm text-slate-500 dark:text-white">
       Track all system actions and user operations
     </p>
   </div>
@@ -116,70 +116,78 @@ export default function ActivityFeedSection() {
       </div>
 
       {/* ================= FILTER BAR ================= */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-wrap gap-3 mb-10"
+  <motion.div
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  className="flex flex-wrap gap-3 mb-10"
+>
+  {/* chip commun */}
+  <div className="flex items-center gap-2 px-3 py-2 rounded-xl
+                  border bg-slate-50 border-slate-200
+                  text-slate-700
+                  dark:bg-white/5 dark:border-white/10 dark:text-slate-200">
+    <FaFilter className="text-slate-400 dark:text-slate-300" />
+    <select
+      value={filterAction}
+      onChange={(e) => setFilterAction(e.target.value)}
+      className="bg-transparent text-sm outline-none appearance-none pr-6
+                 dark:text-slate-200 dark:[color-scheme:dark]"
+    >
+      <option value="">All Actions</option>
+      {Object.keys(ACTION_UI).map((key) => (
+        <option key={key} value={key}>{ACTION_UI[key].label}</option>
+      ))}
+    </select>
+  </div>
+
+  <div className="flex items-center gap-2 px-3 py-2 rounded-xl
+                  border bg-slate-50 border-slate-200
+                  text-slate-700
+                  dark:bg-white/5 dark:border-white/10 dark:text-slate-200">
+    <select
+      value={filterEntity}
+      onChange={(e) => setFilterEntity(e.target.value)}
+      className="bg-transparent text-sm outline-none appearance-none pr-6
+                 dark:text-slate-200 dark:[color-scheme:dark]"
+    >
+      <option value="">All Entities</option>
+      {Object.keys(ENTITY_CONFIG).map((key) => (
+        <option key={key} value={key}>{ENTITY_CONFIG[key].label}</option>
+      ))}
+    </select>
+  </div>
+
+  <div className="flex items-center gap-2 px-3 py-2 rounded-xl
+                  border bg-slate-50 border-slate-200
+                  text-slate-700
+                  dark:bg-white/5 dark:border-white/10 dark:text-slate-200">
+    <FaCalendarAlt className="text-slate-400 dark:text-slate-300" />
+    <input
+      type="date"
+      value={filterDate || ""}
+      onChange={(e) => setFilterDate(e.target.value)}
+      className="bg-transparent text-sm outline-none
+                 dark:text-slate-200 dark:[color-scheme:dark]"
+    />
+
+    {filterDate && (
+      <button
+        onClick={() => setFilterDate("")}
+        className="ml-1 rounded-lg px-2 py-1 text-xs font-semibold
+                   text-purple-600 hover:text-purple-700
+                   bg-white border border-slate-200 hover:border-purple-300
+                   dark:text-purple-300 dark:bg-white/5 dark:border-white/10 dark:hover:border-purple-300/40"
+        title="Show all days"
       >
-        <div className="flex items-center gap-2 px-3 py-2 rounded-xl
-                        border border-slate-200 bg-slate-50">
-          <FaFilter className="text-slate-400" />
-          <select
-            value={filterAction}
-            onChange={(e) => setFilterAction(e.target.value)}
-            className="bg-transparent text-sm outline-none"
-          >
-            <option value="">All Actions</option>
-            {Object.keys(ACTION_UI).map((key) => (
-              <option key={key} value={key}>
-                {ACTION_UI[key].label}
-              </option>
-            ))}
-          </select>
-        </div>
+        All days
+      </button>
+    )}
+  </div>
+</motion.div>
 
-        <div className="flex items-center gap-2 px-3 py-2 rounded-xl
-                        border border-slate-200 bg-slate-50">
-          <select
-            value={filterEntity}
-            onChange={(e) => setFilterEntity(e.target.value)}
-            className="bg-transparent text-sm outline-none"
-          >
-            <option value="">All Entities</option>
-            {Object.keys(ENTITY_CONFIG).map((key) => (
-              <option key={key} value={key}>
-                {ENTITY_CONFIG[key].label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex items-center gap-2 px-3 py-2 rounded-xl
-                        border border-slate-200 bg-slate-50">
-          <FaCalendarAlt className="text-slate-400" />
-          <input
-            type="date"
-            value={filterDate || ""}
-            onChange={(e) => setFilterDate(e.target.value)}
-            className="bg-transparent text-sm outline-none"
-          />
-
-          + {filterDate && (
-   <button
-     onClick={() => setFilterDate("")}
-     className="ml-1 rounded-lg px-2 py-1 text-xs font-semibold
-                text-purple-600 hover:text-purple-700
-                bg-white border border-slate-200 hover:border-purple-300"
-     title="Show all days"
-   >
-     All days
-   </button>
- )}
-        </div>
-      </motion.div>
 
       {/* ================= TIMELINE ================= */}
-      <div className="absolute left-[30px] top-[180px] bottom-8 w-px bg-slate-200" />
+      <div className="absolute left-[30px] top-[180px] bottom-8 w-px bg-slate-200 dark:bg-white/10" />
 
       {loading ? (
         <div className="space-y-4 animate-pulse">

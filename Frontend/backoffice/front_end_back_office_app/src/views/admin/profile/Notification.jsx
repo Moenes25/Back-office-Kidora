@@ -202,7 +202,7 @@ export default function Notifications() {
             <button
               key={f.key}
               onClick={() => setFilter(f.key)}
-              className={`relative overflow-hidden rounded-full px-3 py-1.5 text-xs font-semibold transition dark:text-white
+              className={`relative overflow-hidden rounded-full px-3 py-1.5 text-xs font-semibold transition dark:text-white dark:hover:bg-slate-500
                 ${active ? "text-white" : "text-slate-600 hover:bg-slate-100"}
               `}
             >

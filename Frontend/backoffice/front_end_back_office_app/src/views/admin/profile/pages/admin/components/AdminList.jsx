@@ -137,7 +137,7 @@ export default function AdminList() {
                 className="flex items-center justify-between gap-4
                            rounded-2xl border border-slate-200
                            bg-white p-5 shadow-sm
-                           hover:shadow-md transition"
+                           hover:shadow-md transition dark:bg-navy-700 dark:text-white"
               >
                 {/* INFO */}
                 <div className="flex items-center gap-4">
@@ -159,14 +159,14 @@ export default function AdminList() {
 
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="font-semibold text-slate-800">
+                      <p className="font-semibold text-slate-800 dark:text-white">
                         {admin.nom}
                       </p>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 dark:text-white dark:bg-slate-500">
                         {admin.region}
                       </span>
                     </div>
-                    <p className="text-sm text-slate-500">{admin.role}</p>
+                    <p className="text-sm text-slate-500 dark:text-white">{admin.role}</p>
                   </div>
                 </div>
 

@@ -30,7 +30,7 @@ export default function ActivityCard({ activity }) {
 
       <div
         className={`flex-1 rounded-2xl border border-slate-200
-                    p-4 shadow-sm hover:shadow-md transition ${ui.bg}`}
+                    p-4 shadow-sm hover:shadow-md dark:bg-white/5 dark:border-white/10 transition ${ui.bg}`}
       >
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -55,15 +55,15 @@ export default function ActivityCard({ activity }) {
         </div>
 
         {/* Content */}
-        <p className="mt-1 text-sm text-slate-700">
+        <p className="mt-1 text-sm text-slate-700 dark:text-white">
           <span className="font-semibold">{action.name}</span>
           {action.etabname && (
-            <span className="text-slate-400"> — {action.etabname}</span>
+            <span className="text-slate-400 dark:text-white"> — {action.etabname}</span>
           )}
         </p>
 
         {/* User */}
-        <div className="flex items-center gap-3 mt-4">
+        <div className="flex items-center gap-3 mt-4 ">
           {!user.image || imgError ? (
             <div className="w-11 h-11 rounded-full bg-slate-400
                             flex items-center justify-center text-white font-semibold">

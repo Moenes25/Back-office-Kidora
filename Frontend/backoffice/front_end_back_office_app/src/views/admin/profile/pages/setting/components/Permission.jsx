@@ -131,11 +131,11 @@ useEffect(() => {
 
   {/* LEFT FADE */}
   <div className="pointer-events-none absolute left-0 top-0 h-full w-10
-                  bg-gradient-to-r from-white to-transparent z-10" />
+                  bg-gradient-to-r from-white to-transparent z-10 dark:bg-transparent" />
 
   {/* RIGHT FADE */}
   <div className="pointer-events-none absolute right-0 top-0 h-full w-10
-                  bg-gradient-to-l from-white to-transparent z-10" />
+                  bg-gradient-to-l from-white to-transparent z-10 dark:bg-transparent" />
 
   {/* LEFT ARROW */}
   <button
@@ -143,9 +143,9 @@ useEffect(() => {
     className="absolute left-1 top-1/2 -translate-y-1/2 z-20
                h-8 w-8 rounded-full bg-white shadow
                flex items-center justify-center
-               hover:bg-slate-100 transition"
+               hover:bg-slate-100 transition dark:bg-slate-500"
   >
-    <FaChevronLeft className="text-slate-600 text-sm" />
+    <FaChevronLeft className="text-slate-600 text-sm dark:text-white" />
   </button>
 
   {/* RIGHT ARROW */}
@@ -154,9 +154,9 @@ useEffect(() => {
     className="absolute right-1 top-1/2 -translate-y-1/2 z-20
                h-8 w-8 rounded-full bg-white shadow
                flex items-center justify-center
-               hover:bg-slate-100 transition"
+               hover:bg-slate-100 transition dark:bg-slate-500"
   >
-    <FaChevronRight className="text-slate-600 text-sm" />
+    <FaChevronRight className="text-slate-600 text-sm dark:text-white" />
   </button>
 
   {/* ROLES */}
@@ -241,7 +241,7 @@ function PermissionRow({ title, desc, checked, disabled, onClick }) {
       whileHover={{ scale: 1.01 }}
       className="flex items-center justify-between
                  p-3 rounded-xl border border-slate-200
-                 hover:bg-slate-50 transition dark:hover:text-slate-800
+                 hover:bg-slate-50 transition dark:hover:bg-slate-500
                  "
     >
       <div>

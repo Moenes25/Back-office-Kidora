@@ -126,8 +126,8 @@ const PreferenceCard = ({ icon, title, description, children }) => (
     <div className="flex items-start gap-3 mb-4">
       <div className="text-purple-600 text-lg">{icon}</div>
       <div>
-        <p className="font-semibold text-slate-700">{title}</p>
-        <p className="text-xs text-slate-500">{description}</p>
+        <p className="font-semibold text-slate-700 dark:text-white">{title}</p>
+        <p className="text-xs text-slate-500 dark:text-slate-300">{description}</p>
       </div>
     </div>
     {children}
