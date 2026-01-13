@@ -1,5 +1,7 @@
 package tn.kidora.spring.kidorabackoffice.config;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,6 +13,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import tn.kidora.spring.kidorabackoffice.utils.Constants;
 
 import lombok.AllArgsConstructor;
@@ -41,6 +47,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http)  throws Exception {
         return http
                .csrf(AbstractHttpConfigurer::disable)
+               .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                .authorizeHttpRequests(auth ->
                auth
                        .requestMatchers(Constants.APP_ROOT + Constants.CLIENT + Constants.CLIENT_REGISTER,
@@ -58,7 +65,20 @@ public class SecurityConfig {
                                                 ).hasAnyRole("ADMIN_GENERAL","SUPER_ADMIN")
   
                               .requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.REGISTER).hasRole("SUPER_ADMIN")
-                              .anyRequest().permitAll())
+                              .requestMatchers(
+                           // Exemple d'endpoints réservés à l'ADMIN
+                                    // Constants.APP_ROOT + Constants.CLIENT + Constants.REGISTER,
+                                    Constants.APP_ROOT + Constants.CLIENT + Constants.ALL_CLIENTS, 
+                                    Constants.APP_ROOT + Constants.CLIENT + Constants.DELETE_CLIENT+"/*",
+                                    Constants.APP_ROOT + Constants.CLIENT + Constants.update_CLIENT+"/*",
+                                    Constants.APP_ROOT + Constants.CLIENT + Constants.ALL_PARENTS,
+                                    Constants.APP_ROOT + Constants.CLIENT + Constants.ALL_EDUCATEURS,
+                                    Constants.APP_ROOT + Constants.CLIENT + Constants.ID,
+                                    Constants.APP_ROOT + Constants.CLIENT + Constants.GET_ANFANT_BYID_PARENT+"/*",
+                                    "/api/enfants/**"
+
+                                    ).hasRole("ADMIN")
+                              .anyRequest().authenticated())
                      
                      
              .addFilterBefore(new JwtFilter(customUserDetailsService, jwtUtils), UsernamePasswordAuthenticationFilter.class)
@@ -69,7 +89,7 @@ public class SecurityConfig {
      @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

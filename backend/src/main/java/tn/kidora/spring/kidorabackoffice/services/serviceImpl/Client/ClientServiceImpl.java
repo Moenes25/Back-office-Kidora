@@ -80,4 +80,11 @@ public class ClientServiceImpl implements  ClientService{
     public List<Users> getEducateurs() {
         return clientRepo.findByRole(RoleUsers.EDUCATEUR);
     }
+
+    @Override
+    public Users getClientById(String id) {
+        return clientRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Client non trouvé"));
+    }
+    
 }

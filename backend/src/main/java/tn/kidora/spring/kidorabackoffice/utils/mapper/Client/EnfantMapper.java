@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import tn.kidora.spring.kidorabackoffice.dto.Client.EnfantRequestDto;
 import tn.kidora.spring.kidorabackoffice.dto.Client.EnfantResponseDto;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Enfants;
+import tn.kidora.spring.kidorabackoffice.entities.Client.Users;
 
 @Service
 public class EnfantMapper {
@@ -23,6 +24,13 @@ public class EnfantMapper {
         dto.setAge(enfant.getAge());
         dto.setClasse(enfant.getClasse());
         dto.setImageUrl(enfant.getImageUrl());
+        Users parent = enfant.getParent();
+        if (parent != null) {
+            dto.setParentId(parent.getId());
+            
+        }
+        
+        // dto.setParentId(enfant.getParent().getId());
         return dto;
     }
 

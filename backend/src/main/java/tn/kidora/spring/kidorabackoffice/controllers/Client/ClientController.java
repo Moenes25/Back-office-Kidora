@@ -104,4 +104,8 @@ public class ClientController {
     public ResponseEntity<List<Users>> getAllEducateurs() {
         return ResponseEntity.ok(clientService.getEducateurs());
     }
+    @GetMapping(Constants.ID)
+    public ResponseEntity<Users> getClientById(@PathVariable String id) {
+        return ResponseEntity.ok(clientService.getClientById(id));
+    }
 }
