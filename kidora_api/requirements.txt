@@ -1,0 +1,8 @@
+# Dépendances
+fastapi
+uvicorn[standard]
+pymongo
+pandas
+pydantic
+python-dotenv
+dnspython
