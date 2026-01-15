@@ -79,6 +79,16 @@ public class Constants {
     public static final String FACTURE_TOTAL_IMPAYEES = "/total/impayees";
     public static final String FACTURE_ALL = "/all";
     public static final String FACTURE_BY_ID = "/{id}";
+    // ---------------------- CLIENT EVENTS ------------------------
+    public static final String CLIENT_EVENTS = "/client/evenements";
+    public static final String CREATE_EVENT = "/create";
+    public static final String EVENTS_BY_DAY = "/events/today";
+    public static final String UPDATE_EVENT = "/update/{id}";
+    public static final String EVENTS_BY_WEEK = "/events/week";
+    public static final String EVENTS_BY_MONTH = "/events/month";
+    public static final String GET_EVENT_BY_ID = "/events/{id}";
+    public static final String DELETE_EVENT = "/events/delete/{id}";
+
 
 
 

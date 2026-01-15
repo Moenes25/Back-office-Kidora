@@ -33,6 +33,10 @@ public class Evenement {
     private LocalDate date;
     private LocalTime heureDebut;
     private LocalTime heureFin;
+    private String couleur;
+
+    private LocalDate dateDebut;
+    private LocalDate dateFin;
 
     private Type_Etablissement type;
 
