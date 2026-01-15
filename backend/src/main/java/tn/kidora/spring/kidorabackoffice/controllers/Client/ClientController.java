@@ -1,6 +1,7 @@
 package tn.kidora.spring.kidorabackoffice.controllers.Client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -10,11 +11,13 @@ import org.springframework.web.multipart.MultipartFile;
 import tn.kidora.spring.kidorabackoffice.dto.Client.ClientUpdateDto;
 import tn.kidora.spring.kidorabackoffice.dto.LoginDto;
 import tn.kidora.spring.kidorabackoffice.dto.Client.UserRegistreDto;
+import tn.kidora.spring.kidorabackoffice.dto.Client.ClasseResponseDto;
 import tn.kidora.spring.kidorabackoffice.entities.Client.RoleUsers;
 import tn.kidora.spring.kidorabackoffice.entities.Client.StatutClient;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Users;
 import tn.kidora.spring.kidorabackoffice.services.AuthService;
 import tn.kidora.spring.kidorabackoffice.services.serviceImpl.Client.ClientService;
+import tn.kidora.spring.kidorabackoffice.services.serviceImpl.Client.ClasseService;
 import tn.kidora.spring.kidorabackoffice.utils.Constants;
 
 import java.io.IOException;
@@ -29,18 +32,52 @@ public class ClientController {
 
     private final  AuthService authService;
     private final ClientService clientService;
+    private final ClasseService classeService;
 
     @PostMapping(value = Constants.CLIENT_REGISTER, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Users> registerClient(
-            @RequestPart("user") String userJson,
-            @RequestPart(value = "image", required = false) MultipartFile imageFile) throws IOException {
+            @RequestParam("nom") String nom,
+            @RequestParam("prenom") String prenom,
+            @RequestParam("email") String email,
+            @RequestParam("password") String password,
+            @RequestParam("role") RoleUsers role,
+            @RequestParam(value = "numTel", required = false) String numTel,
+            @RequestParam(value = "adresse", required = false) String adresse,
+            @RequestParam(value = "profession", required = false) String profession,
+            @RequestParam(value = "relation", required = false) String relation,
+            @RequestParam(value = "specialisation", required = false) String specialisation,
+            @RequestParam(value = "experience", required = false) Integer experience,
+            @RequestParam(value = "disponibilite", required = false) String disponibilite,
+            @Parameter(description = "Liste des IDs des classes (pour éducateur). Répéter le paramètre pour plusieurs valeurs: classesIds=id1&classesIds=id2", 
+                       schema = @Schema(type = "array", example = "[\"id1\", \"id2\"]"))
+            @RequestParam(value = "classesIds", required = false) List<String> classesIds,
+            @RequestParam(value = "statutClient", required = false, defaultValue = "ACTIF") StatutClient statutClient,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile
+    ) throws IOException {
+
         log.info("RegisterClient endpoint called.");
-        ObjectMapper mapper = new ObjectMapper();
-        UserRegistreDto dto = mapper.readValue(userJson, UserRegistreDto.class);
+
+        UserRegistreDto dto = new UserRegistreDto();
+        dto.setNom(nom);
+        dto.setPrenom(prenom);
+        dto.setEmail(email);
+        dto.setPassword(password);
+        dto.setRole(role);
+        dto.setNumTel(numTel);
+        dto.setAdresse(adresse);
+        dto.setProfession(profession);
+        dto.setRelation(relation);
+        dto.setSpecialisation(specialisation);
+        dto.setExperience(experience);
+        dto.setDisponibilite(disponibilite);
+        dto.setClassesIds(classesIds);
+        dto.setStatutClient(statutClient);
         dto.setImageFile(imageFile);
         Users savedUser = authService.registerClient(dto);
+
         return ResponseEntity.ok(savedUser);
     }
+
 
     @PostMapping(Constants.CLIENT_LOGIN)
     public ResponseEntity<Map<String,Object>> login(@RequestBody LoginDto dto){
@@ -66,7 +103,9 @@ public class ClientController {
             @RequestParam(value = "specialisation", required = false) String specialisation,
             @RequestParam(value = "experience", required = false) Integer experience,
             @RequestParam(value = "disponibilite", required = false) String disponibilite,
-            @RequestParam(value = "classe", required = false) String classe,
+            @Parameter(description = "Liste des IDs des classes (pour éducateur). Répéter le paramètre pour plusieurs valeurs: classesIds=id1&classesIds=id2", 
+                       schema = @Schema(type = "array", example = "[\"id1\", \"id2\"]"))
+            @RequestParam(value = "classesIds", required = false) List<String> classesIds,
             @RequestParam(value = "statutClient", required = false) StatutClient statutClient,
 
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
@@ -84,7 +123,7 @@ public class ClientController {
         dto.setSpecialisation(specialisation);
         dto.setExperience(experience);
         dto.setDisponibilite(disponibilite);
-        dto.setClasse(classe);
+        dto.setClassesIds(classesIds);
         dto.setImageFile(imageFile);
         dto.setStatutClient(statutClient);
 
@@ -104,8 +143,11 @@ public class ClientController {
     public ResponseEntity<List<Users>> getAllEducateurs() {
         return ResponseEntity.ok(clientService.getEducateurs());
     }
-    @GetMapping(Constants.ID)
-    public ResponseEntity<Users> getClientById(@PathVariable String id) {
-        return ResponseEntity.ok(clientService.getClientById(id));
+
+    
+    @GetMapping("/classes/all")
+    public ResponseEntity<List<ClasseResponseDto>> getAllClasses() {
+        return ResponseEntity.ok(classeService.getAllClasses());
+
     }
 }

@@ -3,9 +3,11 @@ package tn.kidora.spring.kidorabackoffice.services.serviceImpl.Client;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import tn.kidora.spring.kidorabackoffice.dto.Client.ClientUpdateDto;
+import tn.kidora.spring.kidorabackoffice.entities.Client.Classes;
 import tn.kidora.spring.kidorabackoffice.entities.Client.RoleUsers;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Users;
 import tn.kidora.spring.kidorabackoffice.repositories.Client.ClientRepo;
+import tn.kidora.spring.kidorabackoffice.repositories.Client.ClasseRepository;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,6 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ClientServiceImpl implements  ClientService{
     private final ClientRepo clientRepo;
+    private final ClasseRepository classeRepository;
 
     @Override
     public void deleteClient(String clientId) {
@@ -45,7 +48,10 @@ public class ClientServiceImpl implements  ClientService{
             if (dto.getSpecialisation() != null) user.setSpecialisation(dto.getSpecialisation());
             if (dto.getExperience() != null) user.setExperience(dto.getExperience());
             if (dto.getDisponibilite() != null) user.setDisponibilite(dto.getDisponibilite());
-            if (dto.getClasse() != null) user.setClasse(dto.getClasse());
+            if (dto.getClassesIds() != null && !dto.getClassesIds().isEmpty()) {
+                List<Classes> classes = classeRepository.findAllById(dto.getClassesIds());
+                user.setClasses(classes);
+            }
         }
         if (dto.getStatutClient() != null) {
             user.setStatutClient(dto.getStatutClient());

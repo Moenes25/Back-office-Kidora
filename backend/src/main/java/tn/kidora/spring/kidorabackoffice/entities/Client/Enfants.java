@@ -19,9 +19,11 @@ public class Enfants {
     private  String nom;
     private  String prenom;
     private  Integer age;
-    private  String classe;
+
     private String imageUrl;
 
+    @DBRef 
+    private Classes classe;
 
     @DBRef
     private Users parent; // référence vers le parent

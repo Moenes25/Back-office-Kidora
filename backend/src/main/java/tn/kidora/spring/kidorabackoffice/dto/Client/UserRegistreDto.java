@@ -7,6 +7,8 @@ import org.springframework.web.multipart.MultipartFile;
 import tn.kidora.spring.kidorabackoffice.entities.Client.RoleUsers;
 import tn.kidora.spring.kidorabackoffice.entities.Client.StatutClient;
 
+import java.util.List;
+
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
 public class UserRegistreDto {
@@ -23,10 +25,10 @@ public class UserRegistreDto {
     String specialisation;
     Integer experience;
     String disponibilite;
-    String classe;
     RoleUsers role;
     MultipartFile imageFile;
     String imageUrl;
     StatutClient statutClient;
+    List<String> classesIds;
 
 }

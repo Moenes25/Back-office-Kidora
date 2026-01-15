@@ -25,11 +25,13 @@ import org.springframework.web.multipart.MultipartFile;
 import tn.kidora.spring.kidorabackoffice.config.JwtUtils;
 import tn.kidora.spring.kidorabackoffice.dto.RegisterDto;
 import tn.kidora.spring.kidorabackoffice.dto.Client.UserRegistreDto;
+import tn.kidora.spring.kidorabackoffice.entities.Client.Classes;
 import tn.kidora.spring.kidorabackoffice.entities.Client.RoleUsers;
 import tn.kidora.spring.kidorabackoffice.entities.Role;
 
 import tn.kidora.spring.kidorabackoffice.entities.User;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Users;
+import tn.kidora.spring.kidorabackoffice.repositories.Client.ClasseRepository;
 import tn.kidora.spring.kidorabackoffice.repositories.Client.ClientRepo;
 import tn.kidora.spring.kidorabackoffice.repositories.UserRepository;
 import tn.kidora.spring.kidorabackoffice.services.AuthService;
@@ -42,6 +44,7 @@ public class AuthServiceImpl implements  AuthService{
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
    private final ClientRepo clientRepo;
+   private  final ClasseRepository classeRepository;
 
     @Override
     public User register(RegisterDto dto) {
@@ -70,7 +73,6 @@ public class AuthServiceImpl implements  AuthService{
             throw new RuntimeException("Email already registered!");
         }
         System.out.println("RegisterClient called with DTO: " +dto);
-
         // Créer l'entité Users
         Users user = new Users();
         user.setNom(dto.getNom());
@@ -79,17 +81,20 @@ public class AuthServiceImpl implements  AuthService{
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(dto.getRole());  // RoleUsers: ROLE_PARENT ou ROLE_EDUCATEUR
         user.setStatutClient(dto.getStatutClient());
+        user.setNumTel(dto.getNumTel());
         // Champs optionnels selon le rôle
         if (dto.getRole() == RoleUsers.PARENT) {
             user.setProfession(dto.getProfession());
             user.setRelation(dto.getRelation());
-            user.setNumTel(dto.getNumTel());
             user.setAdresse(dto.getAdresse());
         } else if (dto.getRole() == RoleUsers.EDUCATEUR) {
             user.setSpecialisation(dto.getSpecialisation());
             user.setExperience(dto.getExperience());
             user.setDisponibilite(dto.getDisponibilite());
-            user.setClasse(dto.getClasse());
+            if (dto.getClassesIds() != null && !dto.getClassesIds().isEmpty()) {
+                List<Classes> classes = classeRepository.findAllById(dto.getClassesIds());
+                user.setClasses(classes);
+            }
         }
         // ✅ Gérer l'image de profil si envoyée
         if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {
@@ -107,19 +112,16 @@ public class AuthServiceImpl implements  AuthService{
                 // Copier le fichier sur le disque
                 Files.copy(dto.getImageFile().getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-                // Enregistrer le chemin relatif dans l'entité
                 user.setImageUrl("/" + uploadDir + fileName);
 
             } catch (IOException e) {
                 throw new RuntimeException("Erreur lors du téléchargement de l'image : " + e.getMessage(), e);
             }
         }
-        user.setActive(true);
+
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
-
         // Sauvegarder l'utilisateur dans la base
-
         return  clientRepo.save(user);
     }
 
@@ -143,7 +145,12 @@ public class AuthServiceImpl implements  AuthService{
         }
         Users client = clientRepo.findByEmail(email);
         if (client != null && passwordEncoder.matches(password, client.getPassword())) {
-            String token = jwtUtils.generateToken(client.getId(), email, client.getRole().toString());
+
+            String role = (client.getRole() != null)
+                    ? client.getRole().toString()
+                    : "PARENT";
+            String token = jwtUtils.generateToken(client.getId(), email, role);
+
             Map<String, Object> authData = new HashMap<>();
             authData.put("token", token);
             authData.put("type", "Bearer");
@@ -182,7 +189,6 @@ public class AuthServiceImpl implements  AuthService{
             user.setEmail(newEmail);
         }
         if (newPassword != null && !newPassword.isEmpty()) {
-            //  Assure-toi d’utiliser ton encodeur BCryptPasswordEncoder
             String encodedPassword = passwordEncoder.encode(newPassword);
             user.setPassword(encodedPassword);
         }
@@ -235,7 +241,6 @@ public class AuthServiceImpl implements  AuthService{
             String encodedPassword = passwordEncoder.encode(newPassword);
             user.setPassword(encodedPassword);
         }
-        // Mettre à jour le rôle si fourni
         if (newRole != null) {
             user.setRole(newRole);
         }

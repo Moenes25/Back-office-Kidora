@@ -75,7 +75,9 @@ public class SecurityConfig {
                                     Constants.APP_ROOT + Constants.CLIENT + Constants.ALL_EDUCATEURS,
                                     Constants.APP_ROOT + Constants.CLIENT + Constants.ID,
                                     Constants.APP_ROOT + Constants.CLIENT + Constants.GET_ANFANT_BYID_PARENT+"/*",
-                                    "/api/enfants/**"
+                                    
+                                    "/api/enfants/**",
+                                    Constants.APP_ROOT + "/classes/**"
 
                                     ).hasRole("ADMIN")
                               .anyRequest().authenticated())
