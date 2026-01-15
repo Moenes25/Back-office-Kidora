@@ -86,4 +86,9 @@ public class ClientServiceImpl implements  ClientService{
     public List<Users> getEducateurs() {
         return clientRepo.findByRole(RoleUsers.EDUCATEUR);
     }
+
+    @Override
+    public long getTotalParents() {
+        return clientRepo.countParents();
+    }
 }

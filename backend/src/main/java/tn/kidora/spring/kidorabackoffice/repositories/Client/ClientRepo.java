@@ -1,6 +1,7 @@
 package tn.kidora.spring.kidorabackoffice.repositories.Client;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 import tn.kidora.spring.kidorabackoffice.entities.Client.RoleUsers;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Users;
@@ -16,4 +17,6 @@ public interface ClientRepo extends MongoRepository<Users,String> {
     List<Users> findByRole(RoleUsers role);
     Optional<Users> findByEmail(String email);
     String Id(String id);
+    @Query(value = "{ 'role' : 'PARENT' }", count = true)
+    long countParents();
 }

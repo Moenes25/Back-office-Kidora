@@ -117,5 +117,10 @@ public class EnfantServiceImpl implements  EnfantService {
                 .toList();
     }
 
+    @Override
+    public long getNombreEnfants() {
+        return enfantRepository.count();
+    }
+
 
 }
