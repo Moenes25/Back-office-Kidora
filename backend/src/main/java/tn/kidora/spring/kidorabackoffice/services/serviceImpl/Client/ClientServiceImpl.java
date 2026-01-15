@@ -92,5 +92,10 @@ public class ClientServiceImpl implements  ClientService{
         return clientRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Client non trouvé"));
     }
+
+     @Override
+    public long getTotalParents() {
+        return clientRepo.countParents();
+    }
     
 }

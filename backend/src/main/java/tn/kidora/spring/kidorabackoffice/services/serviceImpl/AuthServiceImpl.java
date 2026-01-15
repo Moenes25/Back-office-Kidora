@@ -143,14 +143,13 @@ public class AuthServiceImpl implements  AuthService{
                 throw new RuntimeException("Email ou mot de passe incorrect");
             }
         }
-        Users client = clientRepo.findByEmail(email);
+        Users client = clientRepo.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Client non trouvé avec l'email : " + email));
         if (client != null && passwordEncoder.matches(password, client.getPassword())) {
-
             String role = (client.getRole() != null)
                     ? client.getRole().toString()
                     : "PARENT";
             String token = jwtUtils.generateToken(client.getId(), email, role);
-
             Map<String, Object> authData = new HashMap<>();
             authData.put("token", token);
             authData.put("type", "Bearer");
@@ -277,4 +276,3 @@ public class AuthServiceImpl implements  AuthService{
 
 
 }
-

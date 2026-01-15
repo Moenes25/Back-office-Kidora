@@ -409,7 +409,7 @@ export const getEtablissementsSansAbonnement = async () => {
  */
 export const getTotalParents = async () => {
   try {
-    const res = await api.get("/client/parents");
+    const res = await api.get("/parents/total");
     // le backend peut renvoyer un array ou {count: N}
     if (Array.isArray(res.data)) return res.data.length;
     if (typeof res.data?.count === "number") return res.data.count;
@@ -426,7 +426,7 @@ export const getTotalParents = async () => {
  */
 export const getTotalEnfants = async () => {
   try {
-    const res = await api.get("/client/AllEnfant");
+    const res = await api.get("/count");
     if (Array.isArray(res.data)) return res.data.length;
     if (typeof res.data?.count === "number") return res.data.count;
     return 0;

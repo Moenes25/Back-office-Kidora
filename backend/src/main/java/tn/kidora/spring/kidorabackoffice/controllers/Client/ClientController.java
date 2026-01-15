@@ -145,9 +145,15 @@ public class ClientController {
     }
 
     
-    @GetMapping("/classes/all")
+       /*@GetMapping("/classes/all")
     public ResponseEntity<List<ClasseResponseDto>> getAllClasses() {
         return ResponseEntity.ok(classeService.getAllClasses());
-
+    }*/
+    @GetMapping(Constants.TOTAL_PARENTS)
+    public ResponseEntity<Map<String, Long>> getTotalParents() {
+        long totalParents = clientService.getTotalParents();
+        return ResponseEntity.ok(Map.of("totalParents", totalParents));
     }
+
+    
 }

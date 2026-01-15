@@ -18,4 +18,3 @@ public interface UserRepository extends MongoRepository<User,String> {
     void deleteById(String id);
     List<User> findByRegion(String region);
 }
-

@@ -13,4 +13,5 @@ public interface ClientService {
     List<Users> getParents();
     List<Users> getEducateurs();
     Users getClientById(String id);
+    long getTotalParents();
 }

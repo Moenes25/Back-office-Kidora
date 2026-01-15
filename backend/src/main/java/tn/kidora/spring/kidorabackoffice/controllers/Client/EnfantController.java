@@ -60,5 +60,10 @@ public class EnfantController {
         List<EnfantResponseDto> enfants = enfantService.getEnfantsByParent(parentId);
         return ResponseEntity.ok(enfants);
     }
-}
+    @GetMapping(Constants.COUNT_ENFANT)
+    public ResponseEntity<Long> getNombreEnfants() {
+        long count = enfantService.getNombreEnfants();
+        return ResponseEntity.ok(count);
+    }
 
+}

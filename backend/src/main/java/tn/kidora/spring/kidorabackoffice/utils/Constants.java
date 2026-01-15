@@ -61,6 +61,8 @@ public class Constants {
     public static final String ALL_EDUCATEURS = "/educateurs";
     public static final String AJOUTER_CLASSE = "/ajouter";
     public static final String GET_ALL_CLASSES = "/all";
+    public static final String COUNT_ENFANT = "/count";
+    public static final String TOTAL_PARENTS = "/parents/total";
 
     // -------------------- ANALYTICS --------------------
     public static final String ANALYTICS = "/analytics";
@@ -80,6 +82,7 @@ public class Constants {
     public static final String FACTURE_TOTAL_IMPAYEES = "/total/impayees";
     public static final String FACTURE_ALL = "/all";
     public static final String FACTURE_BY_ID = "/{id}";
+    
 
 
 
