@@ -20,6 +20,7 @@ public class EtablissementMapper {
         etabDto.setType(etab.getType());
         etabDto.setEmail(etab.getEmail());
         etabDto.setIsActive(etab.getIsActive());
+        etabDto.setPassword(etab.getPassword());
         // etabDto.setNombreEducateurs(etab.getNombreEducateurs());
         // etabDto.setNombreParents(etab.getNombreParents());
         // etabDto.setNombreEnfants(etab.getNombreEnfants());
@@ -42,6 +43,7 @@ public class EtablissementMapper {
                 .url_localisation(requestDTO.getUrl_localisation())
                 .type(requestDTO.getType())
                 .email(requestDTO.getEmail())
+                .password(requestDTO.getPassword())
                 .isActive(requestDTO.getIsActive() != null ? requestDTO.getIsActive() : true)
                 .build();
         

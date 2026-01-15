@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneId;
-import java.time.chrono.ChronoPeriod;
 import java.time.format.TextStyle;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -16,14 +15,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import tn.kidora.spring.kidorabackoffice.dto.DonneesCroissanceDTo;
 import tn.kidora.spring.kidorabackoffice.dto.Etab_Dto;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementInactifDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementUpdateDTO;
 import tn.kidora.spring.kidorabackoffice.entities.Abonnement;
-// import tn.kidora.spring.kidorabackoffice.entities.Abonnement;
 import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.Type_Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.User;
@@ -55,18 +52,7 @@ public class EtabServiceImpl implements EtabService {
         Etablissement etab = etablissementMapper.toEntity(dto);
         etab.setUser(user);
         etab.setCreatedAt(LocalDateTime.now());
-        // etab.setPassword(encoder.encode(dto.getPassword()));
-        // Etablissement.builder()
-        //         .nomEtablissement(dto.getNomEtablissement())
-        //         .adresse_complet(dto.getAdresse_complet())
-        //         .region(dto.getRegion())
-        //         .telephone(dto.getTelephone())
-        //         .url_localisation(dto.getUrl_localisation())
-        //         .type(dto.getType())
-        //         .email(dto.getEmail())
-        //         .password(dto.getPassword() != null ? encoder.encode(dto.getPassword()) : null)
-        //         .isActive(dto.getIsActive() != null ? dto.getIsActive() : true)
-        //         .build();
+        etab.setPassword(encoder.encode(dto.getPassword()));
         Etablissement saved = etablissementRepository.save(etab);
         System.out.println("DTO reçu : " + dto);
 
@@ -182,7 +168,6 @@ public class EtabServiceImpl implements EtabService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
         }
     }
-// l’API pour fournir les données de croissance des inscriptions par catégorie et par mois.
     @Override
     public List<DonneesCroissanceDTo> obtenirCroissanceMensuelle() {
     List<DonneesCroissanceDTo> resultats = new ArrayList<>();
@@ -211,7 +196,7 @@ public class EtabServiceImpl implements EtabService {
         
         Type_Etablissement type = etablissement.getType();
         
-        DonneesCroissanceDTo dto = resultats.get(mois - 1); // -1 car liste commence à 0
+        DonneesCroissanceDTo dto = resultats.get(mois - 1);
         
         switch (type) {
             case GARDERIE:

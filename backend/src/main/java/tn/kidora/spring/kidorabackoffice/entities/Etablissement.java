@@ -29,7 +29,7 @@ public class Etablissement {
     private String region;
     private String telephone ;
     private String url_localisation;
-    
+    private String password;
     private Type_Etablissement type;
     private String email;
     private Boolean isActive;

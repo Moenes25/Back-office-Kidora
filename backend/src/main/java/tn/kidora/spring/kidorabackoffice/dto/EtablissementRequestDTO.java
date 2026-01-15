@@ -15,7 +15,7 @@ public class EtablissementRequestDTO {
     // @Enumerated(EnumType.STRING)
     Type_Etablissement type;
     String email;
-    // String password ;
+    String password ;
     Boolean isActive;
     Integer nombreEducateurs;
     Integer nombreParents;
