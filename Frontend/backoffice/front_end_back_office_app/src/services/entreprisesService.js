@@ -121,3 +121,27 @@ export function getUserFromToken() {
     return null;
   }
 }
+
+
+
+
+export async function registerClientAdmin({ nom, prenom = "", email, password, numTel = "", adresse = "", imageFile = null }) {
+  const fd = new FormData();
+  fd.append("nom", nom);
+  fd.append("prenom", prenom);
+  fd.append("email", email);
+  fd.append("password", password);
+  fd.append("role", "ADMIN"); // enum côté backend
+  fd.append("numTel", numTel);
+  fd.append("adresse", adresse);
+  fd.append("profession", "");
+  fd.append("relation", "");
+  fd.append("specialisation", "");
+  fd.append("experience", "");
+  fd.append("disponibilite", "");
+  if (imageFile) fd.append("imageFile", imageFile); // ✅ correspond au nom dans DTO
+
+
+  const { data } = await api.post("/client/register", fd); // <-- /api/client/register
+  return data;
+}

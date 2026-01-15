@@ -1,39 +1,44 @@
-// src/views/admin/ia/analyseIa.jsx
-// APRÈS
-import React, { useMemo, useState, useEffect, useRef } from "react";
+/* src/views/admin/ia/analyseIa.jsx */
+
+import React from "react";
+import { useState, useEffect, useMemo } from "react";
+import { motion } from "framer-motion";
 import ReactECharts from "echarts-for-react";
 import * as echarts from "echarts";
-import Swal from "sweetalert2";
-import { FiInfo } from "react-icons/fi";
-import DashboardCharts from "components/DashboardCharts";
+import { FiFileText, FiDownload } from "react-icons/fi";
 import jsPDF from "jspdf";
 import * as XLSX from "xlsx";
-import { FiFileText, FiDownload } from "react-icons/fi";
-import { motion } from "framer-motion"; 
-/* ====================== THEME & WRAPPERS ======================= */ 
-const NeonPanel = ({ title, subtitle, children }) => 
-  ( <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="relative rounded-2xl p-4 bg-slate-900/80 border border-cyan-400/10 shadow-[0_12px_40px_rgba(0,0,0,.35)]" > <div className="pointer-events-none absolute -inset-px rounded-2xl ring-1 ring-white/5" />
-   <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-cyan-500/10 blur-3xl" /> {(title || subtitle) && ( <div className="mb-3"> <h3 className="text-cyan-100 font-semibold">{title}</h3> {subtitle && <p className="text-xs text-slate-400">{subtitle}</p>} </div> )} <div className="relative">{children}</div> </motion.div> ); 
-   const axisDark = { axisLine: { lineStyle: { color: "rgba(148,163,184,.25)" } }, axisTick: { show: false }, axisLabel: { color: "rgba(226,232,240,.85)" }, splitLine: { lineStyle: { color: "rgba(148,163,184,.12)" } }, };
-    const cardBg = { background: "linear-gradient(180deg,rgba(8,47,73,.55),rgba(2,6,23,.65))" };
-     /* =========================== KPIs ============================== */
-      function useTicker(base, wobble = 0.03) { const [v, setV] = useState(base); useEffect(() => { const id = setInterval(() => { setV((x) => +(x * (1 + (Math.random() * 2 - 1) * wobble)).toFixed(2)); }, 1500); return () => clearInterval(id); }, [wobble]); return v; } 
-function KpiSpark({
-  label,
-  unit = "",
-  // color = couleur de la LIGNE (spark)
-  color = "#fff",
-  // gradient = fond de la carte ; si absent on prend `bgColor`
-  gradient,
-  // bgColor = fond uni si tu ne veux pas de gradient
-  bgColor,
-}) {
-  const [data, setData] = React.useState(() =>
-    Array.from({ length: 40 }, () => 0)
-  );
+
+// tes charts existants (restent inchangés)
+import DashboardCharts from "components/DashboardCharts";
+
+// ========= APIs analytics (réelles) =========
+import {
+  getDashboardStats,
+  getRepartitionParType,
+  getRepartitionParStatut,
+  getEvolutionMensuelle,
+} from "services/dashboardService";
+
+/* =========================================================
+   Petites cartes KPI (ton composant d’origine, inchangé)
+========================================================= */
+function useTicker(base, wobble = 0.03) {
+  const [v, setV] = useState(base);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setV((x) => +(x * (1 + (Math.random() * 2 - 1) * wobble)).toFixed(2));
+    }, 1500);
+    return () => clearInterval(id);
+  }, [wobble]);
+  return v;
+}
+
+function KpiSpark({ label, unit = "", color = "#fff", gradient, bgColor }) {
+  const [data, setData] = useState(() => Array.from({ length: 40 }, () => 0));
   const value = useTicker(1 + Math.random() * 100, 0.06);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const id = setInterval(() => {
       setData((d) => {
         const n = d.slice(1);
@@ -44,7 +49,7 @@ function KpiSpark({
     return () => clearInterval(id);
   }, []);
 
-  const option = React.useMemo(
+  const option = useMemo(
     () => ({
       grid: { left: 0, right: 0, top: 0, bottom: 0 },
       xAxis: { type: "category", show: false, data: data.map((_, i) => i) },
@@ -55,19 +60,12 @@ function KpiSpark({
           data,
           smooth: true,
           showSymbol: false,
-          lineStyle: {
-            width: 2,
-            color,                                  // ✅ couleur de la courbe
-            shadowBlur: 10,
-            shadowColor: "rgba(0,0,0,.25)",
-          },
-          // léger remplissage sous la courbe, dans la même teinte
+          lineStyle: { width: 2, color, shadowBlur: 10, shadowColor: "rgba(0,0,0,.25)" },
           areaStyle: {
-            color:
-              new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: `${color}cc` }, // ~80% opacité
-                { offset: 1, color: `${color}00` }, // 0% opacité
-              ]),
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: `${color}cc` },
+              { offset: 1, color: `${color}00` },
+            ]),
           },
           animationDuration: 600,
           animationDurationUpdate: 600,
@@ -77,31 +75,21 @@ function KpiSpark({
     [data, color]
   );
 
-  // ✅ fond de la carte = gradient OU couleur unie
-  const cardStyle = {
-    background: gradient ? gradient : (bgColor ?? "#111827"),
-  };
+  const cardStyle = { background: gradient ? gradient : (bgColor ?? "#111827") };
 
   return (
     <div
-      className="
-        relative overflow-hidden rounded-2xl
-        min-h-[120px] p-3 shadow-[0_14px_48px_rgba(2,6,23,.12)]
-        text-white
-      "
+      className="relative overflow-hidden rounded-2xl min-h-[120px] p-3 shadow-[0_14px_48px_rgba(2,6,23,.12)] text-white"
       style={cardStyle}
     >
-      {/* pas de film, pas de blur */}
       <div className="flex items-baseline justify-between">
         <span className="text-white/80 text-xs">{label}</span>
         <span className="text-white/60 text-xs">{unit}</span>
       </div>
-
       <div className="mt-1 text-2xl font-extrabold tracking-tight">
         {value}
         <span className="ml-1 text-sm text-white/70">{unit}</span>
       </div>
-
       <div className="mt-2 h-10">
         <ReactECharts option={option} style={{ height: 40 }} notMerge />
       </div>
@@ -109,424 +97,277 @@ function KpiSpark({
   );
 }
 
-function KPIStyles() {
-  return (
-    <style>{`
-      @keyframes kpiFloat { 0%{transform:translateY(0)} 50%{transform:translateY(6px)} 100%{transform:translateY(0)} }
-      @keyframes kpiShine { 0%{transform:translateX(-40%)} 100%{transform:translateX(180%)} }
-      .kpi-float{ animation: kpiFloat 4s ease-in-out infinite; }
-      .kpi-shine{ animation: kpiShine 2.2s ease-in-out infinite; }
-    `}</style>
-  );
-}
-
-
-/* ------------------------------------------------------------------ *
- * Palette Kidora (lisible, enfants/éducation)
- * ------------------------------------------------------------------ */
-const C = {
-  indigo:  "#6366f1",
-  sky:     "#0ea5e9",
-  emerald: "#10b981",
-  amber:   "#f59e0b",
-  rose:    "#f43f5e",
-  slate:   "#64748b",
-  violet:  "#8b5cf6",
-  teal:    "#14b8a6",
-  gray:    "#94a3b8",
+/* =========================================================
+   1) Hook: charge les données réelles pour les exports
+========================================================= */
+const initialAnalytics = {
+  dashboard: null,   // /analytics/dashboard
+  repType: null,     // /analytics/repartition/type
+  repStatut: null,   // /analytics/repartition/statut
+  evolution: null,   // /analytics/evolution-mensuelle
 };
 
-/* ------------------------------------------------------------------ *
- * Données EXEMPLE (remplace par ton feed)
- * ------------------------------------------------------------------ */
-const DATA = {
-  clientsByTypeStatus: {
-    types: ["Crèches", "Garderies", "Écoles"],
-    statuts: ["Actif", "Essai", "Retard", "Suspendu"],
-    // matrice [type][statut]
-    values: [
-      [120, 18, 14, 6],
-      [140, 12, 22, 4],
-      [95,  8,  9,  2],
-    ],
-  },
-  revenus12m: {
-    mois: ["Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc", "Jan", "Fév"],
-    mrr:  [24, 26, 29, 31, 34, 36, 39, 42, 44, 47, 50, 54],
-    forecast: [56, 59, 62], // 3 mois futurs (Fév+1 → Avr)
-  },
-  retention: {
-    retention: 91, // %
-    churn: 9,      // %
-  },
-  paiement: {
-    mois: ["Sep", "Oct", "Nov", "Déc", "Jan", "Fév"],
-    paye:   [86, 88, 84, 90, 87, 89],
-    impaye: [14, 12, 16, 10, 13, 11],
-  },
-  tickets: {
-    labels: ["Haute", "Moyenne", "Basse"],
-    values: [28, 64, 41],
-  },
-  usageHeat: {
-    // jours ISO → niveau d’utilisation (0..5)
-    start: "2024-09-01",
-    days:  180,
-  },
-};
-function InfoHint({ title, html, position = "top-center", toast = true }) {
-  const show = async () => {
-    // s'il y a déjà une alerte visible, on la ferme tout de suite
-    if (Swal.isVisible()) {
-      await Swal.close();              // garantit la fermeture avant d'ouvrir l'autre
-    }
+function useAnalytics() {
+  const [analytics, setAnalytics] = useState(initialAnalytics);
+  const [loading, setLoading] = useState(true);
 
-    // mixin pour uniformiser les toasts
-    const Toast = Swal.mixin({
-      toast,
-      position,
-      showConfirmButton: false,
-      timer: 6000,
-      timerProgressBar: true,
-      // swap instantané (sans fade) pour une transition nette
-      showClass: { popup: "" },
-      hideClass: { popup: "" },
-    });
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const [dashboard, repType, repStatut, evolution] = await Promise.all([
+          getDashboardStats(),
+          getRepartitionParType(),
+          getRepartitionParStatut(),
+          getEvolutionMensuelle(),
+        ]);
+        if (!mounted) return;
+        setAnalytics({ dashboard, repType, repStatut, evolution });
+      } catch (e) {
+        console.error("Chargement analytics failed:", e);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
-    Toast.fire({
-      title,
-      html,
-      icon: "info",
-    });
-  };
-
-  return (
-    <button
-      type="button"
-      onClick={show} // ← clic = remplace l’info courante par la nouvelle
-      className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full
-                 border border-slate-200 bg-white text-slate-500 shadow hover:text-slate-700"
-      aria-label="Informations sur le graphique"
-      title="Infos"
-    >
-      <FiInfo />
-    </button>
-  );
+  return { analytics, loading };
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* ------------------------------------------------------------------ *
- * Historique d’actions IA / Back-office (FAKE DATA)
- * ------------------------------------------------------------------ */
-const HISTORY_ROWS = [
-  {
-    date: "2025-02-10 09:42",
-    type: "Compte",
-    action: "Création de compte",
-    cible: "École Horizon",
-    details: "Compte école + 2 administrateurs créés",
-    statut: "Succès",
-    responsable: "Admin Kidora",
-  },
-  {
-    date: "2025-02-10 11:15",
-    type: "Licence",
-    action: "Activation abonnement",
-    cible: "Crèche Les P’tits Anges",
-    details: "Plan Premium annuel",
-    statut: "Succès",
-    responsable: "Commercial Nord",
-  },
-  {
-    date: "2025-02-10 14:03",
-    type: "Paiement",
-    action: "Relance impayé",
-    cible: "Garderie Soleil",
-    details: "1er rappel automatique (mail + SMS)",
-    statut: "En cours",
-    responsable: "Bot IA Paiements",
-  },
-  {
-    date: "2025-02-11 09:02",
-    type: "Support",
-    action: "Ticket créé",
-    cible: "Crèche Arc-en-ciel",
-    details: "Problème de connexion éducatrices",
-    statut: "Ouvert",
-    responsable: "Support Kidora",
-  },
-  {
-    date: "2025-02-11 10:37",
-    type: "IA",
-    action: "Score de risque mis à jour",
-    cible: "École Les Sources",
-    details: "Risque churn : 72% (baisse d’utilisation)",
-    statut: "Alerte",
-    responsable: "Moteur IA",
-  },
-  {
-    date: "2025-02-11 16:20",
-    type: "Carte",
-    action: "Nouveau client géolocalisé",
-    cible: "Crèche MiniMonde",
-    details: "Affectation zone Nord / Tunis",
-    statut: "Succès",
-    responsable: "Admin régional",
-  },
-];
-function HistoryTable() {
-  const statusColors = {
-    Succès: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-    "En cours": "bg-amber-50 text-amber-700 ring-amber-200",
-    Ouvert: "bg-sky-50 text-sky-700 ring-sky-200",
-    Alerte: "bg-rose-50 text-rose-700 ring-rose-200",
-  };
-
-  return (
-    <div className="rounded-2xl border border-black/10 bg-white shadow-sm mt-6 overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-slate-50">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Historique des actions IA & Back Office
-          </p>
-          <p className="text-[11px] text-slate-400">
-            Création de comptes, abonnements, alertes IA, relances de paiement…
-          </p>
-        </div>
-        <div className="flex items-center gap-2 text-[11px] text-slate-400">
-          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-          Temps réel
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="overflow-x-auto">
-       <table className="min-w-full text-sm border-separate [border-spacing:0_8px]">
-          <thead>
-            <tr className="bg-slate-50/80 text-xs uppercase text-slate-500">
-              <th className="px-4 py-2 text-left font-semibold">Date</th>
-              <th className="px-4 py-2 text-left font-semibold">Type</th>
-              <th className="px-4 py-2 text-left font-semibold">Action</th>
-              <th className="px-4 py-2 text-left font-semibold">Cible</th>
-              <th className="px-4 py-2 text-left font-semibold">Détails</th>
-              <th className="px-4 py-2 text-left font-semibold">Statut</th>
-              <th className="px-4 py-2 text-left font-semibold">Responsable</th>
-            </tr>
-          </thead>
-          <tbody>
-            {HISTORY_ROWS.map((row, idx) => (
-              <tr
-                key={idx}
-                className={`transition hover:bg-slate-50/80 ${
-                  idx % 2 === 0 ? "bg-white" : "bg-slate-50/40"
-                }`}
-              >
-                <td className="px-4 py-2 text-xs font-mono text-slate-500">
-                  {row.date}
-                </td>
-                <td className="px-4 py-2">
-                  <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600">
-                    {row.type}
-                  </span>
-                </td>
-                <td className="px-4 py-2 text-slate-700 font-medium">
-                  {row.action}
-                </td>
-                <td className="px-4 py-2 text-slate-600">{row.cible}</td>
-                <td className="px-4 py-2 text-slate-500 text-xs">
-                  {row.details}
-                </td>
-                <td className="px-4 py-2">
-                  <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ${
-                      statusColors[row.statut] || "bg-slate-50 text-slate-600 ring-slate-200"
-                    }`}
-                  >
-                    {row.statut}
-                  </span>
-                </td>
-                <td className="px-4 py-2 text-slate-600 text-xs">
-                  {row.responsable}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+// remplace toLocaleString("fr-FR") par ceci quand tu écris dans le PDF
+function formatNumberFR(n) {
+  if (n == null || isNaN(+n)) return "0";
+  // nombre FR avec espace fine, puis on normalise vers espace simple
+  const s = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(+n);
+  return s.replace(/\u202F|\u00A0/g, " "); // ← évite le bug PDF (&1&1…)
 }
-// Construit les lignes de résumé pour PDF/CSV à partir des DATA
-function buildSummaryRows() {
+
+function formatMoneyFR(n) {
+  if (n == null || isNaN(+n)) return "0 TND";
+  // pas de symbole exotique, on garde "TND" en suffixe
+  return `${formatNumberFR(n)} TND`;
+}
+
+/* =========================================================
+   2) Builder de synthèse (utilisé par CSV/XLSX/PDF)
+========================================================= */
+function buildSummaryRowsFrom(analytics) {
   const rows = [["Métrique", "Valeur"]];
+  const { dashboard, repType, repStatut, evolution } = analytics || {};
 
-  // 1) Clients par type & statut
-  const { types, values } = DATA.clientsByTypeStatus;
-  const totalClients = values.flat().reduce((a, b) => a + b, 0);
-  rows.push(["Nombre total de clients (tous types)", totalClients]);
+  if (dashboard) {
+    const total = dashboard.total_etablissements ?? 0;
+    const sans = dashboard.sans_abonnement ?? 0;
+    const avec = Math.max(0, total - sans);
 
-  types.forEach((type, idx) => {
-    const totalType = values[idx].reduce((a, b) => a + b, 0);
-    rows.push([`Clients - ${type}`, totalType]);
-  });
+    rows.push(["Établissements (total)", total]);
+    rows.push(["Avec abonnement", avec]);
+    rows.push(["Sans abonnement", sans]);
+    rows.push(["Montant payé (TND)", (dashboard.montant_total_paye ?? 0).toLocaleString("fr-FR")]);
+    rows.push(["Montant dû (TND)", (dashboard.montant_total_du ?? 0).toLocaleString("fr-FR")]);
+  }
 
-  // 2) Rétention / churn
-  rows.push(["Taux de rétention", `${DATA.retention.retention} %`]);
-  rows.push(["Taux de churn", `${DATA.retention.churn} %`]);
+  if (repType?.labels && repType?.data) {
+    rows.push(["—", "—"]);
+    rows.push(["Répartition par type (total)", repType.data.reduce((a, b) => a + b, 0)]);
+    repType.labels.forEach((l, i) => rows.push([`Type: ${l}`, repType.data[i] ?? 0]));
+  }
 
-  // 3) Revenus MRR (dernier mois)
-  const lastMrr = DATA.revenus12m.mrr[DATA.revenus12m.mrr.length - 1];
-  const lastMrrMonth = DATA.revenus12m.mois[DATA.revenus12m.mois.length - 1];
-  rows.push([`MRR actuel (${lastMrrMonth})`, `${lastMrr} kDT`]);
+  if (repStatut?.labels && repStatut?.data) {
+    rows.push(["—", "—"]);
+    rows.push(["Répartition par statut (total)", repStatut.data.reduce((a, b) => a + b, 0)]);
+    repStatut.labels.forEach((l, i) => rows.push([`Statut: ${l}`, repStatut.data[i] ?? 0]));
+  }
 
-  // 4) Paiements (dernier mois)
-  const idxPay = DATA.paiement.mois.length - 1;
-  const moisPay = DATA.paiement.mois[idxPay];
-  rows.push([
-    `Taux de paiement (${moisPay})`,
-    `${DATA.paiement.paye[idxPay]} % payés / ${DATA.paiement.impaye[idxPay]} % impayés`,
-  ]);
-
-  // 5) Tickets par priorité
-  rows.push(["Tickets priorité haute", DATA.tickets.values[0]]);
-  rows.push(["Tickets priorité moyenne", DATA.tickets.values[1]]);
-  rows.push(["Tickets priorité basse", DATA.tickets.values[2]]);
-
-  // 6) Utilisation
-  rows.push([
-    "Période d’utilisation couverte",
-    `${DATA.usageHeat.days} jours depuis ${DATA.usageHeat.start}`,
-  ]);
+  if (evolution?.mois && evolution?.paye && evolution?.impaye) {
+    const i = evolution.mois.length - 1;
+    if (i >= 0) {
+      rows.push(["—", "—"]);
+      rows.push([
+        `Paiements (${evolution.mois[i]})`,
+        `Payé: ${evolution.paye[i] ?? 0} • Impayé: ${evolution.impaye[i] ?? 0}`,
+      ]);
+    }
+  }
 
   return rows;
 }
 
 
-/* ------------------------------------------------------------------ *
- * Layout – 2 colonnes en desktop
- * ------------------------------------------------------------------ */
+
+/* =========================================================
+   3) Exports (CSV / XLSX / PDF) — style propre
+========================================================= */
+// utils CSV
+function csvEscape(v) {
+  return `"${(v ?? "").toString().replace(/\r?\n/g, " ").replace(/"/g, '""')}"`;
+}
+
+// CSV (UTF-8 ; ; )
+function exportCSVFrom(analytics) {
+  const summary = buildSummaryRowsFrom(analytics);
+  const csv = summary.map(r => r.map(csvEscape).join(";")).join("\r\n");
+  const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `analyse-ia_${new Date().toISOString().slice(0,19).replace(/[:T]/g,"-")}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// XLSX multi-feuilles
+function exportXLSXFrom(analytics) {
+  const wb = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    wb,
+    XLSX.utils.aoa_to_sheet(buildSummaryRowsFrom(analytics)),
+    "Résumé"
+  );
+
+  if (analytics.repType?.labels) {
+    const typeRows = [["Type", "Nombre"], ...analytics.repType.labels.map((l, i) => [l, analytics.repType.data[i] ?? 0])];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(typeRows), "Par type");
+  }
+  if (analytics.repStatut?.labels) {
+    const stRows = [["Statut", "Nombre"], ...analytics.repStatut.labels.map((l, i) => [l, analytics.repStatut.data[i] ?? 0])];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(stRows), "Par statut");
+  }
+  if (analytics.evolution?.mois) {
+    const evoRows = [["Mois", "Payé", "Impayé"], ...analytics.evolution.mois.map((m, i) => [m, analytics.evolution.paye[i] ?? 0, analytics.evolution.impaye[i] ?? 0])];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(evoRows), "Évolution");
+  }
+
+  XLSX.writeFile(wb, `analyse-ia_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+// PDF (bandeau + alignements + pagination)
+function exportPDFFrom(analytics) {
+  const doc = new jsPDF({ unit: "pt", format: "a4" });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+
+  const Mx = 42, My = 48;         // marges
+  const colK = Mx + 12;           // padding gauche dans la carte/table
+  let y = My;
+
+  // --- Bandeau ---
+  doc.setFillColor(79, 70, 229);  // indigo
+  doc.rect(0, 0, pageW, 68, "F");
+  doc.setFontSize(16); doc.setTextColor(255);
+  doc.text("Kidora — Rapport d'analyse IA", Mx, 44);
+  doc.setFontSize(10);
+  doc.text(new Date().toLocaleString("fr-FR").replace(/\u202F|\u00A0/g, " "), pageW - Mx, 44, { align: "right" });
+
+  // --- Carte/Table conteneur ---
+  y = 96;
+  const cardW = pageW - Mx * 2;
+  const rowH = 26;
+
+  // header de section
+  doc.setFontSize(12); doc.setTextColor(30);
+  doc.text("Synthèse", Mx, y); y += 12;
+
+  // carte arrondie
+  doc.setDrawColor(230); doc.setFillColor(255,255,255);
+  doc.roundedRect(Mx, y, cardW, 340, 8, 8, "S"); // hauteur large; on s'arrêtera avant si besoin
+  let tableTop = y + 6; y = tableTop;
+
+  // entête de table
+  const thH = 30;
+  //doc.setFillColor(245, 243, 255); // violet très clair
+  //doc.roundedRect(Mx+3, y, cardW-6, thH, 6, 6, "F");
+  //doc.setFontSize(11); doc.setTextColor(80);
+  //doc.text("Métrique", colK, y + 19);
+  const colV = Mx + cardW - 12; // bord droit intérieur
+  //doc.text("Valeur", colV, y + 19, { align: "right" });
+  y += thH + 4;
+
+  // lignes
+  const rows = buildSummaryRowsFrom(analytics).filter(r => r[0] !== "—");
+  doc.setFontSize(11);
+
+  rows.forEach((row, i) => {
+    const isEven = i % 2 === 0;
+    // zébrage
+    if (isEven) {
+      doc.setFillColor(248, 250, 252); // slate-50
+      doc.rect(Mx+3, y, cardW-6, rowH, "F");
+    }
+    // clé
+    doc.setTextColor(60);
+    doc.text(`• ${row[0]}`, colK, y + 17);
+
+    // valeur (à droite)
+    doc.setTextColor(90);
+    const val = String(row[1]).replace(/\u202F|\u00A0/g, " ");
+    doc.text(val, colV, y + 17, { align: "right" });
+
+    y += rowH;
+
+    // pagination simple
+    if (y + rowH > pageH - My) {
+      doc.addPage();
+      y = My;
+    }
+  });
+
+  // pied de page
+  if (y + 28 > pageH - My) { doc.addPage(); y = My; }
+  y += 12;
+  doc.setDrawColor(230); doc.line(Mx, y, pageW - Mx, y); y += 18;
+  doc.setFontSize(9); doc.setTextColor(120);
+  doc.text("© Kidora — Back Office", Mx, y);
+
+  doc.save(`analyse-ia_${new Date().toISOString().slice(0,10)}.pdf`);
+}
+
+
+/* =========================================================
+   4) Composant principal
+========================================================= */
 export default function AnalyseIA() {
+  const { analytics, loading } = useAnalytics();
 
-   const summaryRows = buildSummaryRows();
+  const handleExportCSV  = () => exportCSVFrom(analytics);
+  const handleExportXLSX = () => exportXLSXFrom(analytics);
+  const handleExportPDF  = () => exportPDFFrom(analytics);
 
-  const handleExportCSV = () => {
-    const ws = XLSX.utils.aoa_to_sheet(summaryRows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Analyse IA");
-    XLSX.writeFile(wb, "analyse-ia.csv");
-  };
+  if (loading) return <p>Chargement…</p>;
 
-  const handleExportPDF = () => {
-    const doc = new jsPDF();
-    const marginLeft = 14;
-    let cursorY = 20;
-
-    doc.setFontSize(18);
-    doc.text("Rapport d'analyse IA", marginLeft, cursorY);
-    cursorY += 8;
-
-    doc.setFontSize(11);
-    doc.setTextColor(100);
-    doc.text("Synthèse des principaux indicateurs de la page Analyse IA.", marginLeft, cursorY);
-    cursorY += 10;
-
-    doc.setFontSize(12);
-    doc.setTextColor(0);
-
-    summaryRows.slice(1).forEach(([metric, value]) => {
-      if (cursorY > 280) {
-        doc.addPage();
-        cursorY = 20;
-      }
-      doc.text(`• ${metric} : ${value}`, marginLeft, cursorY);
-      cursorY += 7;
-    });
-
-    doc.save("analyse-ia.pdf");
-  };
   return (
     <div className="space-y-5">
-      {/* KPI Row */} 
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-  {/* fond uni indigo, spark blanc */}
-  <KpiSpark
-    label="Requêtes / s"
-    bgColor="#4f46e5"
-    color="#ffffff"
-  />
+      {/* KPI Row (décoratif) */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-2">
+        <KpiSpark label="Requêtes / s" bgColor="#4f46e5" color="#ffffff" />
+        <KpiSpark label="Latence p95" unit="ms" gradient="linear-gradient(135deg,#60a5fa,#3b82f6)" color="#ffffff" />
+        <KpiSpark label="Erreurs" unit="%" gradient="linear-gradient(135deg,#f59e0b,#ef4444)" color="#ffffff" />
+        <KpiSpark label="Utilisateurs actifs" gradient="linear-gradient(135deg,#10b981,#22d3ee)" color="#ffffff" />
+      </div>
 
-  {/* fond gradient bleu, spark blanc */}
-  <KpiSpark
-    label="Latence p95 (ms)"
-    unit="ms"
-    gradient="linear-gradient(135deg,#60a5fa,#3b82f6)"
-    color="#ffffff"
-  />
-
-  {/* fond gradient orange→rouge, spark blanc */}
-  <KpiSpark
-    label="Erreurs (%)"
-    unit="%"
-    gradient="linear-gradient(135deg,#f59e0b,#ef4444)"
-    color="#ffffff"
-  />
-
-  {/* fond gradient vert→cyan, spark blanc */}
-  <KpiSpark
-    label="Utilisateurs actifs"
-    gradient="linear-gradient(135deg,#10b981,#22d3ee)"
-    color="#ffffff"
-  />
-</div>
-
-     {/* 🔽 Barre d’actions export sous les KPI */}
-      <div className="flex justify-end gap-3 mb-2">
-     <button
-  onClick={handleExportPDF}
-  className="
-    inline-flex items-center gap-2 rounded-2xl border border-white/20
-    bg-gradient-to-r from-[#a78bfa]/10 to-[#8b5cf6]/10
-    px-3 py-2 text-sm font-semibold text-[#6d28d9]
-    shadow-[0_10px_24px_rgba(2,6,23,.1)] backdrop-blur
-    hover:from-[#a78bfa]/20 hover:to-[#8b5cf6]/20
-  "
->
-  <FiFileText className="text-sm" />
-  Exporter le rapport PDF
-</button>
-
+      {/* Boutons export */}
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={handleExportPDF}
+          className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-gradient-to-r from-[#a78bfa]/10 to-[#8b5cf6]/10 px-3 py-2 text-sm font-semibold text-[#6d28d9] shadow-[0_10px_24px_rgba(2,6,23,.1)] backdrop-blur hover:from-[#a78bfa]/20 hover:to-[#8b5cf6]/20"
+        >
+          <FiFileText className="text-sm" />
+          Exporter le rapport PDF
+        </button>
 
         <button
           onClick={handleExportCSV}
-          className="
-           inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-gradient-to-r from-emerald-500/10 to-teal-400/10 px-3 py-2 text-sm font-semibold text-emerald-700 shadow-[0_10px_24px_rgba(2,6,23,.1)] backdrop-blur hover:from-emerald-500/20 hover:to-teal-400/20"
+          className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-gradient-to-r from-emerald-500/10 to-teal-400/10 px-3 py-2 text-sm font-semibold text-emerald-700 shadow-[0_10px_24px_rgba(2,6,23,.1)] backdrop-blur hover:from-emerald-500/20 hover:to-teal-400/20"
         >
           <FiDownload className="text-sm" />
-          Exporter CSV / Excel
+          Exporter CSV
         </button>
       </div>
 
-
-
-     
-
-       <DashboardCharts />
-
-    
+      {/* Tes graphiques existants (déjà branchés aux APIs) */}
+      <DashboardCharts />
     </div>
   );
 }

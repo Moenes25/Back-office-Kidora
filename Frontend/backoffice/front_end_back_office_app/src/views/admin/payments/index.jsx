@@ -15,6 +15,14 @@ import { QRCodeCanvas } from "qrcode.react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
+// en haut du fichier page.jsx
+import { getAllEtablissements } from "services/entreprisesService";
+import { createFacture } from "services/factureService";          
+import { getFactures, deleteFacture, updateFacture ,  pickAvatarGradient, getFactureFull , getTotalsStats} from "services/factureService";
+ import Swal from "sweetalert2";
+
+
+
 
 
 import { FiUsers, FiActivity, FiStar } from "react-icons/fi"; 
@@ -47,12 +55,8 @@ function computeTotals(lines = []) {
 
 /* --------------------------- Données démo --------------------------- */
 
-const STATS = [
-  { id: "total",  label: "Total des factures",   value: 582, icon: <FiTrendingUp className="text-2xl" /> },
-  { id: "paid",   label: "Factures payées",      value: 346, icon: <FiCheckCircle className="text-2xl" /> },
-  { id: "unpaid", label: "Factures impayées",    value: 236, icon: <FiAlertTriangle className="text-2xl" /> },
-  { id: "sent",   label: "Factures envoyées",    value: 126, icon: <FiSend className="text-2xl" /> },
-];
+
+
 
 
 const PAYMENTS = [
@@ -129,18 +133,16 @@ function PaymentsToolbar({ q, setQ, onToggleFilters, onExportCSV, onExportPDF, s
         </button>
 
         {/* Exports */}
-        <button
-          onClick={onExportPDF}
-          className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-gradient-to-r from-[#a78bfa]/10 to-[#8b5cf6]/10 px-3 py-2 text-sm font-semibold text-[#6d28d9] shadow-[0_10px_24px_rgba(2,6,23,.1)] backdrop-blur hover:from-[#a78bfa]/20 hover:to-[#8b5cf6]/20"
-        >
-          <FiDownload /> Export PDF
-        </button>
-        <button
-          onClick={onExportCSV}
-          className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-gradient-to-r from-emerald-500/10 to-teal-400/10 px-3 py-2 text-sm font-semibold text-emerald-700 shadow-[0_10px_24px_rgba(2,6,23,.1)] backdrop-blur hover:from-emerald-500/20 hover:to-teal-400/20"
-        >
-          <FiDownload /> Export CSV
-        </button>
+  
+<button
+  onClick={() => onExportCSV("page")}
+  className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-gradient-to-r from-emerald-500/10 to-teal-400/10 px-3 py-2 text-sm font-semibold text-emerald-700 shadow-[0_10px_24px_rgba(2,6,23,.1)] backdrop-blur hover:from-emerald-500/20 hover:to-teal-400/20"
+>
+  <FiDownload /> Export CSV
+</button>
+
+
+
       </div>
       {/* 👉 Ajoute ce bouton ici pour qu’il s’aligne */}
   <div className="flex justify-end">
@@ -288,10 +290,11 @@ const StatusPill = ({ status }) => {
 };
 
 const AvatarBubble = ({ name, color }) => {
-  const initial = name?.[0] ?? "?";
+  const initial = (name || "?").trim().charAt(0).toUpperCase();
+  const bg = color ? `bg-gradient-to-br ${color}` : "bg-slate-300"; // fallback neutre
   return (
     <div className="flex items-center gap-3">
-      <div className={`h-9 w-9 rounded-full bg-gradient-to-br ${color} shadow-[0_10px_22px_rgba(15,23,42,.25)] grid place-items-center text-sm font-bold text-white`}>
+      <div className={`h-9 w-9 rounded-full ${bg} shadow-[0_10px_22px_rgba(15,23,42,.25)] grid place-items-center text-sm font-bold text-white`}>
         {initial}
       </div>
       <div className="leading-tight">
@@ -300,6 +303,7 @@ const AvatarBubble = ({ name, color }) => {
     </div>
   );
 };
+
 function useInView(ref, rootMargin = "0px") {
   const [inView, setInView] = React.useState(false);
   React.useEffect(() => {
@@ -365,32 +369,6 @@ function AnimatedNumber({ value, duration = 800, format = (n)=>n.toLocaleString(
   return <span ref={spanRef}>{format(display)}</span>;
 }
 
-function KPI({ title, value, icon, gradient }) {
-  return (
-    <div className="
-      relative overflow-hidden rounded-2xl border border-white/50 bg-white/70 backdrop-blur-md
-      shadow-[0_14px_48px_rgba(2,6,23,.12)] min-h-[110px]
-    ">
-      <div className="absolute inset-0 opacity-25" style={{ background: gradient }} />
-      <div className="pointer-events-none absolute -top-6 -right-6 h-24 w-24 rounded-full bg-white/60 blur-2xl kpi-float" />
-      <div className="pointer-events-none absolute -left-1/3 -top-1/2 h-[220%] w-1/3 rotate-[14deg] bg-white/40 blur-md kpi-shine" />
-      <div className="relative z-10 flex items-center gap-3 p-4">
-        <div
-          className="grid h-12 w-12 place-items-center rounded-xl text-white shadow-lg ring-1 ring-white/50"
-          style={{ background: gradient }}
-        >
-          {icon}
-        </div>
-        <div>
-          <div className="text-3xl font-extrabold tracking-tight text-slate-900">
-            <AnimatedNumber value={Number.isFinite(value) ? value : 0} />
-          </div>
-          <div className="mt-0.5 text-xs font-medium text-slate-600">{title}</div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function KPIStyles() {
   return (
@@ -465,60 +443,99 @@ function SupportPagination({ page, pageCount, total, onPage }) {
 }
 /* --------------------------- Modale d’édition --------------------------- */
 
-const FactureModal = ({ row = {}, onClose, onSave }) => {
-  const STATIC_CLIENTS = [
-    { id: 1, nom: "Crèche XYZ",        email: "xyz@mail.com",           region: "Tunis",    type: "creche"   },
-    { id: 2, nom: "École Horizon",     email: "ecolehorizon@mail.com",  region: "Nabeul",   type: "ecole"    },
-    { id: 3, nom: "Garderie Soleil",   email: "soleil@garderie.com",    region: "Ariana",   type: "garderie" },
-  ];
+// Remplace ta FactureModal par cette version "branchée"
+const FactureModal = ({ row = {}, onClose, onCreated }) => {
+  const [etabs, setEtabs] = useState([]);
+  const [etabId, setEtabId] = useState("");          // on envoie l'id au backend
+  const [statut, setStatut] = useState("IMPAYEE");   // enum backend
+  const [methode, setMethode] = useState("VIREMENT");// valeur par défaut
 
-  const [form, setForm] = useState({
-    id: row.id || `#F${Date.now()}`,
-    date: row.date || new Date().toLocaleString("fr-FR"),
-    client: row.client || "",
-    email: row.email || "",
-    region: row.region || "",
-    type: row.type || "creche",
-    status: row.status || "impayée",
-    abonnement: row.abonnement || "",
-    avatarColor: row.avatarColor || "from-emerald-400 to-teal-500"
+  useEffect(() => {
+    (async () => {
+      const list = await getAllEtablissements();
+      setEtabs(list);
+    })();
+  }, []);
+
+  // si on vient d'une ligne existante, pré-sélectionner
+  useEffect(() => {
+    if (!row?.raw) return;
+    const id = row.raw?.etablissement?.idEtablissment;
+    if (id) setEtabId(id);
+    if (row.raw?.statutFacture) setStatut(String(row.raw.statutFacture).toUpperCase());
+    if (row.raw?.methode) setMethode(String(row.raw.methode).toUpperCase());
+  }, [row]);
+const handleSubmit = async () => {
+  if (!etabId) return alert("Sélectionnez un établissement");
+
+  const dto = { etablissementId: etabId, methode, statutFacture: statut };
+  const created = await createFacture(dto);
+
+  const etab = etabs.find(e => String(e.idEtablissment) === String(etabId));
+
+  const patched = {
+    ...created,
+    client: etab?.nomEtablissement || created.client || "",
+    email:  etab?.email             || created.email  || "",
+    region: etab?.region            || created.region || "",
+  };
+
+  // ✅ assure une couleur même si l’API ne l’a pas mise
+  patched.avatarColor = created.avatarColor ||
+                        pickAvatarGradient(patched.client || patched.id);
+
+  onCreated?.(patched);
+
+  await Swal.fire({
+    icon: "success",
+    title: "Nouvelle facture ajoutée",
+    text: `${patched.client || "Établissement"} • ${patched.id}`,
+    timer: 1800,
+    showConfirmButton: false,
   });
 
-  const [clients] = useState(STATIC_CLIENTS);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name === "client") {
-      const selected = clients.find((c) => c.nom === value);
-      if (selected) {
-        setForm((prev) => ({ ...prev, client: selected.nom, email: selected.email, region: selected.region, type: selected.type }));
-      }
-    } else {
-      setForm((prev) => ({ ...prev, [name]: value }));
-    }
-  };
-
-  const handleSubmit = () => {
-    if (!form.client || !form.email) return alert("Champs obligatoires !");
-    onSave(form);
-    onClose();
-  };
-
+  onClose();
+};
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/30 backdrop-blur-sm">
       <div className="bg-white w-full max-w-md rounded-2xl p-6 shadow-xl border">
-        <h3 className="text-lg font-bold mb-4">{row?.id ? "Modifier" : "Nouvelle"} facture</h3>
+        <h3 className="text-lg font-bold mb-4">{row?.id ? "Nouvelle facture (backend n’expose pas l’édition)" : "Nouvelle facture"}</h3>
+
         <div className="space-y-3 text-sm">
-          <select name="client" value={form.client} onChange={handleChange} className="w-full rounded-xl border p-2">
+          <select
+            value={etabId}
+            onChange={(e)=>setEtabId(e.target.value)}
+            className="w-full rounded-xl border p-2"
+          >
             <option value="">-- Sélectionnez un établissement --</option>
-            {clients.map((c) => <option key={c.id} value={c.nom}>{c.nom}</option>)}
+            {etabs.map(e => (
+              <option key={e.idEtablissment} value={e.idEtablissment}>
+                {e.nomEtablissement} — {e.region}
+              </option>
+            ))}
           </select>
-          <div className="flex gap-2">
-            <select name="status" value={form.status} onChange={handleChange} className="w-full rounded-xl border p-2">
-              <option value="Payée">Payée</option>
-              <option value="impayée">Impayée</option>
-            </select>
-          </div>
+
+          <select
+            value={statut}
+            onChange={(e)=>setStatut(e.target.value)}
+            className="w-full rounded-xl border p-2"
+          >
+            <option value="PAYEE">Payée</option>
+            <option value="IMPAYEE">Impayée</option>
+            <option value="EN_ATTENTE">En attente</option>
+            <option value="ANNULEE">Annulée</option>
+          </select>
+
+         {/*  <select
+            value={methode}
+            onChange={(e)=>setMethode(e.target.value)}
+            className="w-full rounded-xl border p-2"
+          >
+            <option value="VIREMENT">Virement</option>
+            <option value="CARTE_BANCAIRE">Carte bancaire</option>
+            <option value="CHEQUE">Chèque</option>
+            <option value="ESPECES">Espèces</option>
+          </select> */}
         </div>
 
         <div className="mt-4 flex justify-end gap-2">
@@ -530,6 +547,7 @@ const FactureModal = ({ row = {}, onClose, onSave }) => {
   );
 };
 
+
 /* --------------------------- INVOICE PREVIEW (créatif) --------------------------- */
 
 const InvoicePreview = React.forwardRef(function InvoicePreview(
@@ -539,6 +557,13 @@ const InvoicePreview = React.forwardRef(function InvoicePreview(
   const { rows: calcRows, subHT, subTVA, total } = computeTotals(lines || []);
   const typeMeta = TYPE_META[row?.type] || { label: "—", chip: "bg-gray-100 text-gray-700" };
   const isPaid = String(row?.status).toLowerCase() === "payée";
+
+  // surclassement d'affichage via objets enrichis si présents
+ const etabName  = row?._etab?.nomEtablissement || row?.client;
+const etabEmail = row?._etab?.email || row?.email;
+const etabReg   = row?._etab?.region || row?.region;
+const etabType  = (row?._etab?.type || row?.type || "").toString().toLowerCase();
+ const typeMeta2 = TYPE_META[etabType] || typeMeta;
 
   return (
     <section
@@ -579,13 +604,13 @@ const InvoicePreview = React.forwardRef(function InvoicePreview(
         <div className="p-4">
           <div className="text-[11px] uppercase tracking-wide text-slate-500">Établissement</div>
           <div className="mt-2 space-y-1 text-sm">
-            <div className="font-semibold text-slate-900">{row?.client}</div>
-            <div className="text-slate-600">{row?.email || "—"}</div>
-            <div className="text-slate-600">Gouvernorat : {row?.region || "—"}</div>
+      <div className="font-semibold text-slate-900">{etabName}</div>
+<div className="text-slate-600">{etabEmail || "—"}</div>
+<div className="text-slate-600">Gouvernorat : {etabReg || "—"}</div>
             <div className="flex items-center gap-2">
               <span>Type :</span>
-              <span className={"inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold " + typeMeta.chip}>
-                {typeMeta.label}
+              <span className={"inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold " + typeMeta2.chip}>
+                {typeMeta2.label}
               </span>
             </div>
           </div>
@@ -685,9 +710,18 @@ const InvoicePreview = React.forwardRef(function InvoicePreview(
 /* --------------------------- Modale d’aperçu (utilise InvoicePreview) --------------------------- */
 
 function InvoiceModal({ row, onClose }) {
-  const lines = Array.isArray(row?.lines) && row.lines.length
-    ? row.lines
-    : [{ desc: row.abonnement || "Abonnement", qty: 1, puHT: 0, tva: 0 }];
+ const realAbo = row?._abo || null;
+ const computedLines = React.useMemo(() => {
+   if (Array.isArray(row?.lines) && row.lines.length) return row.lines;
+  if (realAbo) {
+     // construit une ligne propre depuis l'abonnement
+     const lib = realAbo.formule ? `Abonnement — ${realAbo.formule}` : "Abonnement";
+     const pu  = Number(realAbo.montantTotal ?? realAbo.montantDu ?? 0);
+     // si ton PU est “0” mais que tu veux montrer “montant dû”, remplace ci-dessus par montantDu
+     return [{ desc: lib, qty: 1, puHT: pu, tva: 0 }];
+   }
+  return [{ desc: row?.abonnement || "Abonnement", qty: 1, puHT: 0, tva: 0 }];
+ }, [row, realAbo]);
 
   const previewRef = React.useRef(null);
 
@@ -800,7 +834,7 @@ const exportPDF = async () => {
           className="relative z-10 w-[800px] max-w-[95vw] max-h-[90vh] overflow-auto rounded-2xl bg-transparent"
         >
           {/* 👉 on passe le ref au preview */}
-          <InvoicePreview ref={previewRef} row={row} lines={lines} />
+          <InvoicePreview ref={previewRef} row={row} lines={computedLines} />
 
           {/* barre d’actions (non imprimée) */}
           <div className="mt-3 flex justify-end gap-2 print:hidden">
@@ -830,9 +864,44 @@ const exportPDF = async () => {
 /* ============================ Page ============================ */
 export default function PaymentsPage() {
   /* --- états --- */
-  const [viewRow, setViewRow] = useState(null);
+const [viewRow, setViewRow] = useState(null);
+  const [rows, setRows] = useState([]);
 
-  const [rows, setRows] = useState(PAYMENTS);
+  // KPIs récupérés de l'API
+  const [kpi, setKpi] = useState({ total: 0, payees: 0, impayees: 0, envoyees: null });
+const envoyeesEstime = Math.max(0, kpi.total - kpi.impayees);
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await getTotalsStats(); // <- garde bien ce nom
+        setKpi(data);
+      } catch (e) {
+        console.error("KPI fetch error", e);
+      }
+    })();
+  }, []);
+
+  // ✅ construit les cartes à partir du state kpi
+  const STAT_CARDS = useMemo(() => {
+    const base = [
+      { id: "total",  label: "Total des factures",  value: kpi.total,    icon: <FiTrendingUp className="text-2xl" /> },
+      { id: "paid",   label: "Factures payées",     value: kpi.payees,   icon: <FiCheckCircle className="text-2xl" /> },
+      { id: "unpaid", label: "Factures impayées",   value: kpi.impayees, icon: <FiAlertTriangle className="text-2xl" /> },
+      { id: "sent", label: "Factures envoyées", value: envoyeesEstime, icon: <FiSend className="text-2xl" /> }
+    ];
+    return kpi.envoyees != null
+      ? [...base, { id: "sent", label: "Factures envoyées", value: kpi.envoyees, icon: <FiSend className="text-2xl" /> }]
+      : base;
+  }, [kpi]);
+
+// charge la liste au montage
+useEffect(() => {
+  (async () => {
+    const list = await getFactures();
+    setRows(list);
+  })();
+}, []);
+
  const [search, setSearch] = useState("");
 const [statusFilter, setStatusFilter] = useState("Tous");
 const [openFilters, setOpenFilters] = useState(false);
@@ -928,22 +997,130 @@ const [sortAsc, setSortAsc] = useState(false);   // par défaut: date récente e
     else setSelected(new Set());
   };
 
-const exportCSV = () => {
- const header = ["id", "date", "etablissement", "type", "gouvernorat", "email",  "status"];
-  const lines = [header.join(",")].concat(
-    filtered.map((r) =>
-      [r.id, r.date, `"${r.client}"`, TYPE_META[r.type]?.label || "", r.region || "", r.email, r.status]
-        .map((v) => String(v ?? "").replace(/[\n\r]/g, " "))
-        .join(",")
-    )
-  );
-  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+// ---------- Helpers CSV (échappement, formats) ----------
+function csvEscape(v) {
+  // guillemets -> doublés, retours à la ligne -> espace
+  const s = (v ?? "").toString().replace(/\r?\n/g, " ").replace(/"/g, '""');
+  return `"${s}"`;
+}
+
+function formatNumber2(n) {
+  // pour afficher 2 décimales dans CSV (EXCEL lira le nombre)
+  const x = Number(n) || 0;
+  return x.toFixed(2).replace(".", ","); // FR : virgule
+}
+
+// transforme "1 juin 2025, 08:22" -> ISO 2025-06-01 08:22
+function toIsoFromFr(s) {
+  const d = parseFrDate(s);
+  if (!d || isNaN(d.getTime())) return "";
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+// ---------- Construit les lignes pour "paiements.csv" ----------
+// Remplace ta fonction buildPaymentsCsvRows par celle-ci
+function buildPaymentsCsvRows(dataset = [], { includeId = false } = {}) {
+  // colonnes dans le même ordre que ton tableau
+  const header = includeId
+    ? ["id", "date", "etablissement", "type", "gouvernorat", "email", "statut"]
+    : ["date", "etablissement", "type", "gouvernorat", "email", "statut"];
+
+  const rows = dataset.map((r) => {
+    const base = [
+      r.date || "",
+      r.client || "",
+      (TYPE_META[r.type]?.label ?? r.type ?? ""),
+      (r.region ?? ""),
+      (r.email ?? ""),
+      (r.status ?? ""),
+    ];
+    return includeId ? [r.id || "", ...base] : base;
+  });
+
+  return { header, rows };
+}
+
+
+// ---------- Construit les lignes pour "paiements_lignes.csv" (1 ligne par article) ----------
+function buildPaymentLinesCsvRows(dataset = []) {
+  const header = [
+    "id_facture",
+    "date_iso",
+    "etablissement",
+    "designation",
+    "quantite",
+    "pu_ht",
+    "tva_pct",
+    "total_ht",
+    "total_ttc"
+  ];
+
+  const rows = [];
+  dataset.forEach((r) => {
+    const items = Array.isArray(r.lines) && r.lines.length
+      ? r.lines
+      : (r.abonnement ? [{ desc: r.abonnement, qty: 1, puHT: 0, tva: 0 }] : []);
+
+    items.forEach((it) => {
+      const qty = Number(it.qty) || 0;
+      const pu  = Number(it.puHT) || 0;
+      const tva = Number(it.tva) || 0;
+      const ht  = qty * pu;
+      const ttc = ht + ht * (tva/100);
+
+      rows.push([
+        r.id,
+        toIsoFromFr(r.date),
+        r.client,
+        it.desc || "",
+        qty,
+        formatNumber2(pu),
+        tva,
+        formatNumber2(ht),
+        formatNumber2(ttc)
+      ]);
+    });
+  });
+
+  return { header, rows };
+}
+// ---------- Écrit un fichier CSV (UTF-8 + BOM) ----------
+function downloadCsv(filename, header, rows, separator = ";") {
+  const head = header.map(csvEscape).join(separator);
+  const body = rows.map(r => r.map(csvEscape).join(separator)).join("\r\n");
+  const file = head + "\r\n" + body;
+  const blob = new Blob([`\uFEFF${file}`], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "paiements.csv";
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+function exportCSVEnhanced(scope = "visible", dataAll, dataFiltered, selectedSet, pageRows) {
+  let data = [];
+  if (scope === "selected") {
+    data = dataFiltered.filter(r => selectedSet.has(r.id));
+  } else if (scope === "all") {
+    data = dataAll;
+  } else if (scope === "page") {
+    data = pageRows;                    // ✅ uniquement la page affichée
+  } else {
+    data = dataFiltered;                // "visible" = tout le filtré
+  }
+
+  const { header: H1, rows: R1 } = buildPaymentsCsvRows(data, { includeId: false });
+  downloadCsv(`paiements_${scope}_${new Date().toISOString().slice(0,10)}.csv`, H1, R1);
+}
+
+
+const handleExportCSV = (scope = "visible") =>
+  exportCSVEnhanced(scope, rows, filtered, selected, pageRows);
+
+const handleCreated = async (createdRow) => {
+  // soit refetch propre
+  const list = await getFactures();
+  setRows(list);
 };
 
 
@@ -1052,11 +1229,18 @@ const exportCSV = () => {
 };
 
 
-const onRowAction = (id, action) => {
+const onRowAction = async (id, action) => {
   setOpenRowMenu(null);
   if (action === "view") {
-    const row = rows.find(r => r.id === id);
-    setViewRow(row || null);
+  // charge la facture + etab + abo à jour
+   try {
+     const rich = await getFactureFull(id);
+     setViewRow(rich);
+   } catch (e) {
+     // fallback si l’API spécifique n’est pas prête
+     const row = rows.find(r => r.id === id);
+     setViewRow(row || null);
+   }
     return;
   }
   if (action === "Envoyer") alert(`Envoyer ${id}`);
@@ -1080,7 +1264,7 @@ const onRowAction = (id, action) => {
 <KPIStyles />
 <PaginationStylesOnce /> 
 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-  {STATS.map((s, i) => <StatCard key={s.id} stat={s} index={i} />)}
+  {STAT_CARDS.map((s, i) => <StatCard key={s.id} stat={s} index={i} />)}
 </div>
 
 
@@ -1088,14 +1272,15 @@ const onRowAction = (id, action) => {
       {/* TOOLBAR */}
 
 <div ref={filterRef} className="relative">
-  <PaymentsToolbar
-    q={search}
-    setQ={(v)=>{ setSearch(v); setPage(1); }}
-    onToggleFilters={()=>setOpenFilters(v=>!v)}
-    onExportCSV={exportCSV}
-    onExportPDF={exportPDF}
-    setEditRow={setEditRow}
-  />
+ <PaymentsToolbar
+  q={search}
+  setQ={(v)=>{ setSearch(v); setPage(1); }}
+  onToggleFilters={()=>setOpenFilters(v=>!v)}
+  onExportCSV={handleExportCSV}          // ✅ au lieu de passer exportCSVEnhanced directement
+  onExportPDF={exportPDF}
+  setEditRow={setEditRow}
+/>
+
 
   <PaymentsFilterDrawer
     open={openFilters}
@@ -1259,14 +1444,10 @@ const onRowAction = (id, action) => {
   <FactureModal
     row={editRow}
     onClose={() => setEditRow(null)}
-    onSave={(newRow) => {
-      setRows((prev) => {
-        const exists = prev.find((r) => r.id === newRow.id);
-        return exists
-          ? prev.map((r) => (r.id === newRow.id ? newRow : r))
-          : [...prev, newRow];
-      });
-    }}
+      onCreated={(newRow) => {
+     // insertion optimiste en tête (sans refetch)
+     setRows(prev => [newRow, ...prev]);
+   }}
   />
 )}
 

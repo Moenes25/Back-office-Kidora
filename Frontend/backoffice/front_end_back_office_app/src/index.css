@@ -501,3 +501,9 @@ input[type="password"]::-webkit-textfield-decoration-container {
   display: none;
 }
 
+/* quelque part dans globals.css */
+input:-webkit-autofill,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: inherit;
+  transition: background-color 9999s ease-out 0s; /* masque la surcouche */
+}

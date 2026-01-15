@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import tn.kidora.spring.kidorabackoffice.dto.AbonnementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.AbonnementResponseDTO;
+import tn.kidora.spring.kidorabackoffice.dto.PaiementHistoriqueDto;
 import tn.kidora.spring.kidorabackoffice.entities.Abonnement;
 import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.StatutPaiement;
@@ -35,10 +36,9 @@ AbonnementMapper abonnementMapper;
         Abonnement abonnement = new Abonnement();
         abonnement.setDateDebutAbonnement(dto.getDateDebutAbonnement());
         abonnement.setDateFinAbonnement(dto.getDateFinAbonnement());
-        abonnement.setMontantPaye(dto.getMontantPaye());
+        abonnement.setMontantTotal(dto.getMontantTotal());
         abonnement.setMontantDu(dto.getMontantDu());
         abonnement.setStatut(dto.getStatut());
-        abonnement.setFormule(dto.getFormule()); 
         abonnement.setEtablissement(etab);
 
         Abonnement saved = abonnementRepository.save(abonnement);
@@ -65,10 +65,9 @@ AbonnementMapper abonnementMapper;
 
         abonnement.setDateDebutAbonnement(dto.getDateDebutAbonnement());
         abonnement.setDateFinAbonnement(dto.getDateFinAbonnement());
-        abonnement.setMontantPaye(dto.getMontantPaye());
+        abonnement.setMontantTotal(dto.getMontantTotal());
         abonnement.setMontantDu(dto.getMontantDu());
         abonnement.setStatut(dto.getStatut());
-        abonnement.setFormule(dto.getFormule()); 
         abonnement.setEtablissement(etab);
         Abonnement updated = abonnementRepository.save(abonnement);
 //pour recuperer la reponse
@@ -76,7 +75,7 @@ AbonnementMapper abonnementMapper;
         response.setIdAbonnement(updated.getIdAbonnement());
         response.setDateDebutAbonnement(updated.getDateDebutAbonnement());
         response.setDateFinAbonnement(updated.getDateFinAbonnement());
-        response.setMontantPaye(updated.getMontantPaye());
+        response.setMontantTotal(updated.getMontantTotal());
         response.setMontantDu(updated.getMontantDu());
         response.setStatut(updated.getStatut());
 
@@ -116,7 +115,7 @@ AbonnementMapper abonnementMapper;
             dto.setIdAbonnement(a.getIdAbonnement());
             dto.setDateDebutAbonnement(a.getDateDebutAbonnement());
             dto.setDateFinAbonnement(a.getDateFinAbonnement());
-            dto.setMontantPaye(a.getMontantPaye());
+            dto.setMontantTotal(a.getMontantTotal());
             dto.setMontantDu(a.getMontantDu());
             dto.setStatut(a.getStatut());
             return dto;
@@ -142,7 +141,7 @@ return  ResponseEntity.ok(response);
                     dto.setIdAbonnement(abonnement.getIdAbonnement());
                     dto.setDateDebutAbonnement(abonnement.getDateDebutAbonnement());
                     dto.setDateFinAbonnement(abonnement.getDateFinAbonnement());
-                    dto.setMontantPaye(abonnement.getMontantPaye());
+                    dto.setMontantTotal(abonnement.getMontantTotal());
                     dto.setMontantDu(abonnement.getMontantDu());
                     dto.setStatut(abonnement.getStatut());
                     return dto;
@@ -155,5 +154,27 @@ return  ResponseEntity.ok(response);
     @Override
     public List<Map<String, Object>> getRepartitionAnnuelle(int annee) {
         return abonnementRepository.getRepartitionParTypeEtablissement(annee);
+    }
+
+    @Override
+    public List<PaiementHistoriqueDto> getHistoriquePaiements() {
+        List<Abonnement> abonnements = abonnementRepository.findAll();
+
+        return abonnements.stream().map(abo -> {
+            PaiementHistoriqueDto dto = new PaiementHistoriqueDto();
+            dto.setIdFacture(
+                    abo.getReferenceFacture() != null ? abo.getReferenceFacture() : abo.getIdAbonnement()
+            );
+            dto.setDate(abo.getDateDebutAbonnement()); // ou dateDebutAbonnement si tu préfères
+            if (abo.getEtablissement() != null) {
+                dto.setNomEtablissement(abo.getEtablissement().getNomEtablissement());
+                dto.setTypeEtablissement(abo.getEtablissement().getType());
+                dto.setGouvernorat(abo.getEtablissement().getRegion());
+                dto.setEmail(abo.getEtablissement().getEmail());
+            }
+            dto.setLibelleAbonnement(abo.getFormule());
+            dto.setStatutFacture(abo.getStatutFacture());
+            return dto;
+        }).toList();
     }
 }

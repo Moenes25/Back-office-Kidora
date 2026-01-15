@@ -12,7 +12,9 @@ import AlertsPanel from "components/AlertsPanel";
 import AppointmentPlanner from "components/calendar/AppointmentPlanner";
 import AIIndicatorsPanel from "components/ai/AIIndicatorsPanel";
 
-import { getTotalEtablissements , getChiffreAffairesTotal,getAlertsData ,  getNextExpirationsByType , getTopEtablissements}  from "services/dashboardService";
+import { getTotalEtablissements , getChiffreAffairesTotal,getAlertsData ,  getNextExpirationsByType , getTopEtablissements ,  getTotalParents,
+  getTotalEnfants,
+  getTotalActivites}  from "services/dashboardService";
 
 // ==== imports d’icônes (remplace tes imports actuels) ====
 import {
@@ -833,6 +835,9 @@ const [kpis, setKpis] = useState({ totalEtablissements: 0, totalParents: 0, tota
 
 const [nombreEtablissements, setNombreEtablissements] = useState(0);
 const [chiffreAffaires, setChiffreAffaires] = useState(0);
+const [totalParents, setTotalParents] = useState(0);
+const [totalEnfants, setTotalEnfants] = useState(0);
+const [totalActivites, setTotalActivites] = useState(0);
 
 
 
@@ -853,7 +858,23 @@ useEffect(() => {
   }, []);
 
 
+useEffect(() => {
+  (async () => {
+    const [
+      nbParents,
+      nbEnfants,
+      nbActivites,
+    ] = await Promise.all([
+      getTotalParents(),
+      getTotalEnfants(),
+      getTotalActivites(),
+    ]);
 
+    setTotalParents(nbParents);
+    setTotalEnfants(nbEnfants);
+    setTotalActivites(nbActivites);
+  })();
+}, []);
 
 
 
@@ -1036,13 +1057,13 @@ const availability = (() => {
   <WidgetKids variant="solid" bg="#4f46e5" size="sm" fx={false}    
     icon={pickIcon("Nombre Totale de Parents")}
     title="Nombre Totale de Parents"
-    value={55}
+     value={totalParents}
   />
 
   <WidgetKids variant="solid" bg="#10b981" size="sm" fx={false}    
     icon={pickIcon("Nombre Totale des Enfants")}
     title="Nombre Totale des Enfants"
-    value={55}
+    value={totalEnfants}
   />
 
   <WidgetKids variant="solid" bg="#22c55e" size="sm" fx={false}    
@@ -1055,7 +1076,7 @@ const availability = (() => {
   <WidgetKids variant="solid" bg="#f59e0b" size="sm" fx={false}    
     icon={pickIcon("Nombre d'activité d'etablissement")}
     title="Nombre d'activité d'etablissement"
-    value={55}
+   value={totalActivites}
   />
 
   <WidgetKids variant="solid" bg="#111827" size="sm" fx={false}    

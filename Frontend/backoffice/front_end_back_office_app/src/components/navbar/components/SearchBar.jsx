@@ -155,6 +155,7 @@ const SearchBar = () => {
           w-full max-w-[460px] focus-within:max-w-[620px]
           focus-within:ring-indigo-300/60 focus-within:shadow-[0_10px_30px_rgba(79,70,229,.25)]
           relative
+           dark:[color-scheme:dark]
         "
       >
         <FiSearch className="w-5 h-5 text-slate-400 dark:text-slate-300" />
@@ -169,13 +170,13 @@ const SearchBar = () => {
           onKeyDown={onKeyDown}
           className="
             w-full h-7 text-sm font-medium rounded-full bg-slate-200 dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-400 border-0 outline-none focus:outline-none focus-visible:outline-none ring-0 focus:ring-0 focus-visible:ring-0 focus:border-transparent shadow-[inset_0_0_0_0_rgba(0,0,0,0)]
-          "
+         appearance-none dark:[color-scheme:dark] "
         />
 
         {/* Shimmer léger au focus */}
         <span
           aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-full opacity-0 transition-[opacity] duration-300"
+           className="pointer-events-none absolute inset-0 rounded-full opacity-0 transition-[opacity] duration-300 dark:hidden"
           style={{ background: shimmer, opacity: focus ? 1 : 0 }}
         />
 

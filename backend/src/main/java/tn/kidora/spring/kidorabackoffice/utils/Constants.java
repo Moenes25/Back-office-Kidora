@@ -46,7 +46,21 @@ public class Constants {
     public static final String UserByREGION = "/byRegion";
     public static final String ACTIVITY = "/activity";
     public static final String ALLACTIVITY = "/all";
-
+    public static final String CLIENT = "/client";
+    public static final String CLIENT_REGISTER = "/register";
+    public static final String CLIENT_LOGIN = "/login";
+    public static final String AJOUTER_ENFANT = "/ajouter";
+    public static final String DELETE_ENFANT="/delet-enfnat";
+    public static final String GETALLENFANT="/AllEnfant";
+    public static final String UPDATE_ENFANT="/UpdateEnfant";
+    public static final String GET_ANFANT_BYID_PARENT="/BYIdPrent";
+    public static final String DELETE_CLIENT = "/delete-client";
+    public static final String update_CLIENT = "/update-client";
+    public static final String ALL_CLIENTS = "/all";
+    public static final String ALL_PARENTS = "/parents";
+    public static final String ALL_EDUCATEURS = "/educateurs";
+    public static final String AJOUTER_CLASSE = "/ajouter";
+    public static final String GET_ALL_CLASSES = "/all";
 
     // -------------------- ANALYTICS --------------------
     public static final String ANALYTICS = "/analytics";
@@ -56,6 +70,17 @@ public class Constants {
     public static final String ANALYTICS_REPARTITION_TYPE = "/repartition/type";
     public static final String ANALYTICS_REPARTITION_STATUT = "/repartition/statut";
     public static final String ANALYTICS_EVOLUTION_MENSUELLE = "/evolution-mensuelle";
+
+
+  //----------------------Factures------------------------
+    public static final String FACTURE = "/factures";
+    public static final String ADD_FACTURE = "/add/facture";
+    public static final String FACTURE_TOTAL = "/total";
+    public static final String FACTURE_TOTAL_PAYEES = "/total/payees";
+    public static final String FACTURE_TOTAL_IMPAYEES = "/total/impayees";
+    public static final String FACTURE_ALL = "/all";
+    public static final String FACTURE_BY_ID = "/{id}";
+
 
 
 

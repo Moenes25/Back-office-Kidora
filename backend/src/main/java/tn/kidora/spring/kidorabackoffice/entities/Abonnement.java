@@ -20,13 +20,19 @@ public class Abonnement {
     private String idAbonnement;
     private LocalDate dateDebutAbonnement;
     private LocalDate dateFinAbonnement;
-    private Double montantPaye;
+    private Double montantTotal;
     private Double montantDu;
 
     private StatutPaiement statut;
     private String formule ;
+    // Informations de facture (1 facture pour cet abonnement)
+    private String referenceFacture;
+    private LocalDate dateFacture;
+    private StatutFacture statutFacture;
+    private boolean envoyee;
 
-   @DocumentReference
+
+    @DocumentReference
    private Etablissement etablissement;
 }
 

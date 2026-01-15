@@ -16,21 +16,28 @@ export const getTotalEtablissements = async () => {
 
 export const getChiffreAffairesTotal = async () => {
   try {
-    const response = await api.get("/abonnement/all");
-    const abonnements = response.data;
+    const { data } = await api.get("/abonnement/all");
+    const abonnements = Array.isArray(data) ? data : [];
 
-    // On additionne tous les `montantPaye` valides
     const total = abonnements.reduce((sum, abn) => {
-      const montant = parseFloat(abn.montantPaye);
-      return sum + (isNaN(montant) ? 0 : montant);
+      // essaie dans l’ordre: montantPaye, montantTotal, montantDu
+      const raw =
+        abn.montantPaye ??
+        abn.montantTotal ??
+        abn.montantDu ??
+        0;
+
+      const n = Number(raw);
+      return sum + (Number.isFinite(n) ? n : 0);
     }, 0);
 
     return total;
   } catch (error) {
-    console.error("Erreur lors du calcul du chiffre d'affaires total :", error);
+    console.error("Erreur lors du calcul du CA :", error);
     return 0;
   }
 };
+
 
 // 🔔 Récupère les données pour AlertsPanel
 export const getAlertsData = async () => {
@@ -269,54 +276,51 @@ return {
 
 export async function getTopEtablissements() {
   try {
-    const resEtab = await api.get("/etablissement/all");
-    const resAbn = await api.get("/abonnement/all");
+    const { data: etablissements = [] } = await api.get("/etablissement/all");
+    const { data: abonnements = [] } = await api.get("/abonnement/all");
 
-    const etablissements = resEtab.data || [];
-    const abonnements = resAbn.data || [];
+    const toNum = (v) => (Number.isFinite(Number(v)) ? Number(v) : 0);
+    const pickMontant = (abn) =>
+      toNum(abn.montantPaye ?? abn.montantTotal ?? abn.montant ?? abn.montantDu);
 
-    // Mapper les abonnements par id d’établissement
+    // map "dernier abonnement" par établissement
     const abnMap = {};
     for (const abn of abonnements) {
-      const etabId = abn.etablissement?.idEtablissment;
-      if (!etabId) continue;
+      const etabId = abn.etablissement?.idEtablissment; // <-- orthographe backend
+      if (!etabId) continue; // skip si null
 
-      // On garde le dernier abonnement (par dateFinAbonnement)
-      if (!abnMap[etabId] || new Date(abn.dateFinAbonnement) > new Date(abnMap[etabId].dateFinAbonnement)) {
-        abnMap[etabId] = abn;
-      }
+      const current = abnMap[etabId];
+      const dNew = new Date(abn.dateFinAbonnement || abn.dateDebutAbonnement || 0).getTime();
+      const dOld = new Date(current?.dateFinAbonnement || current?.dateDebutAbonnement || 0).getTime();
+      if (!current || dNew > dOld) abnMap[etabId] = abn;
     }
 
-    // Créer les lignes dynamiques
     const fullData = etablissements
-      .filter(e => e.type) // garde ceux avec un type
+      .filter(e => e.type) // garder ceux avec un type
       .map(e => {
-        const abn = abnMap[e.idEtablissment];
-        const revenu = abn?.montantPaye ?? 0;
-        const statut = abn?.statut ?? "INCONNU";
+        const abn = abnMap[e.idEtablissment]; // même clé qu’au-dessus
+        const montant = abn ? pickMontant(abn) : 0;
 
-        // Traduction statut
+        const statut = abn?.statut ?? "INCONNU";
         let licence = "Inconnue";
-        if (statut === "PAYEE") licence = "Active";
-        else if (statut === "RETARD") licence = "En alerte";
+        if (statut === "PAYEE" || statut === "PAYÉE") licence = "Active";
+        else if (statut === "RETARD") licence = "En essai / alerte";
         else if (statut === "EXPIREE") licence = "Expirée";
         else if (statut === "ESSAYE") licence = "En essai";
         else if (statut === "SUSPENDU") licence = "Suspendu";
-        else if (statut === "RESILE") licence = "Resile";
+        else if (statut === "RESILE") licence = "Résilié";
 
         return {
           nom: e.nomEtablissement,
           ville: e.region,
           enfants: e.nombreEnfants ?? 0,
-          revenue: `${revenu.toLocaleString("fr-TN")} DT`,
-          revenuValeur: revenu,
+          revenue: `${montant.toLocaleString("fr-TN")} DT`,
+          revenuValeur: montant,
           licence,
-         type:
-         e.type === "CRECHE" ? "creches" :
-         e.type === "GARDERIE" ? "garderies" :
-         e.type === "ECOLE" ? "ecoles" :
-         "inconnu",
-
+          type:
+            e.type === "CRECHE" ? "creches" :
+            e.type === "GARDERIE" ? "garderies" :
+            e.type === "ECOLE" ? "ecoles" : "inconnu",
         };
       });
 
@@ -326,6 +330,7 @@ export async function getTopEtablissements() {
     return [];
   }
 }
+
 
 
 
@@ -390,6 +395,82 @@ export const getEtablissementsSansAbonnement = async () => {
     return res.data.count || 0;
   } catch (err) {
     console.error("Erreur sans abonnement :", err);
+    return 0;
+  }
+};
+
+
+
+
+
+
+/** ======== PARENTS ======== 
+ * GET /api/client/parents  -> tableau de parents
+ */
+export const getTotalParents = async () => {
+  try {
+    const res = await api.get("/client/parents");
+    // le backend peut renvoyer un array ou {count: N}
+    if (Array.isArray(res.data)) return res.data.length;
+    if (typeof res.data?.count === "number") return res.data.count;
+    return 0;
+  } catch (e) {
+    console.error("Erreur total parents:", e);
+    return 0;
+  }
+};
+
+/** ======== ENFANTS ======== 
+ * Constante: GETALLENFANT="/AllEnfant"
+ * GET /api/client/AllEnfant -> tableau d’enfants
+ */
+export const getTotalEnfants = async () => {
+  try {
+    const res = await api.get("/client/AllEnfant");
+    if (Array.isArray(res.data)) return res.data.length;
+    if (typeof res.data?.count === "number") return res.data.count;
+    return 0;
+  } catch (e) {
+    console.error("Erreur total enfants:", e);
+    return 0;
+  }
+};
+
+/** ======== ACTIVITÉS ======== 
+ * Constantes: ACTIVITY="/activity", ALLACTIVITY="/all"
+ * GET /api/activity/all -> tableau d’activités
+ */
+export const getTotalActivites = async () => {
+  try {
+    const res = await api.get("/activity/all");
+    if (Array.isArray(res.data)) return res.data.length;
+    if (typeof res.data?.count === "number") return res.data.count;
+    return 0;
+  } catch (e) {
+    console.error("Erreur total activités:", e);
+    return 0;
+  }
+};
+
+/** ======== RAPPORTS (par jour) ======== 
+ * Tu as déjà un endpoint analytique global. On essaie d’abord:
+ * GET /api/analytics/dashboard  -> { reportsToday: N, ... } (exemple)
+ * Si ton objet a une autre clé (ex: rapportsJour), adapte la ligne marquée.
+ */
+export const getRapportsDuJour = async () => {
+  try {
+    const res = await api.get("/analytics/dashboard");
+    const data = res.data || {};
+    // 👉 ADAPTE LA CLÉ CI-DESSOUS SELON TA RÉPONSE BACKEND:
+    return (
+      data.reportsToday ??
+      data.rapportsDuJour ??
+      data.rapportsJour ??
+      data.nbRapportsJour ??
+      0
+    );
+  } catch (e) {
+    console.error("Erreur rapports du jour:", e);
     return 0;
   }
 };

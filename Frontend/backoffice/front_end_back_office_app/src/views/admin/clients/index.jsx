@@ -18,7 +18,7 @@ import { RiPauseCircleLine, RiDeleteBinLine } from "react-icons/ri";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 import api from "services/api"; 
-import { getEntreprisesStats , getAllEtablissements, saveEtablissement, updateEtablissement, deleteEtablissement , getUserFromToken , saveAbonnement , updateAbonnement} from "services/entreprisesService";
+import { getEntreprisesStats , getAllEtablissements, saveEtablissement, updateEtablissement, deleteEtablissement , getUserFromToken , saveAbonnement , updateAbonnement , registerClientAdmin} from "services/entreprisesService";
 
 
 /* ----------------------------------------------------------------
@@ -281,35 +281,7 @@ function AnimatedNumber({ value, duration = 800, format = (n)=>n.toLocaleString(
 }
 
 
-function KPI({ title, value, icon, gradient }) {
-  return (
-    <div className="
-      relative overflow-hidden rounded-2xl border border-white/50 bg-white/70 backdrop-blur-md
-      shadow-[0_14px_48px_rgba(2,6,23,.12)] min-h-[110px]
-    ">
-      {/* film de couleur sous le contenu */}
-      <div className="absolute inset-0 opacity-25" style={{ background: gradient }} />
-      {/* petits effets */}
-      <div className="pointer-events-none absolute -top-6 -right-6 h-24 w-24 rounded-full bg-white/60 blur-2xl kpi-float" />
-      <div className="pointer-events-none absolute -left-1/3 -top-1/2 h-[220%] w-1/3 rotate-[14deg] bg-white/40 blur-md kpi-shine" />
-      {/* contenu */}
-      <div className="relative z-10 flex items-center gap-3 p-4">
-        <div
-          className="grid h-12 w-12 place-items-center rounded-xl text-white shadow-lg ring-1 ring-white/50"
-          style={{ background: gradient }}
-        >
-          {icon}
-        </div>
-        <div>
-          <div className="text-3xl font-extrabold tracking-tight text-slate-900">
-            <AnimatedNumber value={Number.isFinite(value) ? value : 0} />
-          </div>
-          <div className="mt-0.5 text-xs font-medium text-slate-600">{title}</div>
-        </div>
-      </div>
-    </div>
-  );
-}
+
 
 function KPIStyles() {
   return (
@@ -797,6 +769,28 @@ const saveClient = async (e) => {
       // 1. Créer l’établissement
       added = await saveEtablissement(payload);
 
+
+           // 2) Créer le Users (ADMIN) associé côté "auth"
+     if (!newClient.email || !newClient.password) {
+       throw new Error("Email et mot de passe sont requis pour créer le compte administrateur.");
+     }
+     try {
+       await registerClientAdmin({
+         nom: newClient.name,             // tu peux mettre le nom du responsable si tu l’as
+         prenom: "",
+         email: newClient.email.trim(),
+         password: newClient.password,
+         numTel: newClient.phone || "",
+         adresse: newClient.address || "",
+         imageFile: null,
+       });
+     } catch (e) {
+       console.error("Création du compte ADMIN échouée :", e);
+       // au choix : bloquer toute l’opération
+       // throw e;
+       // ou juste notifier (et continuer l’abonnement)
+     }
+
       // 2. Créer l’abonnement lié
       const abnPayload = {
         etablissementId: added.idEtablissment,
@@ -818,7 +812,7 @@ const saveClient = async (e) => {
       Swal.fire({
         icon: "success",
         title: "Succès",
-        text: "L'établissement a été ajouté avec succès.",
+        text: "Établissement + compte ADMIN créés avec succès.",
         timer: 2000,
         showConfirmButton: false,
       });
@@ -847,24 +841,128 @@ const saveClient = async (e) => {
 
   const [openFilters, setOpenFilters] = useState(false);
 
-// (facultatif) export CSV des clients filtrés
-const exportCSV = () => {
-  const headers = ["ID","Nom","Type","Ville","Adresse","Téléphone","Email","URL","Date","Statut"];
-  const csv = [headers, ...filtered.map(r => [
-    r.id, r.name, r.type, r.city, r.address || "", r.phone || "",
-    r.email || "", r.url_localisation || "", r.subscriptionDate || "",
-    r.plan || "", r.status || ""
-  ])]
-  .map(line => line.map(v => `"${String(v).replace(/"/g,'""')}"`).join(";"))
-  .join("\n");
+// utils CSV (JS/JSX)
+function csvEscape(v) {
+  const s = (v ?? "").toString().replace(/\r?\n/g, " ").replace(/"/g, '""');
+  return `"${s}"`;
+}
 
-  const blob = new Blob([`\uFEFF${csv}`], {type:"text/csv;charset=utf-8"});
+function numToExcelText(n) {
+  // évite le format scientifique & conserve les zéros initiaux dans Excel
+  const s = (n ?? "").toString().trim();
+  if (!s) return "";
+  return `="${s}"`;
+}
+
+function hyperlink(label, url) {
+  if (!url) return "";
+  // Excel HYPERLINK; dans Sheets/LibreOffice ça s'affichera comme texte
+  const safeLabel = label || "Ouvrir";
+  return `=HYPERLINK("${url.replace(/"/g, '""')}","${safeLabel.replace(/"/g, '""')}")`;
+}
+
+// ---------- CSV universel (UTF-8, ;) ----------
+const exportCSV = () => {
+  const headers = [
+    "ID",
+    "Nom",
+    "Type (clé)",
+    "Type (libellé)",
+    "Gouvernorat",
+    "Adresse",
+    "Téléphone",
+    "Email",
+    "Localisation (URL)",
+    "Abonné depuis",
+    "Statut établissement",
+    "Statut abonnement",
+    "Éducateurs",
+    "Parents",
+    "Enfants",
+  ];
+
+  const rows = filtered.map((r) => {
+    const typeLabel = (TYPE_META[r.type] && TYPE_META[r.type].label) || r.type || "";
+    return [
+      r.id,
+      r.name,
+      r.type,
+      typeLabel,
+      r.city || "",
+      r.address || "",
+      r.phone || "",
+      r.email || "",
+      r.url_localisation || "",
+      r.subscriptionDate || "",
+      r.status || "",
+      r.statusAbonnement || "",
+      r.educateurs ?? 0,
+      r.parents ?? 0,
+      r.enfants ?? 0,
+    ]
+      .map(csvEscape)
+      .join(";");
+  });
+
+  const file = [headers.map(csvEscape).join(";"), ...rows].join("\r\n");
+  const blob = new Blob([`\uFEFF${file}`], { type: "text/csv;charset=utf-8" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "clients.csv";
+  a.download = `clients_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.csv`;
   a.click();
   URL.revokeObjectURL(a.href);
 };
+
+// ---------- Variante “friendly Excel” (tél. en texte, lien clicable) ----------
+const exportCSVForExcel = () => {
+  const headers = [
+    "ID",
+    "Nom",
+    "Type (clé)",
+    "Type (libellé)",
+    "Gouvernorat",
+    "Adresse",
+    "Téléphone (texte)",
+    "Email",
+    "Localisation (clic)",
+    "Abonné depuis",
+    "Statut établissement",
+    "Statut abonnement",
+    "Éducateurs",
+    "Parents",
+    "Enfants",
+  ];
+
+  const rows = filtered.map((r) => {
+    const typeLabel = (TYPE_META[r.type] && TYPE_META[r.type].label) || r.type || "";
+    return [
+      csvEscape(r.id),
+      csvEscape(r.name),
+      csvEscape(r.type),
+      csvEscape(typeLabel),
+      csvEscape(r.city || ""),
+      csvEscape(r.address || ""),
+      csvEscape(numToExcelText(r.phone || "")),                          // 👈 forcer texte
+      csvEscape(r.email || ""),
+      csvEscape(hyperlink("Ouvrir la carte", r.url_localisation || "")), // 👈 HYPERLINK
+      csvEscape(r.subscriptionDate || ""),
+      csvEscape(r.status || ""),
+      csvEscape(r.statusAbonnement || ""),
+      csvEscape(r.educateurs ?? 0),
+      csvEscape(r.parents ?? 0),
+      csvEscape(r.enfants ?? 0),
+    ].join(";");
+  });
+
+  const file = [headers.map(csvEscape).join(";"), ...rows].join("\r\n");
+  const blob = new Blob([`\uFEFF${file}`], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `clients_excel_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+
 
   // liste/pagination
   const PAGE_SIZE = 4;
@@ -991,40 +1089,178 @@ setSelected((s) => s && s.id === etabId ? { ...s, statusAbonnement: newStatus } 
 };
 
 
-  const printSelected = () => {
-    if (!selected) return;
-    const w = window.open("", "_blank");
-    if (!w) return;
-    w.document.write(`
-      <html><head><title>Fiche client ${selected.name}</title>
-      <style>
-        body{font-family: ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial; padding:24px}
-        h1{font-size:20px;margin:0 0 8px 0}
-        h2{font-size:14px;margin:18px 0 8px 0}
-        table{width:100%;border-collapse:collapse}
-        td{padding:6px 8px;border-bottom:1px solid #eee}
-        .muted{color:#667085}.chip{display:inline-block;padding:4px 8px;border-radius:999px;background:#f1f5f9;margin-left:8px}
-      </style></head>
-      <body>
-        <h1>${selected.name} <span class="chip">${TYPE_META[selected.type]?.label || selected.type}</span></h1>
-        <div class="muted">${selected.id}</div>
-        <h2>Informations générales</h2>
-        <table>
-          <tr><td>Ville</td><td>${selected.city}</td></tr>
-          <tr><td>Adresse</td><td>${selected.address || ""}</td></tr>
-          <tr><td>Téléphone</td><td>${selected.phone || ""}</td></tr>
-          <tr><td>Email</td><td>${selected.email || ""}</td></tr>
-          <tr><td>URL localisation</td><td>${selected.url_localisation || ""}</td></tr>
-          <tr><td>Date d'abonnement</td><td>${selected.subscriptionDate}</td></tr>
-          <tr><td>Statut</td><td>${selected.status}</td></tr>
-        </table>
-        <h2>Historique</h2>
-        <table>${(selected.history||[]).map(h => `<tr><td>${h.at}</td><td>${h.text}</td></tr>`).join("")}</table>
-        <script>window.print(); setTimeout(()=>window.close(), 300);</script>
-      </body></html>
-    `);
-    w.document.close();
+const printSelected = () => {
+  if (!selected) return;
+
+  // Libellés & couleurs (simples) pour les badges
+  const typeLabel = (TYPE_META[selected.type]?.label || selected.type || "—");
+  const status = selected.status || "—";
+  const statusAbn = selected.statusAbonnement || "Sans abonnement";
+
+  const statusPalette = {
+    "Actif":                 { bg: "#d1fae5", color: "#065f46" }, // emerald
+    "En période d’essai":    { bg: "#e0e7ff", color: "#3730a3" }, // indigo
+    "En retard de paiement": { bg: "#fef3c7", color: "#92400e" }, // amber
+    "Suspendu":              { bg: "#ffe4e6", color: "#9f1239" }, // rose
+    "Inactif":               { bg: "#f1f5f9", color: "#475569" }, // slate
+    "Sans abonnement":       { bg: "#f8fafc", color: "#64748b" }, // slate
   };
+  const st  = statusPalette[status]     || statusPalette["Inactif"];
+  const abn = statusPalette[statusAbn]  || statusPalette["Sans abonnement"];
+
+  const w = window.open("", "_blank");
+  if (!w) return;
+
+  w.document.write(`
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Fiche établissement — ${selected.name || ""}</title>
+  <style>
+    :root{
+      --indigo:#4f46e5; --sky:#06b6d4; --cyan:#22d3ee;
+      --line:#e5e7eb; --text:#0f172a; --muted:#64748b;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; background:#fff; color:var(--text);
+      font:14px/1.45 ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial;
+      padding:24px;
+    }
+    section{
+      max-width:980px; margin:0 auto;
+      background:#fff; border:1px solid #e2e8f0; border-radius:16px;
+      box-shadow:0 18px 48px rgba(15,23,42,.12); overflow:hidden; position:relative;
+    }
+    .ribbon{position:absolute; inset:0 0 auto 0; height:120px;
+      background:linear-gradient(90deg,#4f46e5,#0ea5e9,#22d3ee); opacity:.92;}
+    .wm{position:absolute; right:20px; bottom:24px;
+      font-weight:900; font-size:72px; letter-spacing:.02em; color:rgba(15,23,42,.05); user-select:none;}
+    header{position:relative; z-index:1; display:grid; gap:16px; grid-template-columns:auto 1fr auto; align-items:center; padding:20px; color:#fff;}
+    .logo{height:48px;width:48px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.6);font-weight:800;}
+    .t-sub{font-size:11px;color:rgba(255,255,255,.85)}
+    .t-id{font-size:12px;color:rgba(255,255,255,.85)}
+    .t-id b{display:block;font-size:16px;color:#fff}
+
+    .cardbar{
+      position:relative; z-index:1; margin:0 16px 16px; border:1px solid var(--line);
+      background:#fff; border-radius:12px; display:grid; grid-template-columns:1fr; overflow:hidden;
+    }
+    @media (min-width:768px){ .cardbar{ grid-template-columns:1fr 1fr; } }
+    .card{padding:16px}
+    .card + .card{border-top:1px solid var(--line)}
+    @media (min-width:768px){ .card + .card{border-top:none; border-left:1px solid var(--line)} }
+    .sec{margin:0 16px 16px; border:1px solid var(--line); border-radius:12px; background:#fff;}
+    .sec .inner{padding:16px}
+    .label{font-size:11px; letter-spacing:.08em; color:#64748b; text-transform:uppercase}
+    .kv{margin-top:6px; font-size:14px}
+    .row{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+    .pill{display:inline-flex;align-items:center;gap:.35rem;padding:.25rem .6rem;border-radius:999px;font-weight:700;font-size:11px}
+    .chip{display:inline-flex;align-items:center;background:#eef2ff;color:#3730a3;padding:.25rem .6rem;border-radius:999px;font-weight:700;font-size:11px}
+    .muted{color:var(--muted); font-size:12px}
+    .ks{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .ks .k{display:inline-flex;align-items:center;gap:6px;padding:.5rem .75rem;border-radius:999px;font-weight:700;font-size:12px}
+    .k.indigo{background:#eef2ff;color:#3730a3}
+    .k.emerald{background:#d1fae5;color:#065f46}
+    .k.sky{background:#e0f2fe;color:#075985}
+
+    table{width:100%;border-collapse:separate;border-spacing:0}
+    .hist thead th{font-size:11px;color:#64748b;text-transform:uppercase;text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+    .hist td{padding:10px 12px;border-bottom:1px solid var(--line)}
+    .footer{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between; padding:0 16px 16px; color:#64748b; font-size:11px}
+
+    @page { size: A4; margin: 14mm; }
+    @media print{
+      body{padding:0}
+      section{border:none; box-shadow:none; border-radius:0}
+      .ribbon{opacity:1}
+    }
+  </style>
+</head>
+<body>
+  <section>
+    <div class="ribbon"></div>
+    <div class="wm">ÉTABLISSEMENT</div>
+
+    <header>
+      <div class="logo">K</div>
+      <div>
+        <div style="font-weight:800;font-size:18px;letter-spacing:.01em">Kidora — Fiche établissement</div>
+        <div class="t-sub">Généré le ${new Date().toLocaleString("fr-FR")}</div>
+      </div>
+      <div class="t-id">Identifiant<b>${selected.id || "—"}</b></div>
+    </header>
+
+    <!-- Cartes infos -->
+    <div class="cardbar">
+      <div class="card">
+        <div class="label">Établissement</div>
+        <div class="kv" style="margin-top:8px">
+          <div style="font-weight:700;font-size:16px">${selected.name || "—"} <span class="chip" title="Type">${typeLabel}</span></div>
+          ${selected.email ? `<div class="muted" style="margin-top:4px">Email : ${selected.email}</div>` : ``}
+          ${selected.phone ? `<div class="muted">Téléphone : ${selected.phone}</div>` : ``}
+          <div class="muted">Ville : ${selected.city || "—"}</div>
+          ${selected.address ? `<div class="muted">Adresse Complet : ${selected.address}</div>` : ``}
+          ${selected.url_localisation ? `<div class="muted" style="margin-top:4px">Localisation : ${selected.url_localisation}</div>` : ``}
+        </div>
+      </div>
+
+      <div class="card" style="background:linear-gradient(180deg,#f8fafc,#fff)">
+        <div class="label">Abonnement & Statuts</div>
+        <div class="row" style="margin-top:8px">
+          <div>Depuis : <b>${selected.subscriptionDate || "—"}</b></div>
+          <div>État :
+            <span class="pill" style="background:${st.bg};color:${st.color}">${status}</span>
+          </div>
+          <div style="grid-column:1/-1">Abonnement :
+            <span class="pill" style="background:${abn.bg};color:${abn.color}">${statusAbn}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Effectifs -->
+    <div class="sec">
+      <div class="inner">
+        <div class="label">Effectifs</div>
+        <div class="ks">
+          <span class="k indigo">🧑‍🏫 ${selected.educateurs ?? 0} éducateurs</span>
+          <span class="k emerald">👨‍👩‍👧 ${selected.parents ?? 0} parents</span>
+          <span class="k sky">🧒 ${selected.enfants ?? 0} enfants</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historique -->
+    <div class="sec">
+      <div class="inner">
+        <div class="label">Historique d’activités</div>
+        <table class="hist">
+          <thead><tr><th>Date</th><th>Événement</th></tr></thead>
+          <tbody>
+            ${(selected.history||[])
+              .map(h => `<tr><td class="muted">${h.at}</td><td>${h.text}</td></tr>`)
+              .join("") || `<tr><td class="muted" colspan="2">Aucune activité.</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>Kidora • 10 Rue du Lac, Tunis • +216 00 000 000</span>
+      <span>MF: 1234567/A • ${selected.id || ""}</span>
+    </div>
+  </section>
+
+  <script>window.print(); setTimeout(()=>window.close(), 300);</script>
+</body>
+</html>
+  `);
+
+  w.document.close();
+};
+
 
   const startEdit = (row) => {
     setEditId(row.id);

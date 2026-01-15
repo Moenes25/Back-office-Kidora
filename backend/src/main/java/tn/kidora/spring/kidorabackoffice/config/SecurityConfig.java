@@ -14,87 +14,86 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import tn.kidora.spring.kidorabackoffice.utils.Constants;
 
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import tn.kidora.spring.kidorabackoffice.services.serviceImpl.CustomUserDetailsService;
-import tn.kidora.spring.kidorabackoffice.utils.Constants;
-// /----------------------------------------------------
-
+import tn.kidora.spring.kidorabackoffice.config.JwtFilter;
 @Configuration
 @EnableWebSecurity
 @AllArgsConstructor
 public class SecurityConfig {
-
     private final CustomUserDetailsService customUserDetailsService;
-    private final JwtUtils jwtUtils;
-    private final JwtFilter jwtFilter;
+    private final JwtUtils jwtUtils;    
+    
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
+    @Bean 
     public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder passwordEncoder) throws Exception {
-        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        AuthenticationManagerBuilder authenticationManagerBuilder =http.getSharedObject(AuthenticationManagerBuilder.class);
         authenticationManagerBuilder.userDetailsService(customUserDetailsService).passwordEncoder(passwordEncoder);
         return authenticationManagerBuilder.build();
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http)  throws Exception {
         return http
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS with custom configuration
-                .authorizeHttpRequests(auth
-                        // Public endpoints
-                        -> auth.requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers("/api/auth/forgot-password").permitAll()
-                        .requestMatchers("/api/auth/verify-otp").permitAll()
-                        .requestMatchers("/api/auth/reset-password").permitAll()
-                        .requestMatchers("/uploads/**").permitAll()
-                        .requestMatchers("/api/auth/update-profile/**").permitAll()
+               .csrf(AbstractHttpConfigurer::disable)
+               .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+               .authorizeHttpRequests(auth ->
+               auth
+                       .requestMatchers(Constants.APP_ROOT + Constants.CLIENT + Constants.CLIENT_REGISTER,
+                               Constants.APP_ROOT + Constants.CLIENT + Constants.CLIENT_LOGIN,
+                               Constants.APP_ROOT+Constants.AUTH+Constants.LOGIN,
+               Constants.APP_ROOT+Constants.ETABLISSEMENT+"/create-test-etablissement",
+                Constants.APP_ROOT+Constants.ABONNEMENT+"/create-test-abonnement",
+                Constants.APP_ROOT+Constants.EVENEMENT+"/create-test-evenement",
+                Constants.APP_ROOT + Constants.ABONNEMENT+"/repartition-annuelle"
+               ).permitAll()
+               
+               // ✅ RENDRE PUBLICS les endpoints Analytics pour le front (3000) → backend (8086)
+                .requestMatchers("/api/analytics/**").permitAll()
+                               .requestMatchers(Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.SAVE,
+                                                Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.UPDATE,
+                                                Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.DELETE,
+                                                Constants.APP_ROOT+Constants.TOOGLE_STATUS
+                                                ).hasAnyRole("ADMIN_GENERAL","SUPER_ADMIN")
+  
+                              .requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.REGISTER).hasRole("SUPER_ADMIN")
+                              .requestMatchers(
+                           // Exemple d'endpoints réservés à l'ADMIN
+                                    // Constants.APP_ROOT + Constants.CLIENT + Constants.REGISTER,
+                                    Constants.APP_ROOT + Constants.CLIENT + Constants.ALL_CLIENTS, 
+                                    Constants.APP_ROOT + Constants.CLIENT + Constants.DELETE_CLIENT+"/*",
+                                    Constants.APP_ROOT + Constants.CLIENT + Constants.update_CLIENT+"/*",
+                                    Constants.APP_ROOT + Constants.CLIENT + Constants.ALL_PARENTS,
+                                    Constants.APP_ROOT + Constants.CLIENT + Constants.ALL_EDUCATEURS,
+                                    Constants.APP_ROOT + Constants.CLIENT + Constants.ID,
+                                    Constants.APP_ROOT + Constants.CLIENT + Constants.GET_ANFANT_BYID_PARENT+"/*",
+                                    "/api/enfants/**"
 
-                        // ✅ RENDRE PUBLICS les endpoints Analytics pour le front (3000) → backend (8086)
-                         .requestMatchers("/api/analytics/**").permitAll()
-                        // Only SUPER_ADMIN can access 
-                        .requestMatchers("/api/superadmin/update-password")
-                        .hasRole("SUPER_ADMIN")
-                        .requestMatchers("/api/auth/all").hasRole("SUPER_ADMIN")
-                        .requestMatchers("/api/auth/delete-user/**").hasRole("SUPER_ADMIN")
-                        .requestMatchers("/api/auth/roles").hasRole("SUPER_ADMIN")
-                        .requestMatchers("/api/auth/update/**").hasRole("SUPER_ADMIN")
-                        // ACTIVITY
-                        .requestMatchers(Constants.APP_ROOT + Constants.ACTIVITY + Constants.ALLACTIVITY)
-                        .hasAnyRole("SUPER_ADMIN")
-                        .requestMatchers(Constants.APP_ROOT + Constants.ETABLISSEMENT + "/create-test-etablissement",
-                                Constants.APP_ROOT + Constants.ABONNEMENT + "/create-test-abonnement",
-                                Constants.APP_ROOT + Constants.EVENEMENT + "/create-test-evenement",
-                                Constants.APP_ROOT + Constants.ABONNEMENT + "/repartition-annuelle"
-                        ).permitAll()
-                        // ETABLISSEMENT management endpoints
-                        .requestMatchers(Constants.APP_ROOT + Constants.ETABLISSEMENT + Constants.ALL)
-                        .permitAll()
-                        .requestMatchers(Constants.APP_ROOT + Constants.ETABLISSEMENT + Constants.SAVE,
-                                Constants.APP_ROOT + Constants.ETABLISSEMENT + Constants.UPDATE,
-                                Constants.APP_ROOT + Constants.ETABLISSEMENT + Constants.DELETE,
-                                Constants.APP_ROOT + Constants.TOOGLE_STATUS).permitAll()
-                        .requestMatchers(Constants.APP_ROOT + Constants.AUTH + Constants.REGISTER).hasRole("SUPER_ADMIN")
-                        .anyRequest().authenticated())
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                // .addFilterBefore(new JwtFilter(customUserDetailsService, jwtUtils), UsernamePasswordAuthenticationFilter.class)
-                .build();
-
+                                    ).hasRole("ADMIN")
+                              .anyRequest().authenticated())
+                     
+                     
+             .addFilterBefore(new JwtFilter(customUserDetailsService, jwtUtils), UsernamePasswordAuthenticationFilter.class)
+             .build();
+               
     }
 
-    // Simple CORS configuration allowing only React dev server
-    @Bean
+     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 
@@ -102,5 +101,7 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+    }
 
-}
+    
+

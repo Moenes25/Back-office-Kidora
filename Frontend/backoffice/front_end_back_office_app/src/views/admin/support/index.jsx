@@ -284,7 +284,7 @@ export default function TicketsSupportFR_3D() {
   const [vue, setVue] = useState("Tous");
   const [openFilters, setOpenFilters] = useState(false);
   const [filters, setFilters] = useState({ priorite: "Tous", agent: "Tous" });
-
+const [openMenuId, setOpenMenuId] = useState(null); 
   const kpi = useMemo(() => {
     const total = rows.length;
     const pending = rows.filter(r => r.statut === "En attente").length;
@@ -312,7 +312,11 @@ export default function TicketsSupportFR_3D() {
 const PAGE_SIZE = 4;
 const [page, setPage] = useState(1);
 
-React.useEffect(() => { setPage(1); }, [q, vue, filters]); // reset quand on filtre/cherche
+  // reset page + fermer tout menu quand on filtre/cherche
+  React.useEffect(() => {
+    setPage(1);
+    setOpenMenuId(null);
+  }, [q, vue, filters]);
 
 const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 const start = (page - 1) * PAGE_SIZE;
@@ -442,7 +446,7 @@ const TicketIcon = (props) => (
             initial={{opacity:0, y:-6, scale:0.98}}
             animate={{opacity:1, y:0, scale:1}}
             exit={{opacity:0, y:-6, scale:0.98}}
-            className="mt-3 w-full max-w-xl rounded-2xl border border-white/30 bg-white/80 p-4 shadow-2xl backdrop-blur-xl"
+            className="mt-3 w-full max-w-xl rounded-2xl border border-white/30 bg-white/80 p-4 shadow-2xl backdrop-blur-xl dark:bg-navy-800"
           >
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <label className="text-sm">
@@ -506,11 +510,17 @@ const TicketIcon = (props) => (
       <td className="px-4 py-4 dark:bg-navy-800 dark:text-white"><BadgeStatut s={r.statut} /></td>
       <td className="px-4 py-4 dark:bg-navy-800 dark:text-white">
         <div className="flex items-center justify-end gap-1 dark:bg-navy-800 dark:text-white">
-          <MenuActions
-            onResolve={() => setStatut(absoluteIndex, "Résolu")}
-            onArchive={() => setStatut(absoluteIndex, "Archivé")}
-            onDelete={() => supprimer(absoluteIndex)}
-          />
+        <MenuActions
+                rowId={r.id}                                  // ⬅️ identifiant
+                open={openMenuId === r.id}                    // ⬅️ contrôlé
+                onToggle={() =>
+                  setOpenMenuId((cur) => (cur === r.id ? null : r.id))
+                }
+                onRequestClose={() => setOpenMenuId(null)}    // ⬅️ click-away / Esc
+                onResolve={() => { setOpenMenuId(null); setStatut(absoluteIndex,"Résolu"); }}
+                onArchive={() => { setOpenMenuId(null); setStatut(absoluteIndex,"Archivé"); }}
+                onDelete={() => { setOpenMenuId(null); supprimer(absoluteIndex); }}
+              />
         </div>
       </td>
     </Row3D>
@@ -639,43 +649,104 @@ function Field({ label, span2, children }) {
 }
 
 /* ---------- Actions menu ---------- */
-function MenuActions({ onResolve, onArchive, onDelete }) {
-  const [open, setOpen] = useState(false);
+function MenuActions({ rowId, open, onToggle, onRequestClose, onResolve, onArchive, onDelete }) {
+  const btnRef = React.useRef(null);
+  const popRef = React.useRef(null);
+
+  // z-index de la ligne en cours
+  React.useEffect(() => {
+    const tr = btnRef.current?.closest("tr");
+    if (!tr) return;
+    if (open) tr.classList.add("menu-open"); else tr.classList.remove("menu-open");
+    return () => tr.classList.remove("menu-open");
+  }, [open]);
+
+  // click-away + Esc
+  React.useEffect(() => {
+    if (!open) return;
+    const onDown = (e) => {
+      const t = e.target;
+      if (!btnRef.current?.contains(t) && !popRef.current?.contains(t)) {
+        onRequestClose?.();
+      }
+    };
+    const onKey = (e) => { if (e.key === "Escape") onRequestClose?.(); };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("touchstart", onDown, { passive: true });
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("touchstart", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open, onRequestClose]);
+
   return (
     <div className="relative">
       <button
-        onClick={()=>setOpen(o=>!o)}
+        ref={btnRef}
+        onClick={onToggle}
         className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-black/10 bg-white text-slate-700 shadow-sm dark:bg-navy-800 dark:text-white"
         title="Actions"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls={`menu-${rowId}`}
       >
         <FiMoreVertical />
       </button>
+
       <AnimatePresence>
         {open && (
-          <motion.div
-            initial={{opacity:0, y:6, scale:.98}}
-            animate={{opacity:1, y:0, scale:1}}
-            exit={{opacity:0, y:6, scale:.98}}
-            className="absolute right-0 mt-2 w-48 overflow-hidden rounded-2xl border border-white/30 bg-white/95 shadow-2xl backdrop-blur"
-          >
-            <button onClick={()=>{setOpen(false); onResolve?.();}}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 dark:text-slate-500">
-              <FiCheckCircle className="text-emerald-600" /> Marquer “résolu”
-            </button>
-            <button onClick={()=>{setOpen(false); onArchive?.();}}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 dark:text-slate-500">
-              <FiArchive className="text-slate-600" /> Archiver
-            </button>
-            <button onClick={()=>{setOpen(false); onDelete?.();}}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-700 hover:bg-rose-50 dark:text-slate-500">
-              <FiTrash2 /> Supprimer
-            </button>
-          </motion.div>
+       <motion.div
+  ref={popRef}
+  id={`menu-${rowId}`}
+  role="menu"
+  initial={{ opacity: 0, y: 6, scale: .98 }}
+  animate={{ opacity: 1, y: 0, scale: 1 }}
+  exit={{ opacity: 0, y: 6, scale: .98 }}
+  className="absolute right-0 mt-2 w-48 overflow-hidden rounded-2xl
+             border border-white/30 bg-white/95 shadow-2xl backdrop-blur
+             dark:border-white/10 dark:bg-navy-700/95 dark:shadow-[0_20px_60px_rgba(0,0,0,.45)] z-[60]"
+>
+  <button
+    onClick={() => { onResolve?.(); }}
+    className="flex w-full items-center gap-2 px-3 py-2 text-sm
+               hover:bg-gray-50 dark:hover:bg-white/10 dark:text-slate-200"
+    role="menuitem"
+  >
+    <FiCheckCircle className="text-emerald-600 dark:text-emerald-400" />
+    Marquer “résolu”
+  </button>
+
+  <button
+    onClick={() => { onArchive?.(); }}
+    className="flex w-full items-center gap-2 px-3 py-2 text-sm
+               hover:bg-gray-50 dark:hover:bg-white/10 dark:text-slate-200"
+    role="menuitem"
+  >
+    <FiArchive className="text-slate-600 dark:text-slate-300" />
+    Archiver
+  </button>
+
+  <button
+    onClick={() => { onDelete?.(); }}
+    className="flex w-full items-center gap-2 px-3 py-2 text-sm
+               text-rose-700 hover:bg-rose-50
+               dark:text-rose-300 dark:hover:bg-rose-400/10"
+    role="menuitem"
+  >
+    <FiTrash2 />
+    Supprimer
+  </button>
+</motion.div>
+
         )}
       </AnimatePresence>
     </div>
   );
 }
+
+
 
 /* ---------- tiny style injector for inputs ---------- */
 function StyleOnce() {
