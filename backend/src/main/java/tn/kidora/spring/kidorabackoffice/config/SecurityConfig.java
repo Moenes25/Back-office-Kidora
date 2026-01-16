@@ -61,6 +61,10 @@ public class SecurityConfig {
                
                // ✅ RENDRE PUBLICS les endpoints Analytics pour le front (3000) → backend (8086)
                 .requestMatchers("/api/analytics/**").permitAll()
+                .requestMatchers("/api/enfants/count").permitAll()
+                .requestMatchers("/api/client/parents/total").permitAll()
+                  .requestMatchers("/uploads/**").permitAll()
+
                                .requestMatchers(Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.SAVE,
                                                 Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.UPDATE,
                                                 Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.DELETE,
@@ -68,6 +72,9 @@ public class SecurityConfig {
                                                 ).hasAnyRole("ADMIN_GENERAL","SUPER_ADMIN")
   
                               .requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.REGISTER).hasRole("SUPER_ADMIN")
+                              .requestMatchers(Constants.APP_ROOT + Constants.AUTH + Constants.UPDATE + Constants.ID).hasRole("SUPER_ADMIN")
+                              .requestMatchers(Constants.APP_ROOT + Constants.AUTH + Constants.DELETE_USER).hasRole("SUPER_ADMIN")
+
                               .requestMatchers(
                            // Exemple d'endpoints réservés à l'ADMIN
                                     // Constants.APP_ROOT + Constants.CLIENT + Constants.REGISTER,

@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import api from "services/api";
 import { FaLock } from "react-icons/fa";
 import { MdMail } from "react-icons/md";
+import Swal from 'sweetalert2';
+
 import {
   IoEyeOutline,
   IoEyeOffOutline,
@@ -45,8 +47,19 @@ const EditAdminModal = ({ admin, onClose, onEditSuccess }) => {
       if (role && role !== admin.role) formData.append("role", role);
 
       const res = await api.put(`/auth/update/${admin.id}`, formData);
-      onEditSuccess(res.data);
-      onClose();
+      console.log("UPDATE RESPONSE:", res.data);
+      /*onEditSuccess(res.data);
+      onClose();*/
+      Swal.fire({
+  icon: 'success',
+  title: 'Admin updated!',
+  text: 'The admin profile was successfully updated.',
+  confirmButtonColor: '#6366F1', // violet
+}).then(() => {
+  onEditSuccess(res.data);
+  onClose();
+});
+
     } catch (err) {
       console.error("Edit failed:", err);
       alert("Failed to update admin profile");
@@ -120,6 +133,10 @@ const EditAdminModal = ({ admin, onClose, onEditSuccess }) => {
               >
                 {showPassword ? <IoEyeOffOutline /> : <IoEyeOutline />}
               </button>
+              <p className="text-xs text-slate-400 mt-1">
+  Leave blank to keep the current password
+</p>
+
             </div>
 
             {/* Role */}

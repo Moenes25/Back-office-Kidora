@@ -12,6 +12,7 @@ public class EtablissementUpdateDTO  {
     String region;
     String telephone ;
     String url_localisation;
+    String password ;
     // @Enumerated(EnumType.STRING)
     Type_Etablissement type;
     String email;

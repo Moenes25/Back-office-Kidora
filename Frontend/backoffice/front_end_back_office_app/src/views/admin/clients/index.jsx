@@ -360,7 +360,7 @@ function SupportFilterDrawer({
           initial={{opacity:0, y:-6, scale:0.98}}
           animate={{opacity:1, y:0, scale:1}}
           exit={{opacity:0, y:-6, scale:0.98}}
-          className="mt-3 w-full max-w-xl rounded-2xl border border-white/30 bg-white/80 p-4 shadow-2xl backdrop-blur-xl"
+          className="mt-3 w-full max-w-xl rounded-2xl border border-white/30 bg-white/80 p-4 shadow-2xl backdrop-blur-xl dark:bg-navy-800"
         >
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {/* Type */}
@@ -612,11 +612,11 @@ useEffect(() => {
             etab.type === "ECOLE" ? "ecoles" : "autre",
           //status: abn ? convertStatutToLabel(abn?.statut) : "Sans abonnement",
           status: etab.isActive ? "Actif" : "Inactif",
-      statusAbonnement: abn ? convertStatutToLabel(abn?.statut) : "Sans abonnement",
+          statusAbonnement: abn ? convertStatutToLabel(abn?.statut) : "Sans abonnement",
 
           subscriptionDate: abn?.dateDebutAbonnement || "",
           //plan: abn?.formule || "",
-          password: "", // pas utilisé ici
+          password: etab.password, 
           enfants: etab.nombreEnfants ?? 0,
           parents: etab.nombreParents ?? 0,
           educateurs: etab.nombreEducateurs ?? 0,
@@ -675,13 +675,6 @@ useEffect(() => {
   };
 
 
-
-
-
-
-
-
-
   
   const [newClient, setNewClient] = useState(emptyClient);
   const resetNew = () => { setNewClient(emptyClient); setShowPwd(false); };
@@ -715,7 +708,7 @@ async function toBackendPayload(client) {
 
   const backendType = typeMap[client.type] || "CRECHE"; // valeur par défaut
 
-  if (!client.name || !client.address || !client.city || !client.phone || !client.email) {
+  if (!client.name || !client.address || !client.city || !client.phone || !client.email ) {
     throw new Error("Un ou plusieurs champs obligatoires sont manquants.");
   }
 
@@ -731,14 +724,12 @@ async function toBackendPayload(client) {
     userId,
     userNom: user?.username || "",
     userEmail: user?.sub || "",
+    password: client.password || undefined,
     nombreEducateurs: client.educateurs ?? 0,
     nombreParents: client.parents ?? 0,
     nombreEnfants: client.enfants ?? 0,
   };
 }
-
-
-
 
 
 
@@ -1631,15 +1622,15 @@ const deleteClient = async (row) => {
                   {/* Mot de passe avec œil */}
                   {selected.password && (
                     <div className="md:col-span-2">
-                      <div className="text-xs text-gray-500 mb-1">Mot de passe</div>
-                      <div className="inline-flex items-center gap-2 rounded-xl border border-black/10 bg-white px-3 py-2 text-sm shadow-sm">
+                      <div className="text-xs text-gray-500 mb-1 ">Mot de passe</div>
+                      <div className="inline-flex items-center gap-2 rounded-xl border border-black/10 bg-white px-3 py-2 text-sm shadow-sm dark:text-gray-800">
                         <span className="font-mono">
                           {showPwdDetail ? selected.password : "•".repeat(Math.max(8, selected.password.length))}
                         </span>
                         <button
                           type="button"
                           onClick={() => setShowPwdDetail(s => !s)}
-                          className="ml-1 rounded-md border border-black/10 p-1 hover:bg-gray-50"
+                          className="ml-1 rounded-md border border-black/10 p-1 hover:bg-gray-50 dark:text-gray-800 dark:hover:bg-gray-200"
                           title={showPwdDetail ? "Masquer" : "Afficher"}
                         >
                           {showPwdDetail ? <FiEyeOff /> : <FiEye />}
@@ -1810,13 +1801,25 @@ const deleteClient = async (row) => {
               {/* Téléphone */}
               <label className="text-sm">
                 <span className="mb-1 block text-xs text-gray-500">Téléphone</span>
-                <input
-                  type="tel"
-                  value={newClient.phone}
-                  onChange={(e) => setNewClient((v) => ({ ...v, phone: e.target.value }))}
-                  className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm shadow-sm outline-none"
-                  placeholder="+216 …"
-                />
+              <input
+  type="tel"
+  value={newClient.phone}
+  onChange={(e) => {
+    const value = e.target.value;
+
+    // Supprime tout ce qui n'est pas chiffre
+    const cleaned = value.replace(/\D/g, "");
+
+    // Si plus de 8 chiffres => ne rien faire
+    if (cleaned.length > 8) return;
+
+    setNewClient((v) => ({ ...v, phone: cleaned }));
+  }}
+  className="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm shadow-sm outline-none"
+  placeholder="Ex: 12345678"
+  required
+/>
+
               </label>
 
               {/* Email */}

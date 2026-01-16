@@ -169,7 +169,7 @@ function PaymentsFilterDrawer({
           initial={{opacity:0, y:-6, scale:0.98}}
           animate={{opacity:1, y:0, scale:1}}
           exit={{opacity:0, y:-6, scale:0.98}}
-          className="mt-3 w-full max-w-xl rounded-2xl border border-white/30 bg-white/80 p-4 shadow-2xl backdrop-blur-xl"
+          className="mt-3 w-full max-w-xl rounded-2xl border border-white/30 bg-white/80 p-4 shadow-2xl backdrop-blur-xl dark:bg-navy-800"
         >
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {/* Statut */}
@@ -1370,7 +1370,7 @@ const onRowAction = async (id, action) => {
     <td className="px-3 py-3 text-right dark:text-white dark:bg-navy-800 ">
   <div className="inline-flex items-center gap-1.5">
     <button
-      className="icon-btn dark:text-white"
+      className="icon-btn dark:text-white dark:hover:text-gray-800"
       title="Voir"
       onClick={() => onRowAction(row.id, "view")}
       aria-label="Voir"
@@ -1378,17 +1378,17 @@ const onRowAction = async (id, action) => {
       <FiEye />
     </button>
 
-    <button
-      className="icon-btn dark:text-white"
+   {/*  <button
+      className="icon-btn dark:text-white hidden dark:hover:text-gray-800"
       title="Modifier"
       onClick={() => setEditRow(row)}
       aria-label="Modifier"
     >
       <FiEdit2 />
-    </button>
+    </button>*/}
 
     <button
-      className="icon-btn dark:text-white"
+      className="icon-btn dark:text-white dark:hover:text-gray-800"
       title="Envoyer"
       onClick={() => onRowAction(row.id, "send")}
       aria-label="Envoyer"
@@ -1399,14 +1399,14 @@ const onRowAction = async (id, action) => {
   
 
 
-    <button
-      className="icon-btn danger dark:text-white"
+   {/*  <button
+      className="icon-btn danger dark:text-white hidden dark:hover:text-gray-800"
       title="Supprimer"
       onClick={() => onRowAction(row.id, "delete")}
       aria-label="Supprimer"
     >
       <FiTrash2 />
-    </button>
+    </button> */}
   </div>
 </td>
 

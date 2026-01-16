@@ -409,10 +409,12 @@ export const getEtablissementsSansAbonnement = async () => {
  */
 export const getTotalParents = async () => {
   try {
-    const res = await api.get("/parents/total");
-    // le backend peut renvoyer un array ou {count: N}
-    if (Array.isArray(res.data)) return res.data.length;
+    const res = await api.get("/client/parents/total");
+    // couvre: nombre brut, objet {totalParents}, objet {count}, tableau
+    if (typeof res.data === "number") return res.data;
+    if (typeof res.data?.totalParents === "number") return res.data.totalParents; // 👈 cas Postman
     if (typeof res.data?.count === "number") return res.data.count;
+    if (Array.isArray(res.data)) return res.data.length;
     return 0;
   } catch (e) {
     console.error("Erreur total parents:", e);
@@ -420,21 +422,24 @@ export const getTotalParents = async () => {
   }
 };
 
+
 /** ======== ENFANTS ======== 
  * Constante: GETALLENFANT="/AllEnfant"
  * GET /api/client/AllEnfant -> tableau d’enfants
  */
 export const getTotalEnfants = async () => {
   try {
-    const res = await api.get("/count");
-    if (Array.isArray(res.data)) return res.data.length;
+    const res = await api.get("/enfants/count");
+    if (typeof res.data === "number") return res.data;          // si Long/number
     if (typeof res.data?.count === "number") return res.data.count;
+    if (Array.isArray(res.data)) return res.data.length;
     return 0;
   } catch (e) {
     console.error("Erreur total enfants:", e);
     return 0;
   }
 };
+
 
 /** ======== ACTIVITÉS ======== 
  * Constantes: ACTIVITY="/activity", ALLACTIVITY="/all"

@@ -78,7 +78,7 @@ public class AuthController {
         return authService.getAllUsersExceptSuperAdmin();
     }
 
-    @PutMapping(value = Constants.UPDATE_PROFILE, consumes = {"multipart/form-data"})
+   /*  @PutMapping(value = Constants.UPDATE_PROFILE, consumes = {"multipart/form-data"})
     public User updateAdminProfile(
             @RequestParam("email") String email,
             @RequestParam(required = false) String newEmail,
@@ -88,7 +88,20 @@ public class AuthController {
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
             ) {
         return authService.updateAdminProfile(email,newEmail, nom, tel, newPassword,imageFile);
-    }
+    }*/
+
+        @PutMapping(value = Constants.UPDATE_PROFILE, consumes = {"multipart/form-data"})
+public User updateAdminProfile(
+        Principal principal, // ou Authentication auth
+        @RequestParam(value = "nom", required = false) String nom,
+        @RequestParam(value = "tel", required = false) String tel,
+        @RequestParam(required = false) String newPassword,
+        @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
+) {
+    String email = principal.getName(); // 🔐 sécurisé et ne dépend pas du client
+    return authService.updateAdminProfile(email, null, nom, tel, newPassword, imageFile);
+}
+
     @GetMapping("/uploads/{filename:.+}")
     public ResponseEntity<Resource> getFile(@PathVariable String filename) throws IOException {
         Path file = Paths.get(System.getProperty("user.dir") + "/uploads/").resolve(filename).normalize();

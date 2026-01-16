@@ -8,6 +8,8 @@ import {
   IoTrashOutline,
 } from "react-icons/io5";
 import api from "services/api";
+import Swal from 'sweetalert2';
+
 
 const DeleteAdminModal = ({ admin, onClose, onDeleteSuccess }) => {
   const [loading, setLoading] = useState(false);
@@ -16,8 +18,18 @@ const DeleteAdminModal = ({ admin, onClose, onDeleteSuccess }) => {
     try {
       setLoading(true);
       await api.delete(`/auth/delete-user/${admin.id}`);
-      onDeleteSuccess(admin.id);
-      onClose();
+     /* onDeleteSuccess(admin.id);
+      onClose();*/
+      Swal.fire({
+  icon: 'success',
+  title: 'Admin deleted!',
+  text: `${admin.nom} has been removed.`,
+  confirmButtonColor: '#EF4444', // red
+}).then(() => {
+  onDeleteSuccess(admin.id);
+  onClose();
+});
+
     } catch (err) {
       console.error("Delete failed:", err);
       alert("Failed to delete admin.");

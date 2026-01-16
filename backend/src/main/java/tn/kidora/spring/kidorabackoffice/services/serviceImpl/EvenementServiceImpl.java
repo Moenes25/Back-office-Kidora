@@ -9,6 +9,8 @@ import tn.kidora.spring.kidorabackoffice.dto.EvenementResponseDTO;
 import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.Evenement;
 import tn.kidora.spring.kidorabackoffice.entities.Type_Etablissement;
+import tn.kidora.spring.kidorabackoffice.repositories.ActivityRepository;
+import tn.kidora.spring.kidorabackoffice.entities.Activity;
 import tn.kidora.spring.kidorabackoffice.repositories.Etablissement_Repository;
 import tn.kidora.spring.kidorabackoffice.repositories.EvenementRepository;
 import tn.kidora.spring.kidorabackoffice.services.EvenementService;
@@ -28,6 +30,7 @@ public class EvenementServiceImpl implements EvenementService {
     private final EvenementRepository evenementRepository;
     private final Etablissement_Repository etablissementRepository;
     private final EvenementMapper evenementMapper;
+    private final ActivityRepository activityRepository;
     @Override
     public ResponseEntity<EvenementResponseDTO> ajouterEvenement(EvenementRequestDTO dto) {
 
@@ -41,6 +44,18 @@ public class EvenementServiceImpl implements EvenementService {
         }
         Evenement evenement = evenementMapper.toEntity(dto, etab);
         evenementRepository.save(evenement);
+       /*  activityRepository.save(Activity.builder()
+        .entityName("Evenement")
+        .recordName(dto.getTitre())
+        .nomEtablissement(etab.getNomEtablissement())
+        .action("Création d'événement")
+        .adminNom(etab.getUser() != null ? etab.getUser().getNom() : "Inconnu")
+        .adminImage(etab.getUser() != null ? etab.getUser().getImageUrl() : null)
+        .adminRegion(etab.getUser() != null ? etab.getUser().getRegion() : "Inconnu")
+        .adminRole(etab.getUser() != null ? etab.getUser().getRole() : null)
+        .dateAction(LocalDateTime.now())
+        .build());*/
+
         EvenementResponseDTO response = evenementMapper.toResponseDTO(evenement);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -83,6 +98,20 @@ public class EvenementServiceImpl implements EvenementService {
                 .orElseThrow(() -> new RuntimeException("Événement non trouvé avec l'id : " + id));
 
         evenementRepository.delete(evenement);
+        Etablissement etab = evenement.getEtablissement();
+
+/*activityRepository.save(Activity.builder()
+        .entityName("Evenement")
+        .recordName(evenement.getTitre())
+        .nomEtablissement(etab != null ? etab.getNomEtablissement() : "Inconnu")
+        .action("Suppression d'événement")
+        .adminNom(etab != null && etab.getUser() != null ? etab.getUser().getNom() : "Inconnu")
+        .adminImage(etab != null && etab.getUser() != null ? etab.getUser().getImageUrl() : null)
+        .adminRegion(etab != null && etab.getUser() != null ? etab.getUser().getRegion() : "Inconnu")
+        .adminRole(etab != null && etab.getUser() != null ? etab.getUser().getRole() : null)
+        .dateAction(LocalDateTime.now())
+        .build());*/
+
     }
 
 
@@ -102,6 +131,18 @@ public class EvenementServiceImpl implements EvenementService {
         evenementExistant.setEtablissement(etab);
 
         evenementRepository.save(evenementExistant);
+       /*activityRepository.save(Activity.builder()
+        .entityName("Evenement")
+        .recordName(evenementExistant.getTitre())
+        .nomEtablissement(etab.getNomEtablissement())
+        .action("Modification d'événement")
+        .adminNom(etab.getUser() != null ? etab.getUser().getNom() : "Inconnu")
+        .adminImage(etab.getUser() != null ? etab.getUser().getImageUrl() : null)
+        .adminRegion(etab.getUser() != null ? etab.getUser().getRegion() : "Inconnu")
+        .adminRole(etab.getUser() != null ? etab.getUser().getRole() : null)
+        .dateAction(LocalDateTime.now())
+        .build());*/
+
 
         return evenementMapper.toResponseDTO(evenementExistant);
     }
@@ -155,5 +196,7 @@ public class EvenementServiceImpl implements EvenementService {
         return evenementRepository.countByType(type);
     }
 
+
+    
 
 }

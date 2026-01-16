@@ -239,12 +239,30 @@ export default function AdminList() {
       {actionModal.type === "message" && (
         <MessageModal admin={actionModal.admin} onClose={closeModal} />
       )}
-      {actionModal.type === "edit" && (
-        <EditAdminModal admin={actionModal.admin} onClose={closeModal} />
-      )}
-      {actionModal.type === "delete" && (
-        <DeleteAdminModal admin={actionModal.admin} onClose={closeModal} />
-      )}
+   {actionModal.type === "edit" && (
+  <EditAdminModal
+    admin={actionModal.admin}
+    onClose={closeModal}
+    onEditSuccess={(updatedAdmin) =>
+      setAdmins((prev) =>
+        prev.map((a) =>
+          a.id === updatedAdmin.id ? updatedAdmin : a
+        )
+      )
+    }
+  />
+)}
+
+ {actionModal.type === "delete" && (
+  <DeleteAdminModal
+    admin={actionModal.admin}
+    onClose={closeModal}
+    onDeleteSuccess={(deletedId) =>
+      setAdmins((prev) => prev.filter((a) => a.id !== deletedId))
+    }
+  />
+)}
+
     </section>
   );
 }

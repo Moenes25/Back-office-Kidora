@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "services/api";
 import { useAuth } from "context/AuthContext";
+import Swal from 'sweetalert2';
+
 import {
   IoPersonAdd,
   IoPersonOutline,
@@ -91,8 +93,18 @@ export default function AddAdminModal({ open, onClose, onSuccess }) {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      onSuccess(res.data);
-      onClose();
+      /*onSuccess(res.data);
+      onClose();*/
+      Swal.fire({
+  icon: 'success',
+  title: 'Admin added!',
+  text: 'The admin account has been created.',
+  confirmButtonColor: '#10B981', // green
+}).then(() => {
+  onSuccess(res.data);
+  onClose();
+});
+
     } catch (err) {
       alert(err.response?.data || "Failed to add admin");
     }

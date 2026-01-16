@@ -9,6 +9,7 @@ import tn.kidora.spring.kidorabackoffice.dto.Client.EnfantResponseDto;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Classes;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Enfants;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Users;
+import tn.kidora.spring.kidorabackoffice.repositories.UserRepository;
 import tn.kidora.spring.kidorabackoffice.repositories.Client.ClasseRepository;
 import tn.kidora.spring.kidorabackoffice.repositories.Client.ClientRepo;
 import tn.kidora.spring.kidorabackoffice.repositories.Client.EnfantRepository;
@@ -29,6 +30,7 @@ public class EnfantServiceImpl implements  EnfantService {
     private final EnfantMapper enfantMapper;
     private final ClientRepo clientRepo;
     private  final ClasseRepository classeRepository;
+    private final UserRepository userRepository;
 
     @Override
     public EnfantResponseDto ajouterEnfant(EnfantRequestDto dto, String parentId)  {
