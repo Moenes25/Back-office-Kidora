@@ -17,4 +17,6 @@ public class EtablissementUpdateDTO  {
     String email;
     Boolean isActive;
     String userId;
+    String usersId;
+    String password;
 }

@@ -14,6 +14,8 @@ import java.util.List;
 public class ClientUpdateDto {
     String nom;
     String prenom;
+    String email;
+    String password;
     String numTel;
     String adresse;
     MultipartFile imageFile;

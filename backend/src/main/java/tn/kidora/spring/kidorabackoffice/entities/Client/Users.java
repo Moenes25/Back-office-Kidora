@@ -28,19 +28,14 @@ public class Users {
     private String numTel;
     private String adresse;
     private RoleUsers role;
-    //private boolean active;
     private String specialisation;
     private Integer experience;
     private String disponibilite;
     private String  imageUrl;
     private StatutClient statutClient;
 
-    @DBRef
+    @DBRef(lazy = false)
     private Etablissement etablissement;
-    //private boolean canManageUsers;
-    //private boolean canManageSystem;
-    //private boolean canViewReports;
-
 
     @DBRef
     private List<Enfants> enfants;

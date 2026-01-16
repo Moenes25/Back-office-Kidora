@@ -96,6 +96,8 @@ public class ClientController {
             @RequestParam(value = "prenom", required = false) String prenom,
             @RequestParam(value = "numTel", required = false) String numTel,
             @RequestParam(value = "adresse", required = false) String adresse,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "password", required = false) String password,
             // Champs parent
             @RequestParam(value = "profession", required = false) String profession,
             @RequestParam(value = "relation", required = false) String relation,
@@ -116,6 +118,8 @@ public class ClientController {
         dto.setPrenom(prenom);
         dto.setNumTel(numTel);
         dto.setAdresse(adresse);
+        dto.setEmail(email);
+        dto.setPassword(password);
 
         dto.setProfession(profession);
         dto.setRelation(relation);

@@ -13,6 +13,7 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 // import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import tn.kidora.spring.kidorabackoffice.entities.Client.Users;
 
 @Document(collection = "etablissements")
 @Data
@@ -34,9 +35,12 @@ public class Etablissement {
     private String email;
     private Boolean isActive;
     private Date dateDesactivation = null;
+    //superAdmin
     @DocumentReference
-    private User user; 
-    
+    private User user;
+
+    @DocumentReference
+    private Users users;
     @DocumentReference(lazy = false)
     private List<Abonnement> abonnements;
 
