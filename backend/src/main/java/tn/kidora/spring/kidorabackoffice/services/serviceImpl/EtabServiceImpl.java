@@ -11,9 +11,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import tn.kidora.spring.kidorabackoffice.dto.DonneesCroissanceDTo;
 import tn.kidora.spring.kidorabackoffice.dto.Etab_Dto;
@@ -21,16 +23,17 @@ import tn.kidora.spring.kidorabackoffice.dto.EtablissementInactifDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementUpdateDTO;
 import tn.kidora.spring.kidorabackoffice.entities.Abonnement;
+import tn.kidora.spring.kidorabackoffice.entities.Client.RoleUsers;
+import tn.kidora.spring.kidorabackoffice.entities.Client.Users;
 import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.Type_Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.User;
 import tn.kidora.spring.kidorabackoffice.repositories.AbonnementRepository;
+import tn.kidora.spring.kidorabackoffice.repositories.Client.ClientRepo;
 import tn.kidora.spring.kidorabackoffice.repositories.Etablissement_Repository;
 import tn.kidora.spring.kidorabackoffice.repositories.UserRepository;
 import tn.kidora.spring.kidorabackoffice.services.EtabService;
 import tn.kidora.spring.kidorabackoffice.utils.mapper.EtablissementMapper;
-import tn.kidora.spring.kidorabackoffice.repositories.ActivityRepository;
-import tn.kidora.spring.kidorabackoffice.entities.Activity;
 @AllArgsConstructor
 @Service
 public class EtabServiceImpl implements EtabService {
@@ -38,6 +41,9 @@ public class EtabServiceImpl implements EtabService {
     private final EtablissementMapper etablissementMapper;
     private final UserRepository userRepository;
     private final  AbonnementRepository abonnementRepository ;
+    private  final ClientRepo clientRepo;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     @Override
     public ResponseEntity<Etab_Dto>  addEtablissement(EtablissementRequestDTO dto) {
         if(etablissementRepository.existsByEmail(dto.getEmail())){
@@ -49,46 +55,99 @@ public class EtabServiceImpl implements EtabService {
 
          User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec ID: " + dto.getUserId()));
-       BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         Etablissement etab = etablissementMapper.toEntity(dto);
         etab.setUser(user);
         etab.setCreatedAt(LocalDateTime.now());
         etab.setPassword(encoder.encode(dto.getPassword()));
         Etablissement saved = etablissementRepository.save(etab);
+        Users admin = Users.builder()
+                .nom(dto.getNomEtablissement())
+                .email(dto.getEmail())
+                .password(encoder.encode(dto.getPassword()))
+                .numTel(dto.getTelephone())
+                .adresse(dto.getAdresse_complet())
+                .role(RoleUsers.ADMIN)      // ou ce que tu utilises
+                .etablissement(saved)
+                .createdAt(LocalDateTime.now())
+                .build();
+        clientRepo.save(admin);
         System.out.println("DTO reçu : " + dto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(etablissementMapper.EntityToEtab_Dto(saved));
     }
 
-    @Override
-    public  ResponseEntity<Etab_Dto>  updateEtablissement(String id, EtablissementUpdateDTO dto) {
-        Etablissement etab = etablissementRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Etablissement non trouvé avec id : " + id));
-        
-         User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec ID: " + dto.getUserId()));
+  @Override
+public ResponseEntity<Etab_Dto> updateEtablissement(String id, EtablissementUpdateDTO dto) {
 
-        etab.setUser(user);
-        etab.setNomEtablissement(dto.getNomEtablissement());
-        etab.setAdresse_complet(dto.getAdresse_complet());
-        etab.setRegion(dto.getRegion());
-        etab.setTelephone(dto.getTelephone());
-        etab.setUrl_localisation(dto.getUrl_localisation());
-        etab.setType(dto.getType());
-        etab.setEmail(dto.getEmail());
-        etab.setIsActive(dto.getIsActive());
-        Etablissement updated = etablissementRepository.save(etab);
-        return ResponseEntity.status(HttpStatus.OK).body(etablissementMapper.EntityToEtab_Dto(updated));
-        
-    }
-    @Override
-    public void deleteEtablissement(String id) {
-        Etablissement etab = etablissementRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Etablissement non trouvé avec id : " + id));
+    Etablissement etab = etablissementRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Etablissement non trouvé avec id : " + id));
 
-        etablissementRepository.delete(etab);
+    User user = userRepository.findById(dto.getUserId())
+            .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec ID: " + dto.getUserId()));
+
+    // 🔹 Recherche de l’admin existant (PEUT ÊTRE ABSENT)
+    Optional<Users> usersOpt = clientRepo.findByEtablissement_IdEtablissment(id);
+
+    etab.setUser(user);
+    etab.setNomEtablissement(dto.getNomEtablissement());
+    etab.setAdresse_complet(dto.getAdresse_complet());
+    etab.setRegion(dto.getRegion());
+    etab.setTelephone(dto.getTelephone());
+    etab.setUrl_localisation(dto.getUrl_localisation());
+    etab.setType(dto.getType());
+    etab.setEmail(dto.getEmail());
+    etab.setIsActive(dto.getIsActive());
+
+    String encodedPassword = null;
+    if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+        encodedPassword = passwordEncoder.encode(dto.getPassword());
+        etab.setPassword(encodedPassword);
     }
+
+    Etablissement updated = etablissementRepository.save(etab);
+
+    Users users;
+    if (usersOpt.isPresent()) {
+        // ✅ Cas normal : admin déjà existant
+        users = usersOpt.get();
+    } else {
+        // 🆕 Cas ancien établissement → création admin
+        users = Users.builder()
+                .role(RoleUsers.ADMIN)
+                .etablissement(updated)
+                .createdAt(LocalDateTime.now())
+                .build();
+    }
+
+    // Mise à jour commune (ancien ou nouveau admin)
+    users.setNom(dto.getNomEtablissement());
+    users.setEmail(dto.getEmail());
+    users.setAdresse(dto.getAdresse_complet());
+    users.setNumTel(dto.getTelephone());
+
+    if (encodedPassword != null) {
+        users.setPassword(encodedPassword);
+    }
+
+    clientRepo.save(users);
+
+    return ResponseEntity.ok(etablissementMapper.EntityToEtab_Dto(updated));
+}
+
+   @Override
+public void deleteEtablissement(String id) {
+    Etablissement etab = etablissementRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Etablissement non trouvé avec id : " + id));
+
+    // Trouver le Users lié à cet établissement
+    Optional<Users> adminOpt = clientRepo.findByEtablissement_IdEtablissment(id);
+    adminOpt.ifPresent(clientRepo::delete); // Supprime l'utilisateur s'il existe
+
+    // Supprimer l'établissement
+    etablissementRepository.delete(etab);
+}
+
 
     @Override
     public ResponseEntity<List<Etab_Dto>> getAllEtablissements() {

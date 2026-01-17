@@ -597,9 +597,11 @@ useEffect(() => {
       // Mapper les données avec l'abonnement
       const mapped = etablissements.map(etab => {
         const abn = abnMap[etab.idEtablissment];
+        const usersId = etab.users?.id || etab.usersId || null;
 
         return {
           id: etab.idEtablissment,
+          usersId,
           name: etab.nomEtablissement,
           city: etab.region,
           address: etab.adresse_complet || "",
@@ -724,7 +726,8 @@ async function toBackendPayload(client) {
     userId,
     userNom: user?.username || "",
     userEmail: user?.sub || "",
-    password: client.password || undefined,
+    password: client.password || undefined,                // superadmin (collection User)
+    usersId: client.usersId,  // admin de l’établissement (collection users)
     nombreEducateurs: client.educateurs ?? 0,
     nombreParents: client.parents ?? 0,
     nombreEnfants: client.enfants ?? 0,
@@ -741,7 +744,7 @@ const saveClient = async (e) => {
     let added;
 
     if (editId) {
-      await updateEtablissement(editId, payload);
+      await updateEtablissement(editId, payload);   // payload CONTIENT usersId + userId
 
       setData((prev) =>
         prev.map((r) => (r.id === editId ? { ...r, ...newClient } : r))
@@ -762,7 +765,7 @@ const saveClient = async (e) => {
 
 
            // 2) Créer le Users (ADMIN) associé côté "auth"
-     if (!newClient.email || !newClient.password) {
+   /*  if (!newClient.email || !newClient.password) {
        throw new Error("Email et mot de passe sont requis pour créer le compte administrateur.");
      }
      try {
@@ -780,7 +783,7 @@ const saveClient = async (e) => {
        // au choix : bloquer toute l’opération
        // throw e;
        // ou juste notifier (et continuer l’abonnement)
-     }
+     }*/
 
       // 2. Créer l’abonnement lié
       const abnPayload = {
@@ -1257,6 +1260,7 @@ const printSelected = () => {
     setEditId(row.id);
     setNewClient({
       ...row,
+      usersId: row.usersId || null,
       subscriptionDate: row.subscriptionDate || new Date().toISOString().slice(0, 10),
     });
     setShowPwd(false);

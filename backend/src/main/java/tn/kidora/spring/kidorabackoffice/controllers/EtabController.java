@@ -42,7 +42,8 @@ public class EtabController {
     }
     @PutMapping(Constants.UPDATE + Constants.ID)
     public ResponseEntity<Etab_Dto> updateEtablissement( @PathVariable String id, @RequestBody EtablissementUpdateDTO dto) {
-         return etabService.updateEtablissement(id, dto);
+        System.out.println("✅ updateEtablissement called with id: " + id); 
+        return etabService.updateEtablissement(id, dto);
         
     }
     @DeleteMapping(Constants.DELETE + Constants.ID)

@@ -4,6 +4,7 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
 
 
 import java.time.LocalDateTime;
@@ -27,17 +28,14 @@ public class Users {
     private String numTel;
     private String adresse;
     private RoleUsers role;
-    //private boolean active;
     private String specialisation;
     private Integer experience;
     private String disponibilite;
     private String  imageUrl;
     private StatutClient statutClient;
 
-    //private boolean canManageUsers;
-    //private boolean canManageSystem;
-    //private boolean canViewReports;
-
+    @DBRef(lazy = false)
+    private Etablissement etablissement;
 
     @DBRef
     private List<Enfants> enfants;

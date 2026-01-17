@@ -16,6 +16,7 @@ public interface ClientRepo extends MongoRepository<Users,String> {
 
     List<Users> findByRole(RoleUsers role);
     Optional<Users> findByEmail(String email);
+    Optional<Users> findByEtablissement_IdEtablissment(String id);
     String Id(String id);
     @Query(value = "{ 'role' : 'PARENT' }", count = true)
     long countParents();

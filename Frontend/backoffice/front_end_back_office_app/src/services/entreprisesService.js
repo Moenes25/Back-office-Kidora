@@ -1,5 +1,6 @@
 import api from "./api";
 
+
 // Récupérer toutes les entreprises avec leurs abonnements (statuts)
 export async function getEntreprisesStats() {
   try {
@@ -83,6 +84,9 @@ export async function saveAbonnement(payload) {
 export async function updateEtablissement(id, payload) {
   try {
     const res = await api.put(`/etablissement/update/${id}`, payload);
+    console.log("Payload envoyé :", payload);
+
+
     return res.data;
   } catch (err) {
     console.error("Erreur update établissement :", err);
@@ -92,6 +96,7 @@ export async function updateEtablissement(id, payload) {
 
 export async function updateAbonnement(id, data) {
   return await api.put(`/abonnement/update/${id}`, data);
+
 }
 
 

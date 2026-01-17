@@ -66,14 +66,28 @@ public class SecurityConfig {
                   .requestMatchers("/uploads/**").permitAll()
 
                                .requestMatchers(Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.SAVE,
-                                                Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.UPDATE,
+                                                Constants.APP_ROOT + Constants.ETABLISSEMENT + Constants.UPDATE + "/**",
                                                 Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.DELETE,
                                                 Constants.APP_ROOT+Constants.TOOGLE_STATUS
                                                 ).hasAnyRole("ADMIN_GENERAL","SUPER_ADMIN")
+
+                                                
+                             
+
+
+                               
+                              .requestMatchers(Constants.APP_ROOT + Constants.CLIENT + Constants.DELETE_CLIENT + "/**")
+                               .hasAnyRole("SUPER_ADMIN", "ADMIN_GENERAL")
+
+                             .requestMatchers(Constants.APP_ROOT + Constants.CLIENT + Constants.update_CLIENT + "/**")
+                             .hasAnyRole("SUPER_ADMIN", "ADMIN_GENERAL")
   
                               .requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.REGISTER).hasRole("SUPER_ADMIN")
                               .requestMatchers(Constants.APP_ROOT + Constants.AUTH + Constants.UPDATE + Constants.ID).hasRole("SUPER_ADMIN")
                               .requestMatchers(Constants.APP_ROOT + Constants.AUTH + Constants.DELETE_USER).hasRole("SUPER_ADMIN")
+
+
+
 
                               .requestMatchers(
                            // Exemple d'endpoints réservés à l'ADMIN
