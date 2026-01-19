@@ -1,4 +1,4 @@
-package tn.kidora.spring.kidorabackoffice.services.serviceImpl;
+package tn.kidora.spring.kidorabackoffice.services;
 
 import lombok.RequiredArgsConstructor;
 

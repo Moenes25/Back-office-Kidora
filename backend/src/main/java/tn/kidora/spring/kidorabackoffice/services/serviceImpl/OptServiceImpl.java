@@ -4,16 +4,20 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import tn.kidora.spring.kidorabackoffice.entities.User;
 import tn.kidora.spring.kidorabackoffice.repositories.UserRepository;
+import tn.kidora.spring.kidorabackoffice.services.EmailService;
+import tn.kidora.spring.kidorabackoffice.services.OptService;
 
 import java.time.LocalDateTime;
 import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
-public class OptService {
+public class OptServiceImpl implements OptService {
 
     private final UserRepository userRepository;
     private final EmailService emailService;
+
+    @Override
     public void generateAndSendOtp(String email) {
         User user = userRepository.findByEmail(email);
         if (user == null) throw new RuntimeException("Utilisateur introuvable");
@@ -29,8 +33,10 @@ public class OptService {
                 "Bonjour " + user.getNom() + ",\n\nVotre code OTP est : " + otp +
                         "\nIl expire dans 5 minutes.\n\nL'équipe Kidora."
         );
-}
-public boolean verifyOtp(String email, String otp) {
+    }
+
+    @Override
+    public boolean verifyOtp(String email, String otp) {
         User user = userRepository.findByEmail(email);
         if (user == null) throw new RuntimeException("Utilisateur introuvable");
 

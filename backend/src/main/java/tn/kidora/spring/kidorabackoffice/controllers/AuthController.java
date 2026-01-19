@@ -33,7 +33,7 @@ import tn.kidora.spring.kidorabackoffice.entities.User;
 import tn.kidora.spring.kidorabackoffice.repositories.UserRepository;
 import tn.kidora.spring.kidorabackoffice.services.AuthService;
 import tn.kidora.spring.kidorabackoffice.services.serviceImpl.AuthServiceImpl;
-import tn.kidora.spring.kidorabackoffice.services.serviceImpl.OptService;
+import tn.kidora.spring.kidorabackoffice.services.OptService;
 import tn.kidora.spring.kidorabackoffice.utils.Constants;
 
 @RestController
@@ -140,15 +140,18 @@ public User updateAdminProfile(
     }
 
     // === OTP forgot/reset ===
-    @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@RequestParam String email) {
-        try {
-            optService.generateAndSendOtp(email);
-            return ResponseEntity.ok("Code OTP envoyé à votre e-mail");
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+@PostMapping("/forgot-password")
+public ResponseEntity<String> forgotPassword(@RequestParam String email) {
+    try {
+        System.out.println("==> Appel OTP pour : " + email);
+        optService.generateAndSendOtp(email);
+        return ResponseEntity.ok("Code OTP envoyé à votre e-mail");
+    } catch (RuntimeException e) {
+        e.printStackTrace(); // Ajoute ceci pour afficher l'erreur exacte dans la console
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
+}
+
 
     @PostMapping("/verify-otp")
     public ResponseEntity<String> verifyOtp(@RequestParam String email, @RequestParam String otp) {

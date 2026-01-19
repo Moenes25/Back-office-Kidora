@@ -64,6 +64,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/enfants/count").permitAll()
                 .requestMatchers("/api/client/parents/total").permitAll()
                   .requestMatchers("/uploads/**").permitAll()
+                  .requestMatchers(
+                     "/api/auth/forgot-password",
+                    "/api/auth/verify-otp",
+                    "/api/auth/reset-password"
+                   ).permitAll() // 🔓 Autoriser ces routes sans token
 
                                .requestMatchers(Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.SAVE,
                                                 Constants.APP_ROOT + Constants.ETABLISSEMENT + Constants.UPDATE + "/**",

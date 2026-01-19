@@ -28,4 +28,9 @@ public class Enfants {
     @DBRef
     private Users parent; // référence vers le parent
 
+    public void setAdmin(Users admin) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setAdmin'");
+    }
+
 }
