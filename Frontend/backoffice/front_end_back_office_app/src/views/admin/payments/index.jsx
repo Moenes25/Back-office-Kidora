@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { FiTrendingUp, FiCheckCircle, FiAlertTriangle, FiEye, FiSend, FiEdit2, FiTrash2  } from "react-icons/fi";
 import { FiSearch, FiDownload } from "react-icons/fi";
+import logoKidora from "assets/img/logo/logo.png";
 import {
   FiDownloadCloud,
   FiFilter,
@@ -555,157 +556,204 @@ const InvoicePreview = React.forwardRef(function InvoicePreview(
   ref
 ) {
   const { rows: calcRows, subHT, subTVA, total } = computeTotals(lines || []);
-  const typeMeta = TYPE_META[row?.type] || { label: "—", chip: "bg-gray-100 text-gray-700" };
-  const isPaid = String(row?.status).toLowerCase() === "payée";
+  const status = row?.status || "Non défini";
 
-  // surclassement d'affichage via objets enrichis si présents
- const etabName  = row?._etab?.nomEtablissement || row?.client;
-const etabEmail = row?._etab?.email || row?.email;
-const etabReg   = row?._etab?.region || row?.region;
-const etabType  = (row?._etab?.type || row?.type || "").toString().toLowerCase();
- const typeMeta2 = TYPE_META[etabType] || typeMeta;
+  const Hr = ({ className = "" }) => (
+    <div className={`h-px w-full bg-slate-300 ${className}`} />
+  );
 
   return (
     <section
-      ref={ref}   // 👈 IMPORTANT
-      className={[
-        "relative mx-auto max-w-[980px] rounded-2xl border border-slate-200 bg-white shadow-[0_18px_48px_rgba(15,23,42,.12)] overflow-hidden",
-        "print:shadow-none print:border-0 print:rounded-none",
-        className,
-      ].join(" ")}
+      ref={ref}
+      className={`mx-auto max-w-[980px] bg-white shadow-md rounded-md border border-slate-300 print:shadow-none print:border-0 print:rounded-none ${className}`}
     >
-      {/* Ribbon gradient top */}
-      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-r from-indigo-600 via-sky-500 to-cyan-400 opacity-90" />
-      {/* subtle pattern */}
-      <div className="absolute left-0 top-0 h-32 w-32 opacity-20"
-        style={{ backgroundImage: "radial-gradient(circle at 20px 20px, white 2px, transparent 2px)" }} />
-      {/* watermark */}
-      <div className="pointer-events-none absolute right-5 bottom-8 text-[84px] font-black tracking-tight text-slate-900/5 select-none">
-        FACTURE
+      {/* DATE (haut gauche) */}
+      <div className="px-6 pt-4 text-[11px] text-slate-500">
+        {new Date().toLocaleString("fr-FR")}
       </div>
 
-      {/* header */}
-      <header className="relative z-10 grid grid-cols-[auto_1fr_auto] items-center gap-5 p-6 text-white">
-        <div className="h-12 w-12 rounded-xl bg-white/20 grid place-items-center font-extrabold shadow ring-1 ring-white/60">
-          K
-        </div>
-        <div className="leading-tight">
-          <h1 className="text-xl font-extrabold tracking-tight">Kidora — Facture</h1>
-          <p className="text-[11px] text-white/80">Généré le {new Date().toLocaleString("fr-FR")}</p>
-        </div>
-        <div className="text-right">
-          <div className="text-[11px] text-white/80">ID facture</div>
-          <div className="text-base font-extrabold">{row?.id}</div>
-        </div>
-      </header>
- <br/>
-      {/* company + client bar */}
-      <div className="relative z-10 mx-6 -mt-6 mb-4 rounded-xl bg-white shadow-lg ring-1 ring-black/5 grid grid-cols-1 md:grid-cols-2 overflow-hidden">
-        <div className="p-4">
-          <div className="text-[11px] uppercase tracking-wide text-slate-500">Établissement</div>
-          <div className="mt-2 space-y-1 text-sm">
-      <div className="font-semibold text-slate-900">{etabName}</div>
-<div className="text-slate-600">{etabEmail || "—"}</div>
-<div className="text-slate-600">Gouvernorat : {etabReg || "—"}</div>
-            <div className="flex items-center gap-2">
-              <span>Type :</span>
-              <span className={"inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold " + typeMeta2.chip}>
-                {typeMeta2.label}
-              </span>
-            </div>
+      {/* ENTÊTE : Société (gauche) + Client (droite) */}
+      <div className="px-6 pt-2 grid grid-cols-1 md:grid-cols-[1fr_1.1fr] gap-4 items-start">
+        {/* Société / vendeur */}
+        <div className="border border-slate-300 rounded-md p-3 grid grid-cols-[64px_1fr] gap-6 items-center">
+          <div className="h-20 w-20 rounded-md border border-slate-300 grid place-items-center overflow-hidden">
+            <img className="object-contain h-18 w-18" src={logoKidora} alt="Kidora" />
+          </div>
+          <div className="leading-tight gap-6 ">
+            <div className="font-extrabold text-[15px] uppercase mb-1">KIDORA</div>
+            <div className="text-[12px]">Adresse : Tunis</div>
+            <div className="text-[12px]">Tunis 3074</div>
+            <div className="text-[12px]">MF : 1860471/X</div>
           </div>
         </div>
-        <div className="p-4 border-t md:border-t-0 md:border-l border-slate-100 bg-gradient-to-br from-slate-50 to-white">
-          <div className="text-[11px] uppercase tracking-wide text-slate-500">Détails facture</div>
-          <div className="mt-2 text-sm grid grid-cols-2 gap-2">
-            <div>Date : <span className="font-medium">{row?.date}</span></div>
-            <div>Statut : <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${isPaid? "bg-emerald-100 text-emerald-700":"bg-rose-100 text-rose-700"}`}>{row?.status}</span></div>
-            {row?.abonnement ? <div className="col-span-2">Abonnement : <span className="font-medium">{row.abonnement}</span></div> : null}
-          </div>
+
+        {/* Cartouche client (comme la maquette) */}
+        <div className="border border-slate-300 rounded-md p-3">
+          <div className="font-semibold text-[13px] mb-1">{row?.client || "—"}</div>
+          <div className="text-[12px]">{row?.region || "—"}</div>
+          <div className="text-[12px]">{row?.email ? `Email : ${row.email}` : "Email : —"}</div>
+          <div className="text-[12px]">{row?.pays || "Tunisie"}</div>
         </div>
       </div>
 
-      {/* lines + totals */}
-      <div className="relative z-10 mx-6 mb-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-xs uppercase text-slate-500">
-            <tr>
-              <th className="px-3 py-2 text-left">Désignation</th>
-              <th className="px-3 py-2 text-right">Qté</th>
-              <th className="px-3 py-2 text-right">PU HT</th>
-              <th className="px-3 py-2 text-right">TVA</th>
-              <th className="px-3 py-2 text-right">Total HT</th>
-              <th className="px-3 py-2 text-right">Total TTC</th>
+      {/* TITRE CENTRÉ entre deux filets */}
+      <div className="px-6 mt-4">
+        <div className="flex items-center gap-4">
+          <Hr />
+          <h1 className="text-[16px] font-bold whitespace-nowrap">
+            Facture N° {row?.id || "—"}
+          </h1>
+          <Hr />
+        </div>
+      </div>
+
+      {/* CLIENT & INFOS FACTURE (deux blocs) */}
+      <div className="px-6 mt-3 grid grid-cols-1 md:grid-cols-2 gap-4 text-[13px]">
+        <div className="border border-slate-300 rounded-md p-3">
+          <div className="font-semibold mb-2">Client</div>
+          <div className="grid grid-cols-[90px_1fr] gap-y-1">
+            <span className="text-slate-500">Nom :</span>
+            <span>{row?.client || "—"}</span>
+            <span className="text-slate-500">Adresse :</span>
+            <span>{row?.region || "—"}</span>
+            <span className="text-slate-500">Email :</span>
+            <span>{row?.email || "—"}</span>
+          </div>
+        </div>
+
+        <div className="border border-slate-300 rounded-md p-3">
+          <div className="font-semibold mb-2">Informations facture</div>
+          <div className="grid grid-cols-[120px_1fr] gap-y-1">
+            <span className="text-slate-500">Date :</span>
+            <span>{row?.date || new Date().toLocaleDateString("fr-FR")}</span>
+            <span className="text-slate-500">N° :</span>
+            <span>{row?.id || "—"}</span>
+            <span className="text-slate-500">Statut :</span>
+            <span>{status}</span>
+            <span className="text-slate-500">Code Client :</span>
+            <span>{row?.codeClient || "CLI-XXXX"}</span>
+            <span className="text-slate-500">Code TVA :</span>
+            <span>TVA-0F9GO1E4R</span>
+          </div>
+        </div>
+      </div>
+
+      {/* TABLEAU PRODUITS (lignes identiques à l'exemple) */}
+      <div className="px-6 mt-3">
+        <table className="w-full text-[13px] border border-slate-300 border-separate border-spacing-0">
+          <thead>
+            <tr className="bg-slate-100 text-slate-700 uppercase">
+              {[
+                "Code",
+                "Désignation",
+                "Qté",
+                "P.U. HT",
+                "Remise",
+                "Montant HT",
+                "TVA%",
+                "Montant TTC",
+              ].map((h) => (
+                <th
+                  key={h}
+                  className="border border-slate-300 px-2 py-2 text-left text-[11px] font-semibold"
+                >
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {calcRows.map((r, i) => (
               <tr key={i} className="odd:bg-white even:bg-slate-50">
-                <td className="px-3 py-2">{r.desc}</td>
-                <td className="px-3 py-2 text-right">{r.qty}</td>
-                <td className="px-3 py-2 text-right">{fmtMoney(r.puHT)}</td>
-                <td className="px-3 py-2 text-right">{r.tva}%</td>
-                <td className="px-3 py-2 text-right">{fmtMoney(r.ht)}</td>
-                <td className="px-3 py-2 text-right">{fmtMoney(r.ttc)}</td>
+                <td className="border border-slate-300 px-2 py-1">PROD-001</td>
+                <td className="border border-slate-300 px-2 py-1">{r.desc}</td>
+                <td className="border border-slate-300 px-2 py-1 text-center">{r.qty}</td>
+                <td className="border border-slate-300 px-2 py-1 text-right">{fmtMoney(r.puHT)}</td>
+                <td className="border border-slate-300 px-2 py-1 text-center">0%</td>
+                <td className="border border-slate-300 px-2 py-1 text-right">{fmtMoney(r.ht)}</td>
+                <td className="border border-slate-300 px-2 py-1 text-center">{r.tva}%</td>
+                <td className="border border-slate-300 px-2 py-1 text-right">{fmtMoney(r.ttc)}</td>
               </tr>
             ))}
           </tbody>
-          <tfoot>
-            <tr className="bg-slate-50/60">
-              <td colSpan={4} className="px-3 py-2 text-right font-semibold">Sous-total HT</td>
-              <td className="px-3 py-2 text-right font-bold">{fmtMoney(subHT)}</td>
-              <td />
-            </tr>
-            <tr className="bg-slate-50/60">
-              <td colSpan={4} className="px-3 py-2 text-right font-semibold">TVA</td>
-              <td className="px-3 py-2 text-right font-bold">{fmtMoney(subTVA)}</td>
-              <td />
-            </tr>
-            <tr className="bg-slate-50/80">
-              <td colSpan={4} className="px-3 py-2 text-right font-semibold">Total TTC</td>
-              <td className="px-3 py-2 text-right text-base font-extrabold">{fmtMoney(total)}</td>
-              <td />
-            </tr>
-          </tfoot>
         </table>
       </div>
 
-      {/* payment + QR + notes */}
-      <div className="relative z-10 grid gap-4 p-6 md:grid-cols-[1fr_auto]">
-        <div className="rounded-xl border border-slate-200 p-4 bg-slate-50/50">
-          <div className="text-[11px] uppercase tracking-wide text-slate-500">Informations de paiement</div>
-          <div className="mt-2 text-sm">
-            <div><span className="font-semibold">IBAN :</span> TN59 1234 5678 9012 3456 7890</div>
-            <div><span className="font-semibold">Banque :</span> BNA — Agence Centre</div>
-            <div><span className="font-semibold">Réf. virement :</span> {row?.id}</div>
+      {/* TVA (gauche) + TOTEAUX (droite) */}
+      <div className="px-6 mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <table className="text-[13px] w-full border border-slate-300 border-separate border-spacing-0">
+          <thead className="bg-slate-100">
+            <tr>
+              <th className="border border-slate-300 px-2 py-2 text-left">T.V.A. %</th>
+              <th className="border border-slate-300 px-2 py-2 text-left">Assiette</th>
+              <th className="border border-slate-300 px-2 py-2 text-left">Montant</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="border border-slate-300 px-2 py-2">20%</td>
+              <td className="border border-slate-300 px-2 py-2">{fmtMoney(subHT)}</td>
+              <td className="border border-slate-300 px-2 py-2">{fmtMoney(subTVA)}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div className="text-sm border border-slate-300 rounded-md p-3 leading-tight">
+          <div className="flex justify-between border-b pb-1">
+            <span>Total HT Brut</span> <strong>{fmtMoney(subHT)}</strong>
           </div>
-          <div className="mt-4 text-[11px] text-slate-500">
-            Merci pour votre confiance. En cas de question, contactez <span className="font-medium">billing@kidora.tn</span>.
+          <div className="flex justify-between border-b py-1">
+            <span>Remise</span> <strong>0</strong>
+          </div>
+          <div className="flex justify-between border-b py-1">
+            <span>Total HT Net</span> <strong>{fmtMoney(subHT)}</strong>
+          </div>
+          <div className="flex justify-between border-b py-1">
+            <span>Total TVA</span> <strong>{fmtMoney(subTVA)}</strong>
+          </div>
+          <div className="mt-2 pt-2 border-t flex justify-between text-base font-bold">
+            <span>Net à Payer</span> <span>{fmtMoney(total)}</span>
           </div>
         </div>
-
- <div className="rounded-xl border border-slate-200 p-4 grid place-items-center">
-  <QRCodeCanvas value={row?.id || "kidora"} size={112} includeMargin />
-  <div className="mt-2 text-[11px] text-slate-500">Scannez votre Facture</div>
-</div>
       </div>
 
-      {/* footer legal */}
-      <footer className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-2 px-6 pb-6 text-[11px] text-slate-500">
-        <span>Kidora • 10 Rue du Lac, Tunis • +216 00 000 000</span>
-        <span>MF: 1234567/A • RIB: ***** • {row?.id}</span>
+      {/* ARRÊTÉ */}
+      <div className="px-6 mt-4 text-sm">
+        <strong>
+          Arrêté la présente Facture à la somme de — {fmtMoney(total)} DT —
+        </strong>
+      </div>
+
+      {/* SIGNATURES */}
+      <div className="px-6 mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-center text-slate-700">
+        <div className="border border-slate-300 h-28 flex items-end justify-center p-2 rounded">
+          Notes
+        </div>
+        <div className="border border-slate-300 h-28 flex items-end justify-center p-2 rounded">
+          Signature Client
+        </div>
+        <div className="border border-slate-300 h-28 flex items-end justify-center p-2 rounded">
+          Signature & Cachet
+        </div>
+      </div>
+
+      {/* PIED DE PAGE */}
+      <footer className="px-6 py-5 text-center text-[11px] text-slate-500">
+        Commercial Management • KIDORA — contact : +216 XX XXX XXX — MF: 1860471/X
       </footer>
 
-      {/* print styles */}
+      {/* Styles impression */}
       <style>{`
         @media print {
           section { box-shadow: none !important; }
-          header { color: #000 !important; }
+          table { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
         }
       `}</style>
     </section>
- );
+  );
 });
+
+
 
 /* --------------------------- Modale d’aperçu (utilise InvoicePreview) --------------------------- */
 
@@ -1321,7 +1369,7 @@ const onRowAction = async (id, action) => {
 
           <table className="no-ukp min-w-full text-sm border-separate [border-spacing:0_8px]  dark:text-white dark:bg-navy-800 dark:shadow-none">
           <thead>
-  <tr className="bg-slate-50/60 text-xs uppercase text-slate-400 dark:text-white dark:bg-navy-700/90 ">
+  <tr className="bg-slate-50/60 text-xs uppercase text-slate-400 dark:text-white dark:bg-navy-700/90 [&_th]:text-center ">
    
     <th className="px-3 py-3 text-left font-semibold hidden dark:text-white dark:bg-navy-700/90 ">ID facture</th>
     <th className="px-3 py-3 text-left font-semibold dark:text-white dark:bg-navy-700/90 ">Date</th>
@@ -1342,7 +1390,7 @@ const onRowAction = async (id, action) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.03 * idx }}
       transitionEnd={{ transform: "none" }}
-      className={`transition hover:bg-slate-50/70 dark:text-white dark:bg-navy-800  relative ${idx % 2 === 0 ? "bg-white" : "bg-slate-50/40"} ${openRowMenu === row.id ? "z-[60]" : ""}`}
+      className={`transition hover:bg-slate-50/70 dark:text-white dark:bg-navy-800 [&_td]:text-center  relative ${idx % 2 === 0 ? "bg-white" : "bg-slate-50/40"} ${openRowMenu === row.id ? "z-[60]" : ""}`}
       style={openRowMenu === row.id ? { transform: "none" } : undefined}
     >
    

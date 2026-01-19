@@ -483,7 +483,7 @@ const TicketIcon = (props) => (
   <table className="uk-table no-ukp w-full min-w-[980px] border-separate [border-spacing:0_12px] text-left dark:text-white dark:bg-navy-800 dark:shadow-none">
   <thead className="sticky top-0 z-10 text-[11px] uppercase tracking-wide
   bg-gray-100/90 text-gray-700 backdrop-blur
-  dark:bg-navy-700/90 dark:text-white">
+  dark:bg-navy-700/90 dark:text-white [&_th]:text-center">
 
             <tr>
               {["Demandeur","Sujet","Priorité","Agent","Date","Statut","Actions"].map((h)=>(
@@ -630,7 +630,7 @@ const TicketIcon = (props) => (
 function Row3D({ children }) {
   const tilt = useTilt(6);
   return (
-    <tr {...tilt} className="uk-row3d">
+    <tr {...tilt} className="uk-row3d [&_td]:text-center">
       {children}
     </tr>
   );

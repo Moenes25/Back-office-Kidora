@@ -1397,14 +1397,14 @@ const deleteClient = async (row) => {
         /* peindre les TH (dark) */
         dark:[&_th]:bg-navy-800/90 dark:[&_th]:backdrop-blur-none
          shadow-[0_8px_14px_-8px_rgba(2,6,23,.2)]
-          divide-x divide-slate-100 dark:divide-white/10
+          divide-x divide-slate-100 dark:divide-white/10 [&_th]:text-center
       "
     >
       <Th onClick={() => toggleSort("name")}  label="Nom"    sortIcon={headerSortIcon("name")} />
       <Th onClick={() => toggleSort("type")}  label="Type"   sortIcon={headerSortIcon("type")}  />
       <Th onClick={() => toggleSort("city")}  label="Ville"  sortIcon={headerSortIcon("city")}  />
       <Th onClick={() => toggleSort("status")} label="Statut" sortIcon={headerSortIcon("status")} />
-      <th className="text-right">Actions</th>
+      <th className="text-center">Actions</th>
     </tr>
   </thead>
 
@@ -1418,7 +1418,7 @@ const deleteClient = async (row) => {
           shadow-sm hover:shadow-md
           transition-colors
           hover:bg-slate-50/70 dark:hover:bg-navy-700/70
-          divide-x divide-slate-50 dark:divide-white/10"
+          divide-x divide-slate-50 dark:divide-white/10 [&_td]:text-center"
    >
           {/* ID masqué si tu veux */}
           {/* <td className="px-4 py-3 whitespace-nowrap font-mono text-xs text-slate-500">{r.id}</td> */}
@@ -1438,8 +1438,8 @@ const deleteClient = async (row) => {
           <td className="px-4 py-3 whitespace-nowrap dark:bg-navy-800 dark:text-white">
             <StatusBadge status={r.status} />
           </td>
-          <td className="px-2 py-2 dark:bg-navy-800 dark:text-white">
-            <div className="flex items-center justify-end gap-1.5">
+          <td className="px-4 py-3 dark:bg-navy-800 dark:text-white">
+            <div className="flex items-center justify-center gap-1.5">
               <button
                 onClick={() => setSelected(r)}
                 className="icon-btn dark:text-white"
