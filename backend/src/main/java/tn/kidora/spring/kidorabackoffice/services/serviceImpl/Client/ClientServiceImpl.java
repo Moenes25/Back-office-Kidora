@@ -121,4 +121,9 @@ public class ClientServiceImpl implements  ClientService{
     public long getTotalParents() {
         return clientRepo.countParents();
     }
+    @Override
+   public long countByRoleAndEtablissementId(RoleUsers role, String idEtablissement) {
+    return clientRepo.countByRoleAndEtablissement_IdEtablissment(role, idEtablissement);
+   }
+
 }

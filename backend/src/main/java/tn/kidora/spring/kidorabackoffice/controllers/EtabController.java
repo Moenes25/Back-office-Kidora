@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 
 import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.User  ;
+import tn.kidora.spring.kidorabackoffice.entities.Client.RoleUsers;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +24,7 @@ import tn.kidora.spring.kidorabackoffice.dto.EtablissementRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.EtablissementUpdateDTO;
 import tn.kidora.spring.kidorabackoffice.repositories.Etablissement_Repository;
 import tn.kidora.spring.kidorabackoffice.services.AbonnementService;
+import tn.kidora.spring.kidorabackoffice.services.serviceImpl.Client.ClientService;
 import tn.kidora.spring.kidorabackoffice.services.EtabService;
 import tn.kidora.spring.kidorabackoffice.utils.Constants;
 import tn.kidora.spring.kidorabackoffice.entities.StatutPaiement;
@@ -34,6 +37,7 @@ import tn.kidora.spring.kidorabackoffice.entities.Type_Etablissement;
 public class EtabController {
     private final EtabService etabService;
     private final AbonnementService abonnementService;
+    private final ClientService clientService;
     Etablissement_Repository etablissementRepository ;
     @PostMapping(Constants.SAVE)
     public ResponseEntity <Etab_Dto> addEtablissement(@RequestBody EtablissementRequestDTO dto) {
@@ -163,6 +167,17 @@ public class EtabController {
         return etabService.getEtablissementsInactifs();
     }
    
+@GetMapping(Constants.COUNT_BY_ROLE)
+public ResponseEntity<Map<String, Long>> countByRoleAndEtablissement(
+        @RequestParam String idEtablissement) {
 
+    long parents = clientService.countByRoleAndEtablissementId(RoleUsers.PARENT, idEtablissement);
+    long educateurs = clientService.countByRoleAndEtablissementId(RoleUsers.EDUCATEUR, idEtablissement);
+
+    return ResponseEntity.ok(Map.of(
+        "parents", parents,
+        "educateurs", educateurs
+    ));
+}
 
 }

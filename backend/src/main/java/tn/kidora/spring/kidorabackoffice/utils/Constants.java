@@ -63,6 +63,8 @@ public class Constants {
     public static final String GET_ALL_CLASSES = "/all";
     public static final String COUNT_ENFANT = "/count";
     public static final String TOTAL_PARENTS = "/parents/total";
+    public static final String COUNT_BY_ROLE = "/count-by-role";
+
 
     // -------------------- ANALYTICS --------------------
     public static final String ANALYTICS = "/analytics";
