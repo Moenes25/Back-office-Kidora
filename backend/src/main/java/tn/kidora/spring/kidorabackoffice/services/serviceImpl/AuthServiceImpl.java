@@ -91,10 +91,10 @@ public class AuthServiceImpl implements  AuthService{
             user.setSpecialisation(dto.getSpecialisation());
             user.setExperience(dto.getExperience());
             user.setDisponibilite(dto.getDisponibilite());
-            if (dto.getClassesIds() != null && !dto.getClassesIds().isEmpty()) {
-                List<Classes> classes = classeRepository.findAllById(dto.getClassesIds());
-                user.setClasses(classes);
-            }
+            // if (dto.getClassesIds() != null && !dto.getClassesIds().isEmpty()) {
+            //     List<Classes> classes = classeRepository.findAllById(dto.getClassesIds());
+            //     user.setClasses(classes);
+            // }
         }
         // ✅ Gérer l'image de profil si envoyée
         if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {

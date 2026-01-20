@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tn.kidora.spring.kidorabackoffice.dto.Client.EnfantRequestDto;
 import tn.kidora.spring.kidorabackoffice.dto.Client.EnfantResponseDto;
+import tn.kidora.spring.kidorabackoffice.dto.Client.EnfantUpdateDto;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Enfants;
 import tn.kidora.spring.kidorabackoffice.services.serviceImpl.Client.EnfantService;
 import tn.kidora.spring.kidorabackoffice.utils.Constants;
@@ -38,7 +39,7 @@ public class EnfantController {
             @RequestPart(value = "image", required = false) MultipartFile imageFile) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
-        EnfantRequestDto dto = mapper.readValue(enfantJson, EnfantRequestDto.class);
+        EnfantUpdateDto dto = mapper.readValue(enfantJson, EnfantUpdateDto.class);
         dto.setImageFile(imageFile);
 
         EnfantResponseDto updated = enfantService.updateEnfant(idEnfant, dto);

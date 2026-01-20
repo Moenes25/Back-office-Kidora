@@ -26,4 +26,10 @@ public class ClasseController {
         List<ClasseResponseDto> classes = classesService.getAllClasses();
         return ResponseEntity.ok(classes);
     }
+
+    @GetMapping(Constants.ID)
+    public ResponseEntity<ClasseResponseDto> getClasseById(@PathVariable String id) {
+        ClasseResponseDto classe = classesService.getClasseById(id);
+        return ResponseEntity.ok(classe);
+    }
 }

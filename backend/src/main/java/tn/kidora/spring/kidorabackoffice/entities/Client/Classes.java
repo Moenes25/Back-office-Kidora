@@ -2,6 +2,7 @@ package tn.kidora.spring.kidorabackoffice.entities.Client;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
@@ -17,9 +18,11 @@ public class Classes {
     private String description_classe;
     private TrancheAge trancheAge;
     private String couleur_classe;
-    private String educateurPrincipal;
     private Integer capacite;
     private String salle;
+    
+    @DBRef
+    private Users created_by;
 
 
 }

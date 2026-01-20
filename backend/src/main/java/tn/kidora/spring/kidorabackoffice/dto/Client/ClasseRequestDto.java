@@ -16,7 +16,7 @@ public class ClasseRequestDto {
     private  String description_classe;
     private TrancheAge trancheAge;
     private  String couleur_classe;
-    private String educateurPrincipal;
     private  Integer capacite ;
     private  String salle;
+    
 }

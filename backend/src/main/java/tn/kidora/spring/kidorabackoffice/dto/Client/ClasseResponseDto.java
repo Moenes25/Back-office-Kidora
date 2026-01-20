@@ -17,8 +17,9 @@ public class ClasseResponseDto {
     private String description_classe;
     private TrancheAge trancheAge;
     private String couleur_classe;
-    private String educateurPrincipal;
     private Integer capacite;
     private String salle;
+    private String created_by_id;
+    private String created_by_nom ;
 
 }

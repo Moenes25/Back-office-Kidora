@@ -4,11 +4,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum TrancheAge {
-    UN_DEUX_ANS("1-2 ans (Tout-petits)"),
-    DEUX_TROIS_ANS("2-3 ans (Petits)"),
-    TROIS_QUATRE_ANS("3-4 ans (Moyens)"),
-    QUATRE_CINQ_ANS("4-5 ans (Grands)"),
-    CINQ_SIX_ANS("5-6 ans (Pré-scolaire)");
+    QUATRE_CINQ_ANS("4-5 ans"),
+    CINQ_SIX_ANS("5-6 ans"),
+    SIX_SEPT_ANS("6-7 ans"),
+    HUIT_NEUF_ANS("8-9 ans"),
+    DIX_ONZE_ANS("10-11 ans");
+
 
     private final String label;
 

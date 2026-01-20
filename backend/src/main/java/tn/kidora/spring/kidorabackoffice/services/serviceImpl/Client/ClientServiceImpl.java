@@ -48,10 +48,10 @@ public class ClientServiceImpl implements  ClientService{
             if (dto.getSpecialisation() != null) user.setSpecialisation(dto.getSpecialisation());
             if (dto.getExperience() != null) user.setExperience(dto.getExperience());
             if (dto.getDisponibilite() != null) user.setDisponibilite(dto.getDisponibilite());
-            if (dto.getClassesIds() != null && !dto.getClassesIds().isEmpty()) {
-                List<Classes> classes = classeRepository.findAllById(dto.getClassesIds());
-                user.setClasses(classes);
-            }
+            // if (dto.getClassesIds() != null && !dto.getClassesIds().isEmpty()) {
+            //     List<Classes> classes = classeRepository.findAllById(dto.getClassesIds());
+            //     user.setClasses(classes);
+            // }
         }
         if (dto.getStatutClient() != null) {
             user.setStatutClient(dto.getStatutClient());

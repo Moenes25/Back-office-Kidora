@@ -70,7 +70,9 @@ public class Constants {
     public static final String ANALYTICS_REPARTITION_TYPE = "/repartition/type";
     public static final String ANALYTICS_REPARTITION_STATUT = "/repartition/statut";
     public static final String ANALYTICS_EVOLUTION_MENSUELLE = "/evolution-mensuelle";
-
+    public static final String EDUCATEUR_CLASSE="/educateur-classe";
+    public static final String CLASSES = "/classes";
+    public static final String EDUCATEURS= "/educateurs";
 
 
 

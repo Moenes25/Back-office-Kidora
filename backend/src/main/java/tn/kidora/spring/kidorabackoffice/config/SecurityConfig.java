@@ -49,7 +49,8 @@ public class SecurityConfig {
                .csrf(AbstractHttpConfigurer::disable)
                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                .authorizeHttpRequests(auth ->
-               auth
+               auth    
+                       .requestMatchers("/uploads/**", "/images/**", "/static/**").permitAll()
                        .requestMatchers(Constants.APP_ROOT + Constants.CLIENT + Constants.CLIENT_REGISTER,
                                Constants.APP_ROOT + Constants.CLIENT + Constants.CLIENT_LOGIN,
                                Constants.APP_ROOT+Constants.AUTH+Constants.LOGIN,
@@ -77,7 +78,8 @@ public class SecurityConfig {
                                     Constants.APP_ROOT + Constants.CLIENT + Constants.GET_ANFANT_BYID_PARENT+"/*",
                                     
                                     "/api/enfants/**",
-                                    Constants.APP_ROOT + "/classes/**"
+                                    Constants.APP_ROOT + "/classes/**",
+                                    Constants.APP_ROOT + Constants.EDUCATEUR_CLASSE +"/**"
 
                                     ).hasRole("ADMIN")
                               .anyRequest().authenticated())

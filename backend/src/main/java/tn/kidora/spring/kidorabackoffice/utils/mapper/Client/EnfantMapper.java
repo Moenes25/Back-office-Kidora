@@ -25,7 +25,8 @@ public class EnfantMapper {
         dto.setAge(enfant.getAge());
        
         if (enfant.getClasse()!= null) {
-            dto.setClasse(enfant.getClasse().getNom_classe());
+            dto.setClasse(enfant.getClasse().getId());
+            dto.setClasseNom(enfant.getClasse().getNom_classe());
         }
 
         dto.setImageUrl(enfant.getImageUrl());

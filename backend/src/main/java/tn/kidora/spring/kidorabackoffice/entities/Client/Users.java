@@ -1,6 +1,8 @@
 package tn.kidora.spring.kidorabackoffice.entities.Client;
 
 import lombok.*;
+import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -41,8 +43,11 @@ public class Users {
 
     @DBRef
     private List<Enfants> enfants;
+    // @DBRef
+    // private List<Classes> classes;
+
     @DBRef
-    private List<Classes> classes;
+    private Etablissement etablissement;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

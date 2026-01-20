@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import tn.kidora.spring.kidorabackoffice.dto.Client.EnfantRequestDto;
 import tn.kidora.spring.kidorabackoffice.dto.Client.EnfantResponseDto;
+import tn.kidora.spring.kidorabackoffice.dto.Client.EnfantUpdateDto;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Classes;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Enfants;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Users;
@@ -69,7 +70,7 @@ public class EnfantServiceImpl implements  EnfantService {
     }
 
     @Override
-    public EnfantResponseDto updateEnfant(String idEnfant, EnfantRequestDto dto) {
+    public EnfantResponseDto updateEnfant(String idEnfant, EnfantUpdateDto dto) {
         Enfants enfant = enfantRepository.findById(idEnfant)
                 .orElseThrow(() -> new RuntimeException("Enfant non trouvé"));
         if (dto.getNom() != null) enfant.setNom(dto.getNom());
@@ -79,6 +80,11 @@ public class EnfantServiceImpl implements  EnfantService {
             Classes classe = classeRepository.findById(dto.getClasse())
                     .orElseThrow(() -> new RuntimeException("Classe introuvable avec l'id : " + dto.getClasse()));
             enfant.setClasse(classe);
+        }
+        if (dto.getParentId() != null) {
+            Users parent = clientRepo.findById(dto.getParentId())
+                    .orElseThrow(() -> new RuntimeException("Parent not found"));
+            enfant.setParent(parent);
         }
 
         if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {
