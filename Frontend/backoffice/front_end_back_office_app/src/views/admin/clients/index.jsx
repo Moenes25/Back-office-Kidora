@@ -18,7 +18,7 @@ import { RiPauseCircleLine, RiDeleteBinLine } from "react-icons/ri";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 import api from "services/api"; 
-import { getEntreprisesStats , getAllEtablissements, saveEtablissement, updateEtablissement, deleteEtablissement , getUserFromToken , saveAbonnement , updateAbonnement , registerClientAdmin} from "services/entreprisesService";
+import { getEntreprisesStats , getAllEtablissements, saveEtablissement, updateEtablissement, deleteEtablissement , getUserFromToken , saveAbonnement , updateAbonnement , getEtabStats} from "services/entreprisesService";
 
 
 /* ----------------------------------------------------------------
@@ -568,7 +568,7 @@ function convertStatutToLabel(code) {
 
 const ClientsPage = () => {
   const [data, setData] = useState([]);
-useEffect(() => {
+/*useEffect(() => {
   async function fetchData() {
     try {
       const [etabRes, abnRes] = await Promise.all([
@@ -598,6 +598,9 @@ useEffect(() => {
       const mapped = etablissements.map(etab => {
         const abn = abnMap[etab.idEtablissment];
         const usersId = etab.users?.id || etab.usersId || null;
+
+        // 🔄 Appel API pour récupérer les stats réelles
+         const stats = await getEtabStats(etab.idEtablissment);
 
         return {
           id: etab.idEtablissment,
@@ -633,8 +636,75 @@ useEffect(() => {
   }
 
   fetchData();
-}, []);
+}, []);*/
 
+useEffect(() => {
+  async function fetchData() {
+    try {
+      const [etabRes, abnRes] = await Promise.all([
+        getAllEtablissements(),
+        api.get("/abonnement/all"),
+      ]);
+
+      const etablissements = etabRes || [];
+      const abonnements = abnRes.data || [];
+
+      // Associer le dernier abonnement à chaque établissement
+      const abnMap = {};
+      for (const abn of abonnements) {
+        const id = abn.etablissement?.idEtablissment;
+        if (!id) continue;
+
+        if (
+          !abnMap[id] ||
+          new Date(abn.dateFinAbonnement) > new Date(abnMap[id].dateFinAbonnement)
+        ) {
+          abnMap[id] = abn;
+        }
+      }
+
+      // ✅ Mapping async + stats
+      const mapped = await Promise.all(
+        etablissements.map(async (etab) => {
+          const abn = abnMap[etab.idEtablissment];
+          const usersId = etab.users?.id || etab.usersId || null;
+
+          // Récupération des stats réelles (backend)
+          const stats = await getEtabStats(etab.idEtablissment);
+
+          return {
+            id: etab.idEtablissment,
+            usersId,
+            name: etab.nomEtablissement,
+            city: etab.region,
+            address: etab.adresse_complet || "",
+            phone: etab.telephone || "",
+            email: etab.email || "",
+            url_localisation: etab.url_localisation || "",
+            type:
+              etab.type === "CRECHE" ? "creches" :
+              etab.type === "GARDERIE" ? "garderies" :
+              etab.type === "ECOLE" ? "ecoles" : "autre",
+            status: etab.isActive ? "Actif" : "Inactif",
+            statusAbonnement: abn ? convertStatutToLabel(abn?.statut) : "Sans abonnement",
+            subscriptionDate: abn?.dateDebutAbonnement || "",
+            password: etab.password,
+            enfants:  etab.enfants ?? 0,
+            parents: stats.parents ?? 0,
+            educateurs: stats.educateurs ?? 0,
+            history: [], // tu peux compléter si tu as une API pour ça
+          };
+        })
+      );
+
+      setData(mapped);
+    } catch (err) {
+      console.error("❌ Erreur chargement établissements + abonnements :", err);
+    }
+  }
+
+  fetchData();
+}, []);
 
 
   // UI

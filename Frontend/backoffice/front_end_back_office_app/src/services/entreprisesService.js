@@ -150,3 +150,18 @@ export async function registerClientAdmin({ nom, prenom = "", email, password, n
   const { data } = await api.post("/client/register", fd); // <-- /api/client/register
   return data;
 }
+
+
+
+
+export async function getEtabStats(idEtablissement) {
+  try {
+    const res = await api.get("/etablissement/count-by-role", {
+      params: { idEtablissement }
+    });
+    return res.data || { parents: 0, educateurs: 0 };
+  } catch (err) {
+    console.error("Erreur récupération stats établissement :", err);
+    return { parents: 0, educateurs: 0 };
+  }
+}

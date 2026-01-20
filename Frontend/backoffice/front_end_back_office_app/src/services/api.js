@@ -18,12 +18,18 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401) {
+    const status = err.response?.status;
+    const message = err.response?.data?.message || "";
+
+    if (status === 401 || message.includes("JWT expired")) {
       localStorage.removeItem("token");
+      localStorage.removeItem("userId");
       window.location.href = "/auth/login";
     }
+
     return Promise.reject(err);
   }
 );
+
 
 export default api;
