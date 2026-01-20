@@ -778,9 +778,11 @@ function StyleOnce() {
 /* Laisse les cellules transparentes pour voir le fond de la ligne */
 tbody tr > * { background: transparent; }
 .uk-row3d{ position:relative; z-index:0; transform-style:preserve-3d; }
-.uk-row3d.menu-open,
 .uk-row3d:hover{ z-index:40; }           /* la ligne passe au-dessus des autres */
 .uk-row3d::before{ pointer-events:none; } /* évite de bloquer les clics */
+.uk-row3d.menu-open {
+  z-index: 100 !important;
+}
 
 
     `}</style>
