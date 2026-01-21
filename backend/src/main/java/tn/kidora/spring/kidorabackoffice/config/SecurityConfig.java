@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -19,11 +20,13 @@ import tn.kidora.spring.kidorabackoffice.services.serviceImpl.CustomUserDetailsS
 import tn.kidora.spring.kidorabackoffice.config.JwtFilter;
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @AllArgsConstructor
 public class SecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
-    private final JwtUtils jwtUtils;    
-    
+    private final JwtUtils jwtUtils;
+    private final JwtFilter jwtFilter;
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -43,7 +46,8 @@ public class SecurityConfig {
                .csrf(AbstractHttpConfigurer::disable)
                .authorizeHttpRequests(auth ->
                auth
-                       .requestMatchers(Constants.APP_ROOT + Constants.CLIENT + Constants.CLIENT_REGISTER,
+                       .requestMatchers(
+                               //Constants.APP_ROOT + Constants.CLIENT + Constants.CLIENT_REGISTER,
                                Constants.APP_ROOT + Constants.CLIENT + Constants.CLIENT_LOGIN,
                                Constants.APP_ROOT+Constants.AUTH+Constants.LOGIN,
                Constants.APP_ROOT+Constants.ETABLISSEMENT+"/create-test-etablissement",
@@ -64,9 +68,10 @@ public class SecurityConfig {
   
                               .requestMatchers(Constants.APP_ROOT+Constants.AUTH+Constants.REGISTER).hasRole("SUPER_ADMIN")
                               .anyRequest().authenticated())
-                     
-                     
-             .addFilterBefore(new JwtFilter(customUserDetailsService, jwtUtils), UsernamePasswordAuthenticationFilter.class)
+
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+
+                // .addFilterBefore(new JwtFilter(customUserDetailsService, jwtUtils), UsernamePasswordAuthenticationFilter.class)
              .build();
                
     }

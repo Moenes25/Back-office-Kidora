@@ -18,6 +18,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -69,6 +70,19 @@ public class AuthServiceImpl implements  AuthService{
     //Registre Client
     @Override
     public Users registerClient(UserRegistreDto dto) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String emailConnecte = auth.getName(); // retourne l'email du UserDetails
+        // Rechercher l'utilisateur connecté dans le repo (admin)
+        Users userConnecte = clientRepo.findByEmailIgnoreCase(emailConnecte)
+                .orElseThrow(() -> new RuntimeException("Utilisateur connecté introuvable"));
+
+        if (userConnecte.getRole() != RoleUsers.ADMIN) {
+            throw new RuntimeException("Seul un admin peut ajouter un utilisateur"); }
+        System.out.println("Admin connecté : " + userConnecte.getId());
+
+
+
+
         if(clientRepo.existsByEmail(dto.getEmail())){
             throw new RuntimeException("Email already registered!");
         }
@@ -82,6 +96,7 @@ public class AuthServiceImpl implements  AuthService{
         user.setRole(dto.getRole());  // RoleUsers: ROLE_PARENT ou ROLE_EDUCATEUR
         user.setStatutClient(dto.getStatutClient());
         user.setNumTel(dto.getNumTel());
+        user.setCreatedByAdminId(userConnecte.getId());
         // Champs optionnels selon le rôle
         if (dto.getRole() == RoleUsers.PARENT) {
             user.setProfession(dto.getProfession());
@@ -96,6 +111,11 @@ public class AuthServiceImpl implements  AuthService{
                 user.setClasses(classes);
             }
         }
+        if (userConnecte.getEtablissement() != null) {
+            user.setEtablissement(userConnecte.getEtablissement());
+        } else {
+            throw new RuntimeException("L'admin n'a pas d'établissement lié");
+        }
         // ✅ Gérer l'image de profil si envoyée
         if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {
             try {
@@ -104,7 +124,6 @@ public class AuthServiceImpl implements  AuthService{
                 if (!directory.exists()) {
                     directory.mkdirs();
                 }
-
                 // Nom unique du fichier
                 String fileName = System.currentTimeMillis() + "_" + dto.getImageFile().getOriginalFilename();
                 Path filePath = Paths.get(uploadDir, fileName);
@@ -118,7 +137,6 @@ public class AuthServiceImpl implements  AuthService{
                 throw new RuntimeException("Erreur lors du téléchargement de l'image : " + e.getMessage(), e);
             }
         }
-
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
         // Sauvegarder l'utilisateur dans la base

@@ -24,7 +24,7 @@ public class JwtFilter  extends OncePerRequestFilter{
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtUtils jwtUtils;
     private static final List<String> PUBLIC_URLS = List.of(
-            "/api/client/register",
+           // "/api/client/register",
             "/api/client/login",
             "/v3/api-docs",
             "/v3/api-docs/",
@@ -49,7 +49,7 @@ public class JwtFilter  extends OncePerRequestFilter{
                 if (authHeader != null && authHeader.startsWith("Bearer ")) {
                     jwt = authHeader.substring(7);
                     username = jwtUtils.extarctUsername(jwt);
-                    
+
                 }
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);

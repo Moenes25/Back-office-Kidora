@@ -11,6 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,7 @@ import tn.kidora.spring.kidorabackoffice.entities.Type_Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.User;
 import tn.kidora.spring.kidorabackoffice.repositories.AbonnementRepository;
 import tn.kidora.spring.kidorabackoffice.repositories.Client.ClientRepo;
+import tn.kidora.spring.kidorabackoffice.repositories.Client.EnfantRepository;
 import tn.kidora.spring.kidorabackoffice.repositories.Etablissement_Repository;
 import tn.kidora.spring.kidorabackoffice.repositories.UserRepository;
 import tn.kidora.spring.kidorabackoffice.services.EtabService;
@@ -42,16 +44,16 @@ public class EtabServiceImpl implements EtabService {
     private final UserRepository userRepository;
     private final  AbonnementRepository abonnementRepository ;
     private  final ClientRepo clientRepo;
+    private  final EnfantRepository enfantsRepository;
+    private  final
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    PasswordEncoder passwordEncoder;
     @Override
     public ResponseEntity<Etab_Dto>  addEtablissement(EtablissementRequestDTO dto) {
         if(etablissementRepository.existsByEmail(dto.getEmail())){
             throw new RuntimeException("Email is already registred!");
         }
-        if (dto.getUserId() == null) {
-            throw new RuntimeException("L'ID du user est obligatoire");
-        }
+
 
          User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec ID: " + dto.getUserId()));
@@ -249,7 +251,6 @@ public class EtabServiceImpl implements EtabService {
   
         System.out.println("Abonnement " + abonnement.getIdAbonnement() + ": Mois=" + mois + ", Type=" + type);
     }
-
     for (DonneesCroissanceDTo dto : resultats) {
         if (dto.getNombreGarderies() > 0 || dto.getNombreCreches() > 0 || dto.getNombreEcoles() > 0) {
                 System.out.println("Mois " + dto.getMois() + ": Garderie=" + dto.getNombreGarderies() + ", Crèche=" + dto.getNombreCreches() + ", École=" + dto.getNombreEcoles());
@@ -276,30 +277,33 @@ public class EtabServiceImpl implements EtabService {
         }
         return ResponseEntity.status(HttpStatus.OK).body(dtos);
         
-        }    
-        
-       
-    
+        }
 
-     public Long calculateJoursInactivite(Etablissement etab){
+
+
+
+    public Long calculateJoursInactivite(Etablissement etab){
         if (etab.getDateDesactivation() == null) {
             return 0L;
         }
-
         try {
             LocalDate dateDesactivation = etab.getDateDesactivation()
                                            .toInstant()
                                            .atZone(ZoneId.systemDefault())
                                            .toLocalDate();
             LocalDate aujourdhui  = LocalDate.now();
-
             return  ChronoUnit.DAYS.between(dateDesactivation, aujourdhui);
-                
 
         } catch (Exception e) {
-             
             return 0L;
         }
      }
+    @Override
+    public ResponseEntity<Long> getNombreEnfantsParEtablissement(String idEtablissment) {
+        ObjectId oid = new ObjectId(idEtablissment);
+        Long count = enfantsRepository.countByIdEtablissement(oid);
+        return ResponseEntity.ok(count != null ? count : 0L);
+    }
+
     }
 

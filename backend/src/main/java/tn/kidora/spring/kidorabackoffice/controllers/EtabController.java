@@ -142,7 +142,6 @@ public class EtabController {
         return ResponseEntity.status(HttpStatus.OK).body(etablissementsDTOs);
 
     }
-    
     @GetMapping(Constants.EN_RETARD)
     public ResponseEntity<List<Etab_Dto>> getEtablissementsStatutEnRetarddePaiement() {
         List<AbonnementResponseDTO> abonnementResponseDTOs = this.abonnementService.getByStatut(StatutPaiement.RETARD.toString()).getBody();
@@ -156,12 +155,14 @@ public class EtabController {
         return ResponseEntity.status(HttpStatus.OK).body(etablissementsDTOs);
     }
 
-    
     @GetMapping(Constants.INACTIVE_NBR_JRS)
     public ResponseEntity<List<EtablissementInactifDTO>> getEtablissementsInactifs() {
         return etabService.getEtablissementsInactifs();
     }
-   
+    @GetMapping("/{id}/nombre-enfants")
+    public ResponseEntity<Long> getNombreEnfantsParEtab(@PathVariable("id") String idEtablissment) {
+        return etabService.getNombreEnfantsParEtablissement(idEtablissment);
+    }
 
 
 }

@@ -34,6 +34,9 @@ public class Users {
     private String  imageUrl;
     private StatutClient statutClient;
 
+    private String createdByAdminId;
+
+
     @DBRef(lazy = false)
     private Etablissement etablissement;
 
@@ -44,4 +47,6 @@ public class Users {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+
 }

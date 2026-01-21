@@ -13,4 +13,6 @@ public interface ClientService {
     List<Users> getParents();
     List<Users> getEducateurs();
     long getTotalParents();
+    Long getNombreParentsParEtablissement(String idEtablissement);
+    Long getNombreEducateursParEtablissement(String idEtablissement);
 }
