@@ -73,7 +73,7 @@ public class Constants {
     public static final String EDUCATEUR_CLASSE="/educateur-classe";
     public static final String CLASSES = "/classes";
     public static final String EDUCATEURS= "/educateurs";
-
+    public static final String ANFANTS_BY_CLASSE = "/enfants-by-classe";
 
 
 

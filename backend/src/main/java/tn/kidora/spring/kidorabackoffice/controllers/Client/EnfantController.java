@@ -15,6 +15,9 @@ import tn.kidora.spring.kidorabackoffice.utils.Constants;
 
 import java.io.IOException;
 import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/api/enfants")
@@ -61,5 +64,11 @@ public class EnfantController {
         List<EnfantResponseDto> enfants = enfantService.getEnfantsByParent(parentId);
         return ResponseEntity.ok(enfants);
     }
+    @GetMapping(Constants.ANFANTS_BY_CLASSE + Constants.ID)
+    public ResponseEntity<List<EnfantResponseDto>> getEnfantsByClasse(@PathVariable String id) {
+        List<EnfantResponseDto> enfants = enfantService.getEnfantsByClasse(id);
+        return ResponseEntity.ok(enfants);
+    }
+    
 }
 

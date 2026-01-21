@@ -13,5 +13,6 @@ public interface EnfantService {
     List<EnfantResponseDto> getAllEnfants();
     EnfantResponseDto updateEnfant(String idEnfant, EnfantUpdateDto dto);
     List<EnfantResponseDto> getEnfantsByParent(String parentId);
+    List<EnfantResponseDto> getEnfantsByClasse(String classeId);
     
 }

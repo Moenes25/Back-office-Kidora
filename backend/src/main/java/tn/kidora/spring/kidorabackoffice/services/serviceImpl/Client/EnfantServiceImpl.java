@@ -115,5 +115,12 @@ public class EnfantServiceImpl implements  EnfantService {
                 .toList();
     }
 
+    @Override
+    public List<EnfantResponseDto> getEnfantsByClasse(String classeId) {
+        return enfantRepository.findByClasseId(classeId).stream()
+                .map(enfantMapper::entityToDto)
+                .toList();  
+    }
+
 
 }

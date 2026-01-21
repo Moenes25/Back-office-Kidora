@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface EnfantRepository extends MongoRepository<Enfants, String> {
     List<Enfants> findByParentId(String parentId);
+    List<Enfants> findByClasseId(String classeId);
 }
