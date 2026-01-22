@@ -159,12 +159,12 @@ public class ClientController {
         long totalParents = clientService.getTotalParents();
         return ResponseEntity.ok(Map.of("totalParents", totalParents));
     }
-    @GetMapping("/{id}/nombre-parents")
+    @GetMapping(Constants.NOMBRE_PARENTS)
     public ResponseEntity<Long> getNombreParents(@PathVariable("id") String idEtablissement) {
         Long count = clientService.getNombreParentsParEtablissement(idEtablissement);
         return ResponseEntity.ok(count != null ? count : 0L);
     }
-    @GetMapping("/{id}/nombre-educateurs")
+    @GetMapping(Constants.NOMBRE_EDUCATEURS)
     public ResponseEntity<Long> getNombreEducateurs(@PathVariable("id") String idEtablissement) {
         Long count = clientService.getNombreEducateursParEtablissement(idEtablissement);
         return ResponseEntity.ok(count);

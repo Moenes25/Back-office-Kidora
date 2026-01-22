@@ -63,6 +63,9 @@ public class Constants {
     public static final String GET_ALL_CLASSES = "/all";
     public static final String COUNT_ENFANT = "/count";
     public static final String TOTAL_PARENTS = "/parents/total";
+    public static final String NOMBRE_PARENTS = "/{id}/nombre-parents";
+    public static final String NOMBRE_EDUCATEURS = "/{id}/nombre-educateurs";
+    public static final String NOMBRE_ENFANTS = "/{id}/nombre-enfants";
 
 
     // -------------------- ANALYTICS --------------------

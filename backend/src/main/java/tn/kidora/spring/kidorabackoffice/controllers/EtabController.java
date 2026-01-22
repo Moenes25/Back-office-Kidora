@@ -159,7 +159,7 @@ public class EtabController {
     public ResponseEntity<List<EtablissementInactifDTO>> getEtablissementsInactifs() {
         return etabService.getEtablissementsInactifs();
     }
-    @GetMapping("/{id}/nombre-enfants")
+    @GetMapping(Constants.NOMBRE_ENFANTS)
     public ResponseEntity<Long> getNombreEnfantsParEtab(@PathVariable("id") String idEtablissment) {
         return etabService.getNombreEnfantsParEtablissement(idEtablissment);
     }
