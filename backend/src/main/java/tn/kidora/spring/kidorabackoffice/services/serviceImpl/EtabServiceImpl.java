@@ -73,7 +73,9 @@ public class EtabServiceImpl implements EtabService {
                 .etablissement(saved)
                 .createdAt(LocalDateTime.now())
                 .build();
+        System.out.println("Création du compte admin pour : " + dto.getEmail());
         clientRepo.save(admin);
+        System.out.println("Admin sauvegardé !");
         System.out.println("DTO reçu : " + dto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(etablissementMapper.EntityToEtab_Dto(saved));

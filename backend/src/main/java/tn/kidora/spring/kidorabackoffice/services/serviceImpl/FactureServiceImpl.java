@@ -1,11 +1,13 @@
 package tn.kidora.spring.kidorabackoffice.services.serviceImpl;
 
 import lombok.AllArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 import tn.kidora.spring.kidorabackoffice.dto.FactureRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.FactureResponseDto;
 import tn.kidora.spring.kidorabackoffice.entities.*;
 import tn.kidora.spring.kidorabackoffice.repositories.AbonnementRepository;
+import tn.kidora.spring.kidorabackoffice.repositories.Client.EnfantRepository;
 import tn.kidora.spring.kidorabackoffice.repositories.Etablissement_Repository;
 import tn.kidora.spring.kidorabackoffice.repositories.FactureRepository;
 import tn.kidora.spring.kidorabackoffice.services.FactureService;
@@ -23,25 +25,35 @@ public class FactureServiceImpl implements FactureService {
 
 
     private final FactureRepository factureRepository;
-    private final AbonnementRepository abonnementRepository;
     private final  Etablissement_Repository etablissementRepository;
+    private final EnfantRepository enfantRepository;
 
 
     @Override
     public Facture creerFacture(FactureRequestDTO dto) {
         Etablissement etablissement = etablissementRepository.findById(dto.getEtablissementId())
                 .orElseThrow(() -> new RuntimeException("Établissement non trouvé"));
+        long nombreEnfants = enfantRepository.countByIdEtablissement(
+                new ObjectId(etablissement.getIdEtablissment())
+        );
+        // Calcul du montant
+        double montantBase = nombreEnfants * 15.0;   // 15 DT par enfant
+        double montantAvecTVA = montantBase * 1.19;  // TVA 19%
+        double montantTotal = montantAvecTVA + 1.0; // +1 DT timbre
         Facture facture = new Facture();
-    //    facture.setAbonnement(abonnement);
+      //facture.setAbonnement(abonnement);
       //  facture.setMontant(montant);
         facture.setEtablissement(etablissement);
         facture.setDateFacture(new Date());
         facture.setMethode(dto.getMethode());
         facture.setReference(genererReferenceFacture());
         facture.setStatutFacture(dto.getStatutFacture());
+        facture.setMontant(montantTotal);
 
         return factureRepository.save(facture);
     }
+
+
 
     @Override
     public long totalFactures() {
@@ -111,24 +123,6 @@ public class FactureServiceImpl implements FactureService {
                 .build();
     }
 
-
-
- /*   private double calculerMontantSelonFormule(FormuleAbonnement formule) {
-        switch (formule) {
-            case ESSAI_14_JOURS:
-                return 0.0;
-            case STANDARD_MENSUEL:
-                return 30.0;
-            case STANDARD_ANNUEL:
-                return 30.0 * 12 ;
-            case PREMIUM_MENSUEL:
-                return 60.0;
-            case PREMIUM_ANNUEL:
-                return 60.0 * 12 ;
-            default:
-                throw new IllegalArgumentException("Formule inconnue : " + formule);
-        }
-    }*/
     private String genererReferenceFacture() {
         LocalDateTime now = LocalDateTime.now();
         long compteur = factureRepository.count() + 1;
