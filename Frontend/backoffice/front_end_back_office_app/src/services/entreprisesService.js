@@ -151,17 +151,29 @@ export async function registerClientAdmin({ nom, prenom = "", email, password, n
   return data;
 }
 
-
-
-
-export async function getEtabStats(idEtablissement) {
+export async function getEtablissementStats(etabId) {
   try {
-    const res = await api.get("/etablissement/count-by-role", {
-      params: { idEtablissement }
-    });
-    return res.data || { parents: 0, educateurs: 0 };
-  } catch (err) {
-    console.error("Erreur récupération stats établissement :", err);
-    return { parents: 0, educateurs: 0 };
+    const [parentsRes, educateursRes, enfantsRes] = await Promise.all([
+      api.get(`/client/${etabId}/nombre-parents`),
+      api.get(`/client/${etabId}/nombre-educateurs`),
+      api.get(`/etablissement/${etabId}/nombre-enfants`),
+    ]);
+    
+
+    return {
+      parents: parentsRes.data?.count ?? parentsRes.data ?? 0,
+      educateurs: educateursRes.data?.count ?? educateursRes.data ?? 0,
+      enfants: enfantsRes.data?.count ?? enfantsRes.data ?? 0,
+      
+    };
+  } catch (e) {
+    console.error("❌ Erreur récupération stats établissement", e);
+    return { parents: 0, educateurs: 0, enfants: 0 };
   }
+  
 }
+
+
+
+
+

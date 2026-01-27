@@ -18,7 +18,7 @@ import { RiPauseCircleLine, RiDeleteBinLine } from "react-icons/ri";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 import api from "services/api"; 
-import { getEntreprisesStats , getAllEtablissements, saveEtablissement, updateEtablissement, deleteEtablissement , getUserFromToken , saveAbonnement , updateAbonnement , getEtabStats} from "services/entreprisesService";
+import { getEntreprisesStats , getAllEtablissements, saveEtablissement, updateEtablissement, deleteEtablissement , getUserFromToken , saveAbonnement , updateAbonnement ,  getEtablissementStats} from "services/entreprisesService";
 
 
 /* ----------------------------------------------------------------
@@ -669,8 +669,9 @@ useEffect(() => {
           const abn = abnMap[etab.idEtablissment];
           const usersId = etab.users?.id || etab.usersId || null;
 
-          // Récupération des stats réelles (backend)
-          const stats = await getEtabStats(etab.idEtablissment);
+  
+
+          
 
           return {
             id: etab.idEtablissment,
@@ -690,8 +691,8 @@ useEffect(() => {
             subscriptionDate: abn?.dateDebutAbonnement || "",
             password: etab.password,
             enfants:  etab.enfants ?? 0,
-            parents: stats.parents ?? 0,
-            educateurs: stats.educateurs ?? 0,
+            parents: etab.nombreParents ?? 0,
+            educateurs: etab.nombreEducateurs ?? 0,
             history: [], // tu peux compléter si tu as une API pour ça
           };
         })
@@ -1032,6 +1033,24 @@ const exportCSVForExcel = () => {
   const PAGE_SIZE = 4;
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(null);
+  const [selectedStats, setSelectedStats] = useState(null);
+useEffect(() => {
+  if (!selected?.id) return;
+
+  console.log("📡 Chargement stats pour :", selected.id);
+
+  getEtablissementStats(selected.id)
+    .then((stats) => {
+      console.log("✅ STATS BACKEND :", stats);
+      setSelectedStats(stats);
+    })
+    .catch((err) => {
+      console.error("❌ Erreur stats :", err);
+      setSelectedStats({ parents: 0, educateurs: 0, enfants: 0 });
+    });
+
+}, [selected]);
+
   useEffect(() => setPage(1), [typeFilter, statusFilter, search]);
 
   const filtered = useMemo(() => {
@@ -1494,7 +1513,9 @@ const deleteClient = async (row) => {
           {/* <td className="px-4 py-3 whitespace-nowrap font-mono text-xs text-slate-500">{r.id}</td> */}
           <td className="px-4 py-3 dark:bg-navy-800 dark:text-white">
             <button
-              onClick={() => setSelected(r)}
+ onClick={() => setSelected(r)}
+
+
               className="font-semibold text-slate-800 hover:underline dark:text-white"
               title="Voir les détails"
             >
@@ -1648,13 +1669,13 @@ const deleteClient = async (row) => {
       <div className="text-xs text-gray-500 mb-3">Effectifs</div>
       <div className="flex flex-wrap gap-8 text-xs">
         <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-3 py-3 font-semibold text-indigo-700">
-          🧑‍🏫 {selected.educateurs ?? 0} éducateurs
+          🧑‍🏫 {selectedStats?.educateurs ?? "—"} éducateurs
         </span>
         <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-3 font-semibold text-emerald-700">
-          👨‍👩‍👧 {selected.parents ?? 0} parents
+          👨‍👩‍👧 {selectedStats?.parents ?? "—"} parents
         </span>
         <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-3 py-3 font-semibold text-sky-700">
-          🧒 {selected.enfants ?? 0} enfants
+          🧒{selectedStats?.enfants ?? "—"} enfants
         </span>
       </div>
     </div>

@@ -295,34 +295,43 @@ export async function getTopEtablissements() {
       if (!current || dNew > dOld) abnMap[etabId] = abn;
     }
 
-    const fullData = etablissements
-      .filter(e => e.type) // garder ceux avec un type
-      .map(e => {
-        const abn = abnMap[e.idEtablissment]; // même clé qu’au-dessus
-        const montant = abn ? pickMontant(abn) : 0;
+   const fullData = await Promise.all(etablissements
+  .filter(e => e.type) // garder ceux avec un type
+  .map(async e => {
+    const abn = abnMap[e.idEtablissment];
+    const montant = abn ? pickMontant(abn) : 0;
 
-        const statut = abn?.statut ?? "INCONNU";
-        let licence = "Inconnue";
-        if (statut === "PAYEE" || statut === "PAYÉE") licence = "Active";
-        else if (statut === "RETARD") licence = "En essai / alerte";
-        else if (statut === "EXPIREE") licence = "Expirée";
-        else if (statut === "ESSAYE") licence = "En essai";
-        else if (statut === "SUSPENDU") licence = "Suspendu";
-        else if (statut === "RESILE") licence = "Résilié";
+    const statut = abn?.statut ?? "INCONNU";
+    let licence = "Inconnue";
+    if (statut === "PAYEE" || statut === "PAYÉE") licence = "Active";
+    else if (statut === "RETARD") licence = "En alerte";
+    else if (statut === "EXPIREE") licence = "Expirée";
+    else if (statut === "ESSAYE") licence = "En essai";
+    else if (statut === "SUSPENDU") licence = "Suspendu";
+    else if (statut === "RESILE") licence = "Résilié";
+     else if (statut === "EN_ATTENTE") licence = "En attente";
+      else if (statut === "IMPAYEE") licence = "Impayée";
+       else if (statut === "ANNULEE") licence = "Annulée";
+        else if (statut === "INACTIF") licence = "Inactif";
 
-        return {
-          nom: e.nomEtablissement,
-          ville: e.region,
-          enfants: e.nombreEnfants ?? 0,
-          revenue: `${montant.toLocaleString("fr-TN")} DT`,
-          revenuValeur: montant,
-          licence,
-          type:
-            e.type === "CRECHE" ? "creches" :
-            e.type === "GARDERIE" ? "garderies" :
-            e.type === "ECOLE" ? "ecoles" : "inconnu",
-        };
-      });
+
+    // 🧠 Appelle ici l'API pour obtenir le vrai nombre d'enfants
+    const enfants = await getNombreEnfantsParEtablissement(e.idEtablissment);
+
+    return {
+      nom: e.nomEtablissement,
+      ville: e.region,
+      enfants, // 👈 Maintenant c’est la vraie donnée
+      revenue: `${montant.toLocaleString("fr-TN")} DT`,
+      revenuValeur: montant,
+      licence,
+      type:
+        e.type === "CRECHE" ? "creches" :
+        e.type === "GARDERIE" ? "garderies" :
+        e.type === "ECOLE" ? "ecoles" : "inconnu",
+    };
+  }));
+
 
     return fullData;
   } catch (err) {
@@ -479,3 +488,14 @@ export const getRapportsDuJour = async () => {
     return 0;
   }
 };
+
+export async function getNombreEnfantsParEtablissement(etabId) {
+  try {
+    const res = await api.get(`/etablissement/${etabId}/nombre-enfants`);
+    return typeof res.data === "number" ? res.data : res.data?.count ?? 0;
+  } catch (e) {
+    console.error("Erreur getNombreEnfantsParEtablissement", e);
+    return 0;
+  }
+}
+
