@@ -4,6 +4,8 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
+
 
 import java.util.List;
 
@@ -21,6 +23,9 @@ public class Enfants {
     private  Integer age;
 
     private String imageUrl;
+
+     @DBRef
+    private Etablissement etablissement;
 
     @DBRef
     private Classes classe;

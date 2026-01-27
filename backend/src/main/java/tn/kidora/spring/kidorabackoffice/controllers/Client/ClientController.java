@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tn.kidora.spring.kidorabackoffice.dto.Client.ClientUpdateDto;
@@ -35,6 +36,7 @@ public class ClientController {
     private final ClasseService classeService;
 
     @PostMapping(value = Constants.CLIENT_REGISTER, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Users> registerClient(
             @RequestParam("nom") String nom,
             @RequestParam("prenom") String prenom,
@@ -154,11 +156,20 @@ public class ClientController {
     public ResponseEntity<List<ClasseResponseDto>> getAllClasses() {
         return ResponseEntity.ok(classeService.getAllClasses());
     }*/
-    @GetMapping(Constants.TOTAL_PARENTS)
+       @GetMapping(Constants.TOTAL_PARENTS)
     public ResponseEntity<Map<String, Long>> getTotalParents() {
         long totalParents = clientService.getTotalParents();
         return ResponseEntity.ok(Map.of("totalParents", totalParents));
     }
-
+    @GetMapping(Constants.NOMBRE_PARENTS)
+    public ResponseEntity<Long> getNombreParents(@PathVariable("id") String idEtablissement) {
+        Long count = clientService.getNombreParentsParEtablissement(idEtablissement);
+        return ResponseEntity.ok(count != null ? count : 0L);
+    }
+    @GetMapping(Constants.NOMBRE_EDUCATEURS)
+    public ResponseEntity<Long> getNombreEducateurs(@PathVariable("id") String idEtablissement) {
+        Long count = clientService.getNombreEducateursParEtablissement(idEtablissement);
+        return ResponseEntity.ok(count);
+    }
     
 }

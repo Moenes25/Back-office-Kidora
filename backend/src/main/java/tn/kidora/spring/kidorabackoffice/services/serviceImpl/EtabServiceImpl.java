@@ -10,7 +10,7 @@ import java.time.format.TextStyle;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
-
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +28,7 @@ import tn.kidora.spring.kidorabackoffice.entities.Client.Users;
 import tn.kidora.spring.kidorabackoffice.entities.Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.Type_Etablissement;
 import tn.kidora.spring.kidorabackoffice.entities.User;
+import tn.kidora.spring.kidorabackoffice.repositories.Client.EnfantRepository;
 import tn.kidora.spring.kidorabackoffice.repositories.AbonnementRepository;
 import tn.kidora.spring.kidorabackoffice.repositories.Client.ClientRepo;
 import tn.kidora.spring.kidorabackoffice.repositories.Etablissement_Repository;
@@ -39,19 +40,21 @@ import tn.kidora.spring.kidorabackoffice.utils.mapper.EtablissementMapper;
 public class EtabServiceImpl implements EtabService {
     private final Etablissement_Repository etablissementRepository;
     private final EtablissementMapper etablissementMapper;
-    private final UserRepository userRepository;
+   private final UserRepository userRepository;
     private final  AbonnementRepository abonnementRepository ;
     private  final ClientRepo clientRepo;
+    private  final EnfantRepository enfantsRepository;
+    private  final
     @Autowired
-    private PasswordEncoder passwordEncoder;
+   PasswordEncoder passwordEncoder;
     @Override
     public ResponseEntity<Etab_Dto>  addEtablissement(EtablissementRequestDTO dto) {
         if(etablissementRepository.existsByEmail(dto.getEmail())){
             throw new RuntimeException("Email is already registred!");
         }
-        if (dto.getUserId() == null) {
+       /*  if (dto.getUserId() == null) {
             throw new RuntimeException("L'ID du user est obligatoire");
-        }
+        }*/
 
          User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec ID: " + dto.getUserId()));
@@ -71,7 +74,9 @@ public class EtabServiceImpl implements EtabService {
                 .etablissement(saved)
                 .createdAt(LocalDateTime.now())
                 .build();
+                 System.out.println("Création du compte admin pour : " + dto.getEmail());
         clientRepo.save(admin);
+         System.out.println("Admin sauvegardé !");
         System.out.println("DTO reçu : " + dto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(etablissementMapper.EntityToEtab_Dto(saved));
@@ -325,4 +330,10 @@ public void deleteEtablissement(String id) {
             return 0L;
         }
      }
+      @Override
+    public ResponseEntity<Long> getNombreEnfantsParEtablissement(String idEtablissment) {
+        ObjectId oid = new ObjectId(idEtablissment);
+        Long count = enfantsRepository.countByIdEtablissement(oid);
+        return ResponseEntity.ok(count != null ? count : 0L);
+    }
     }

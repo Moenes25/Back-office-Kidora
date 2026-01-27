@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -25,10 +26,12 @@ import tn.kidora.spring.kidorabackoffice.services.serviceImpl.CustomUserDetailsS
 import tn.kidora.spring.kidorabackoffice.config.JwtFilter;
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @AllArgsConstructor
 public class SecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
-    private final JwtUtils jwtUtils;    
+    private final JwtUtils jwtUtils; 
+    private final JwtFilter jwtFilter;   
     
 
     @Bean
@@ -70,6 +73,10 @@ public class SecurityConfig {
                     "/api/auth/reset-password"
                    ).permitAll() // 🔓 Autoriser ces routes sans token
 
+     
+
+
+                   
                                .requestMatchers(Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.SAVE,
                                                 Constants.APP_ROOT + Constants.ETABLISSEMENT + Constants.UPDATE + "/**",
                                                 Constants.APP_ROOT+Constants.ETABLISSEMENT+Constants.DELETE,
@@ -106,11 +113,12 @@ public class SecurityConfig {
                                     Constants.APP_ROOT + Constants.CLIENT + Constants.GET_ANFANT_BYID_PARENT+"/*",
                                     "/api/enfants/**"
 
-                                    ).hasRole("ADMIN")
+                                    ).hasRole("SUPER_ADMIN")
                               .anyRequest().authenticated())
                      
                      
-             .addFilterBefore(new JwtFilter(customUserDetailsService, jwtUtils), UsernamePasswordAuthenticationFilter.class)
+             //.addFilterBefore(new JwtFilter(customUserDetailsService, jwtUtils), UsernamePasswordAuthenticationFilter.class)
+               .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
              .build();
                
     }

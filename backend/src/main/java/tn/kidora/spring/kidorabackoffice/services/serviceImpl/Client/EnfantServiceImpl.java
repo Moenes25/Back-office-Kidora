@@ -1,12 +1,14 @@
 package tn.kidora.spring.kidorabackoffice.services.serviceImpl.Client;
 
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import tn.kidora.spring.kidorabackoffice.dto.Client.EnfantRequestDto;
 import tn.kidora.spring.kidorabackoffice.dto.Client.EnfantResponseDto;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Classes;
+import tn.kidora.spring.kidorabackoffice.entities.Client.RoleUsers;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Enfants;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Users;
 import tn.kidora.spring.kidorabackoffice.repositories.UserRepository;
@@ -60,7 +62,11 @@ public class EnfantServiceImpl implements  EnfantService {
         Users admin = clientRepo.findByEmail(adminUsername)
                 .orElseThrow(() -> new RuntimeException("Admin non trouvé"));
         enfant.setAdmin(admin);
-
+ if (admin.getEtablissement() != null) {
+            enfant.setEtablissement(admin.getEtablissement());
+        } else {
+            throw new RuntimeException("L'admin n'a pas d'établissement lié");
+        }
         Enfants saved = enfantRepository.save(enfant);
         return   enfantMapper.entityToDto(saved);
     }

@@ -167,17 +167,9 @@ public class EtabController {
         return etabService.getEtablissementsInactifs();
     }
    
-@GetMapping(Constants.COUNT_BY_ROLE)
-public ResponseEntity<Map<String, Long>> countByRoleAndEtablissement(
-        @RequestParam String idEtablissement) {
-
-    long parents = clientService.countByRoleAndEtablissementId(RoleUsers.PARENT, idEtablissement);
-    long educateurs = clientService.countByRoleAndEtablissementId(RoleUsers.EDUCATEUR, idEtablissement);
-
-    return ResponseEntity.ok(Map.of(
-        "parents", parents,
-        "educateurs", educateurs
-    ));
-}
+      @GetMapping(Constants.NOMBRE_ENFANTS)
+    public ResponseEntity<Long> getNombreEnfantsParEtab(@PathVariable("id") String idEtablissment) {
+        return etabService.getNombreEnfantsParEtablissement(idEtablissment);
+    }
 
 }

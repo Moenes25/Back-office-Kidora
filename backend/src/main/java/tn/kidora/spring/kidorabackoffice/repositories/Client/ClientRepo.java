@@ -1,5 +1,5 @@
 package tn.kidora.spring.kidorabackoffice.repositories.Client;
-
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -20,5 +20,13 @@ public interface ClientRepo extends MongoRepository<Users,String> {
     String Id(String id);
     @Query(value = "{ 'role' : 'PARENT' }", count = true)
     long countParents();
-    long countByRoleAndEtablissement_IdEtablissment(RoleUsers role, String idEtablissment);
+    Optional<Users> findByEmailIgnoreCase(String email);
+    // Nombre d'éducateurs par établissement
+    @Query(value = "{ 'etablissement.$id': ?1, 'role': ?0 }", count = true)
+    Long countEducateurByEtablissement(RoleUsers role, ObjectId etablissementId);
+
+    // Nombre de parents par établissement
+    @Query(value = "{ 'etablissement.$id': ?1, 'role': ?0 }", count = true)
+    Long countParentByEtablissement(RoleUsers role, ObjectId etablissementId);
+
 }

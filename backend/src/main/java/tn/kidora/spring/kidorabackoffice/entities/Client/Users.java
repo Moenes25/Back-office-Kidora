@@ -33,6 +33,7 @@ public class Users {
     private String disponibilite;
     private String  imageUrl;
     private StatutClient statutClient;
+    private String createdByAdminId;
 
     @DBRef(lazy = false)
     private Etablissement etablissement;

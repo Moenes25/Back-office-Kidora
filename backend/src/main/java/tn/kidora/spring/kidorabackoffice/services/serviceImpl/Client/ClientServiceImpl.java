@@ -1,6 +1,7 @@
 package tn.kidora.spring.kidorabackoffice.services.serviceImpl.Client;
 
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -122,8 +123,15 @@ public class ClientServiceImpl implements  ClientService{
         return clientRepo.countParents();
     }
     @Override
-   public long countByRoleAndEtablissementId(RoleUsers role, String idEtablissement) {
-    return clientRepo.countByRoleAndEtablissement_IdEtablissment(role, idEtablissement);
-   }
+    public Long getNombreParentsParEtablissement(String idEtablissement) {
+        ObjectId oid = new ObjectId(idEtablissement);
+        return clientRepo.countParentByEtablissement(RoleUsers.PARENT, oid);
+    }
+    @Override
+    public Long getNombreEducateursParEtablissement(String idEtablissement) {
+        ObjectId oid = new ObjectId(idEtablissement);
+        Long count = clientRepo.countEducateurByEtablissement(RoleUsers.EDUCATEUR, oid);
+        return count != null ? count : 0L;
+    }
 
 }

@@ -14,6 +14,7 @@ public interface ClientService {
     List<Users> getParents();
     List<Users> getEducateurs();
     long getTotalParents();
-    long countByRoleAndEtablissementId(RoleUsers role, String idEtablissement);
+    Long getNombreParentsParEtablissement(String idEtablissement);
+    Long getNombreEducateursParEtablissement(String idEtablissement);
 
 }

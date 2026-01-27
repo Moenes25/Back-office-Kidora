@@ -24,6 +24,7 @@ public interface EtabService {
     ResponseEntity<List<Etab_Dto>> getEtablissementsAbonnesCeMois();
     List<DonneesCroissanceDTo> obtenirCroissanceMensuelle();
      ResponseEntity<List<EtablissementInactifDTO>> getEtablissementsInactifs();
+      ResponseEntity<Long> getNombreEnfantsParEtablissement(String etablissementId);
    
 
 
