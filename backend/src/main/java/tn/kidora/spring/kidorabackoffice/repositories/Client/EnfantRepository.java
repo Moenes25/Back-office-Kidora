@@ -9,10 +9,14 @@ import java.util.List;
 
 public interface EnfantRepository extends MongoRepository<Enfants, String> {
     List<Enfants> findByParentId(String parentId);
+
   //  long countByParent_Etablissement_IdEtablissment(String etablissementId);
   @Query(value="{ 'etablissement.$id' : ?0 }", count=true)
   Long countByIdEtablissement(ObjectId etablissementId);
 
 
+
+
+    List<Enfants> findByClasseId(String classeId);
 
 }

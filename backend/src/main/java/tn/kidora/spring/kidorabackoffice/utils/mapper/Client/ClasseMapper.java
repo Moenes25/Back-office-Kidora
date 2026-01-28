@@ -13,7 +13,6 @@ public class ClasseMapper {
                 .description_classe(dto.getDescription_classe())
                 .trancheAge(dto.getTrancheAge())
                 .couleur_classe(dto.getCouleur_classe())
-                .educateurPrincipal(dto.getEducateurPrincipal())
                 .capacite(dto.getCapacite())
                 .salle(dto.getSalle())
                 .build();
@@ -29,9 +28,12 @@ public class ClasseMapper {
                 .description_classe(entity.getDescription_classe())
                 .trancheAge(entity.getTrancheAge())
                 .couleur_classe(entity.getCouleur_classe())
-                .educateurPrincipal(entity.getEducateurPrincipal())
                 .capacite(entity.getCapacite())
                 .salle(entity.getSalle())
+                .created_by_id(entity.getCreated_by().getId())
+                .created_by_nom(entity.getCreated_by().getNom())
+
+
                 .build();
     }
 }

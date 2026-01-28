@@ -12,7 +12,11 @@ public interface ClientService {
     List<Users> getAllClients();
     List<Users> getParents();
     List<Users> getEducateurs();
+
     long getTotalParents();
     Long getNombreParentsParEtablissement(String idEtablissement);
     Long getNombreEducateursParEtablissement(String idEtablissement);
+
+    Users getClientById(String id);
+
 }

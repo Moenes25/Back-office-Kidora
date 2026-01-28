@@ -8,12 +8,16 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tn.kidora.spring.kidorabackoffice.dto.Client.EnfantRequestDto;
 import tn.kidora.spring.kidorabackoffice.dto.Client.EnfantResponseDto;
+import tn.kidora.spring.kidorabackoffice.dto.Client.EnfantUpdateDto;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Enfants;
 import tn.kidora.spring.kidorabackoffice.services.serviceImpl.Client.EnfantService;
 import tn.kidora.spring.kidorabackoffice.utils.Constants;
 
 import java.io.IOException;
 import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/api/enfants")
@@ -38,7 +42,7 @@ public class EnfantController {
             @RequestPart(value = "image", required = false) MultipartFile imageFile) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
-        EnfantRequestDto dto = mapper.readValue(enfantJson, EnfantRequestDto.class);
+        EnfantUpdateDto dto = mapper.readValue(enfantJson, EnfantUpdateDto.class);
         dto.setImageFile(imageFile);
 
         EnfantResponseDto updated = enfantService.updateEnfant(idEnfant, dto);
@@ -60,11 +64,20 @@ public class EnfantController {
         List<EnfantResponseDto> enfants = enfantService.getEnfantsByParent(parentId);
         return ResponseEntity.ok(enfants);
     }
+
     @GetMapping(Constants.COUNT_ENFANT)
     public ResponseEntity<Long> getNombreEnfants() {
         long count = enfantService.getNombreEnfants();
         return ResponseEntity.ok(count);
     }
+
+
+    @GetMapping(Constants.ANFANTS_BY_CLASSE + Constants.ID)
+    public ResponseEntity<List<EnfantResponseDto>> getEnfantsByClasse(@PathVariable String id) {
+        List<EnfantResponseDto> enfants = enfantService.getEnfantsByClasse(id);
+        return ResponseEntity.ok(enfants);
+    }
+    
 
 }
 

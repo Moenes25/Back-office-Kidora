@@ -11,7 +11,7 @@ import tn.kidora.spring.kidorabackoffice.utils.Constants;
 import java.util.List;
 
 @RestController
-@RequestMapping("/classes")
+@RequestMapping(Constants.APP_ROOT +"/classes")
 @RequiredArgsConstructor
 public class ClasseController {
     private final ClasseService classesService;
@@ -25,5 +25,11 @@ public class ClasseController {
     public ResponseEntity<List<ClasseResponseDto>> getAllClasses() {
         List<ClasseResponseDto> classes = classesService.getAllClasses();
         return ResponseEntity.ok(classes);
+    }
+
+    @GetMapping(Constants.ID)
+    public ResponseEntity<ClasseResponseDto> getClasseById(@PathVariable String id) {
+        ClasseResponseDto classe = classesService.getClasseById(id);
+        return ResponseEntity.ok(classe);
     }
 }

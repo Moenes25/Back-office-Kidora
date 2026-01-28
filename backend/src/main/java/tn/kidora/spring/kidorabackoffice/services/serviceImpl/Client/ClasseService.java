@@ -8,4 +8,7 @@ import java.util.List;
 public interface ClasseService {
      ClasseResponseDto ajouterClasse(ClasseRequestDto dto);
      List<ClasseResponseDto> getAllClasses();
+     ClasseResponseDto updateClasse(ClasseRequestDto dto, String id);
+     ClasseResponseDto deleteClasse(String id);
+     ClasseResponseDto getClasseById(String id);
 }

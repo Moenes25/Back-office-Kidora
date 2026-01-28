@@ -5,6 +5,7 @@ import tn.kidora.spring.kidorabackoffice.dto.Client.EnfantRequestDto;
 import tn.kidora.spring.kidorabackoffice.dto.Client.EnfantResponseDto;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Classes;
 import tn.kidora.spring.kidorabackoffice.entities.Client.Enfants;
+import tn.kidora.spring.kidorabackoffice.entities.Client.Users;
 
 @Service
 public class EnfantMapper {
@@ -22,11 +23,20 @@ public class EnfantMapper {
         dto.setNom(enfant.getNom());
         dto.setPrenom(enfant.getPrenom());
         dto.setAge(enfant.getAge());
-        if (enfant.getClasse() != null) {
-            dto.setClasse(enfant.getClasse().getNom_classe());
+       
+        if (enfant.getClasse()!= null) {
+            dto.setClasse(enfant.getClasse().getId());
+            dto.setClasseNom(enfant.getClasse().getNom_classe());
         }
 
         dto.setImageUrl(enfant.getImageUrl());
+        
+        if (enfant.getParent() != null) {
+            dto.setParentId(enfant.getParent().getId());
+            
+        }
+        
+        // dto.setParentId(enfant.getParent().getId());
         return dto;
     }
 

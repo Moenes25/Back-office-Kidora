@@ -106,10 +106,10 @@ public class AuthServiceImpl implements  AuthService{
             user.setSpecialisation(dto.getSpecialisation());
             user.setExperience(dto.getExperience());
             user.setDisponibilite(dto.getDisponibilite());
-            if (dto.getClassesIds() != null && !dto.getClassesIds().isEmpty()) {
-                List<Classes> classes = classeRepository.findAllById(dto.getClassesIds());
-                user.setClasses(classes);
-            }
+            // if (dto.getClassesIds() != null && !dto.getClassesIds().isEmpty()) {
+            //     List<Classes> classes = classeRepository.findAllById(dto.getClassesIds());
+            //     user.setClasses(classes);
+            // }
         }
         if (userConnecte.getEtablissement() != null) {
             user.setEtablissement(userConnecte.getEtablissement());
@@ -164,10 +164,12 @@ public class AuthServiceImpl implements  AuthService{
         Users client = clientRepo.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Client non trouvé avec l'email : " + email));
         if (client != null && passwordEncoder.matches(password, client.getPassword())) {
+
             String role = (client.getRole() != null)
                     ? client.getRole().toString()
                     : "PARENT";
             String token = jwtUtils.generateToken(client.getId(), email, role);
+
             Map<String, Object> authData = new HashMap<>();
             authData.put("token", token);
             authData.put("type", "Bearer");

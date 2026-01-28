@@ -23,8 +23,9 @@ import java.util.List;
 import java.util.Map;
 
 
-@AllArgsConstructor
+
 @RestController
+@AllArgsConstructor
 @RequestMapping(Constants.APP_ROOT + Constants.ABONNEMENT)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Slf4j
@@ -61,21 +62,23 @@ public class AbonController {
         return ResponseEntity.ok(abonnementService.getRepartitionAnnuelle(annee));
     }
 
-    @PostMapping("/create-test-abonnement")
+
+   /* @PostMapping("/create-test-abonnement")
     public Abonnement createTestAbonnement() {
         Etablissement etab = etablissementRepository.findById("6939461aeb549f4e3ba9a295").orElse(null);
         Abonnement abonnement = Abonnement.builder()
                 .dateDebutAbonnement(LocalDate.now())
                 .dateFinAbonnement(LocalDate.now().plusDays(10))
                 .montantDu(100.0)
-                .montantPaye(100.0)
                 .statut(StatutPaiement.ESSAYE)
                 .etablissement(etab)
                 .build();
         return abonnementRepository.save(abonnement);
-    }
+    }*/
+    
    /* @GetMapping("/paiements/historique")
     public ResponseEntity<List<PaiementHistoriqueDto>> getHistoriquePaiements() {
         return ResponseEntity.ok(abonnementService.getHistoriquePaiements());
     }*/
+
 }

@@ -50,9 +50,6 @@ public class ClientController {
             @RequestParam(value = "specialisation", required = false) String specialisation,
             @RequestParam(value = "experience", required = false) Integer experience,
             @RequestParam(value = "disponibilite", required = false) String disponibilite,
-            @Parameter(description = "Liste des IDs des classes (pour éducateur). Répéter le paramètre pour plusieurs valeurs: classesIds=id1&classesIds=id2", 
-                       schema = @Schema(type = "array", example = "[\"id1\", \"id2\"]"))
-            @RequestParam(value = "classesIds", required = false) List<String> classesIds,
             @RequestParam(value = "statutClient", required = false, defaultValue = "ACTIF") StatutClient statutClient,
             @RequestPart(value = "image", required = false) MultipartFile imageFile
     ) throws IOException {
@@ -72,7 +69,6 @@ public class ClientController {
         dto.setSpecialisation(specialisation);
         dto.setExperience(experience);
         dto.setDisponibilite(disponibilite);
-        dto.setClassesIds(classesIds);
         dto.setStatutClient(statutClient);
         dto.setImageFile(imageFile);
         Users savedUser = authService.registerClient(dto);
@@ -107,9 +103,6 @@ public class ClientController {
             @RequestParam(value = "specialisation", required = false) String specialisation,
             @RequestParam(value = "experience", required = false) Integer experience,
             @RequestParam(value = "disponibilite", required = false) String disponibilite,
-            @Parameter(description = "Liste des IDs des classes (pour éducateur). Répéter le paramètre pour plusieurs valeurs: classesIds=id1&classesIds=id2", 
-                       schema = @Schema(type = "array", example = "[\"id1\", \"id2\"]"))
-            @RequestParam(value = "classesIds", required = false) List<String> classesIds,
             @RequestParam(value = "statutClient", required = false) StatutClient statutClient,
 
             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
@@ -129,7 +122,6 @@ public class ClientController {
         dto.setSpecialisation(specialisation);
         dto.setExperience(experience);
         dto.setDisponibilite(disponibilite);
-        dto.setClassesIds(classesIds);
         dto.setImageFile(imageFile);
         dto.setStatutClient(statutClient);
 
@@ -149,10 +141,12 @@ public class ClientController {
     public ResponseEntity<List<Users>> getAllEducateurs() {
         return ResponseEntity.ok(clientService.getEducateurs());
     }
+
     
     /*@GetMapping("/classes/all")
     public ResponseEntity<List<ClasseResponseDto>> getAllClasses() {
         return ResponseEntity.ok(classeService.getAllClasses());
+<<<<<<< HEAD
     }*/
     @GetMapping(Constants.TOTAL_PARENTS)
     public ResponseEntity<Map<String, Long>> getTotalParents() {
@@ -168,5 +162,6 @@ public class ClientController {
     public ResponseEntity<Long> getNombreEducateurs(@PathVariable("id") String idEtablissement) {
         Long count = clientService.getNombreEducateursParEtablissement(idEtablissement);
         return ResponseEntity.ok(count);
+
     }
 }

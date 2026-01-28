@@ -11,4 +11,5 @@ public class EnfantResponseDto {
     private String classe;
     private String imageUrl;
     private String parentId;
+    private String classeNom;
 }

@@ -77,6 +77,7 @@ public class Constants {
     public static final String ANALYTICS_REPARTITION_STATUT = "/repartition/statut";
     public static final String ANALYTICS_EVOLUTION_MENSUELLE = "/evolution-mensuelle";
 
+
     //----------------------Factures------------------------
     public static final String FACTURE = "/factures";
     public static final String ADD_FACTURE = "/add/facture";
@@ -96,6 +97,12 @@ public class Constants {
     public static final String DELETE_EVENT = "/events/delete/{id}";
 
 
+
+
+    public static final String EDUCATEUR_CLASSE="/educateur-classe";
+    public static final String CLASSES = "/classes";
+    public static final String EDUCATEURS= "/educateurs";
+    public static final String ANFANTS_BY_CLASSE = "/enfants-by-classe";
 
 
 

@@ -9,7 +9,7 @@ import tn.kidora.spring.kidorabackoffice.entities.StatutPaiement;
 public class AbonnementRequestDTO {
     private LocalDate dateDebutAbonnement;
     private LocalDate dateFinAbonnement;
-    private Double montantPaye;
+    private Double montantTotal;
     private Double montantDu;
     private StatutPaiement statut;
     private FormuleAbonnement formule;

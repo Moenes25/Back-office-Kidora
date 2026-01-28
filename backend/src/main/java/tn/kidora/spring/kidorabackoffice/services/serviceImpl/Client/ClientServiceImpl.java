@@ -63,10 +63,10 @@ public class ClientServiceImpl implements  ClientService{
             if (dto.getSpecialisation() != null) user.setSpecialisation(dto.getSpecialisation());
             if (dto.getExperience() != null) user.setExperience(dto.getExperience());
             if (dto.getDisponibilite() != null) user.setDisponibilite(dto.getDisponibilite());
-            if (dto.getClassesIds() != null && !dto.getClassesIds().isEmpty()) {
-                List<Classes> classes = classeRepository.findAllById(dto.getClassesIds());
-                user.setClasses(classes);
-            }
+            // if (dto.getClassesIds() != null && !dto.getClassesIds().isEmpty()) {
+            //     List<Classes> classes = classeRepository.findAllById(dto.getClassesIds());
+            //     user.setClasses(classes);
+            // }
         }
         if (dto.getStatutClient() != null) {
             user.setStatutClient(dto.getStatutClient());
@@ -119,6 +119,7 @@ public class ClientServiceImpl implements  ClientService{
     }
 
     @Override
+
     public long getTotalParents() {
         return clientRepo.countParents();
     }
@@ -133,4 +134,11 @@ public class ClientServiceImpl implements  ClientService{
         Long count = clientRepo.countEducateurByEtablissement(RoleUsers.EDUCATEUR, oid);
         return count != null ? count : 0L;
     }
+
+    public Users getClientById(String id) {
+        return clientRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Client non trouvé"));
+    }
+    
+
 }

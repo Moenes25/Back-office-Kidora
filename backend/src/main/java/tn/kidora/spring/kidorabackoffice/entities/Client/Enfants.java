@@ -25,7 +25,7 @@ public class Enfants {
     @DBRef
     private Etablissement etablissement;
 
-    @DBRef
+    @DBRef 
     private Classes classe;
 
     @DBRef
