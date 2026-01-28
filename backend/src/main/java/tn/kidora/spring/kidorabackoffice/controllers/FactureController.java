@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import tn.kidora.spring.kidorabackoffice.dto.FactureDetailResponseDto;
 import tn.kidora.spring.kidorabackoffice.dto.FactureRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.FactureResponseDto;
 import tn.kidora.spring.kidorabackoffice.entities.Facture;
@@ -43,7 +45,7 @@ public class FactureController {
         return ResponseEntity.ok(factureService.getAllFactures());
     }
     @GetMapping(Constants.FACTURE_BY_ID)
-    public ResponseEntity<FactureResponseDto> getFactureById(@PathVariable String id) {
+    public ResponseEntity<FactureDetailResponseDto> getFactureById(@PathVariable String id) {
         return ResponseEntity.ok(factureService.getFactureById(id));
     }
 }

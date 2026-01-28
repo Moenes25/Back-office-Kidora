@@ -3,12 +3,13 @@ package tn.kidora.spring.kidorabackoffice.services.serviceImpl;
 import lombok.AllArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
+
+import tn.kidora.spring.kidorabackoffice.dto.FactureDetailResponseDto;
 import tn.kidora.spring.kidorabackoffice.dto.FactureRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.FactureResponseDto;
 import tn.kidora.spring.kidorabackoffice.entities.*;
-import tn.kidora.spring.kidorabackoffice.repositories.AbonnementRepository;
-import tn.kidora.spring.kidorabackoffice.repositories.Etablissement_Repository;
 import tn.kidora.spring.kidorabackoffice.repositories.Client.EnfantRepository;
+import tn.kidora.spring.kidorabackoffice.repositories.Etablissement_Repository;
 import tn.kidora.spring.kidorabackoffice.repositories.FactureRepository;
 import tn.kidora.spring.kidorabackoffice.services.FactureService;
 
@@ -23,41 +24,46 @@ import java.util.stream.Collectors;
 @Service
 public class FactureServiceImpl implements FactureService {
 
-
     private final FactureRepository factureRepository;
-    //private final AbonnementRepository abonnementRepository;
-    private final  Etablissement_Repository etablissementRepository;
-     private final EnfantRepository enfantRepository;
+    private final Etablissement_Repository etablissementRepository;
+    private final EnfantRepository enfantRepository;
 
+    /* ======================= CREATION FACTURE ======================= */
 
     @Override
     public Facture creerFacture(FactureRequestDTO dto) {
+
         Etablissement etablissement = etablissementRepository.findById(dto.getEtablissementId())
                 .orElseThrow(() -> new RuntimeException("Établissement non trouvé"));
-                        long nombreEnfants = enfantRepository.countByIdEtablissement(
+
+        long nombreEnfants = enfantRepository.countByIdEtablissement(
                 new ObjectId(etablissement.getIdEtablissment())
         );
-        // Calcul du montant
-        double montantBase = nombreEnfants * 15.0;   // 15 DT par enfant
-        double montantAvecTVA = montantBase * 1.19;  // TVA 19%
-        double montantTotal = montantAvecTVA + 1.0; // +1 DT timbre
+
+        // 💰 Calcul métier
+        double montantHT = nombreEnfants * 15.0;
+        double montantTVA = montantHT * 0.19;
+        double timbre = 1.0;
+        double montantTTC = montantHT + montantTVA + timbre;
+
         Facture facture = new Facture();
-       //facture.setAbonnement(abonnement);
-      //  facture.setMontant(montant);
         facture.setEtablissement(etablissement);
         facture.setDateFacture(new Date());
         facture.setMethode(dto.getMethode());
         facture.setReference(genererReferenceFacture());
         facture.setStatutFacture(dto.getStatutFacture());
-        facture.setMontant(montantTotal);
 
+        // 👉 on stocke uniquement le TTC
+        facture.setMontant(montantTTC);
 
         return factureRepository.save(facture);
     }
 
+    /* ======================= STATS ======================= */
+
     @Override
     public long totalFactures() {
-        return factureRepository.count(); // total général
+        return factureRepository.count();
     }
 
     @Override
@@ -70,35 +76,63 @@ public class FactureServiceImpl implements FactureService {
         return factureRepository.countByStatutFacture(StatutFacture.IMPAYEE);
     }
 
-    @Override
-    public List<FactureResponseDto> getAllFactures() {
-        List<Facture> factures = factureRepository.findAll();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm");
+    /* ======================= LISTE FACTURES ======================= */
 
-        return factures.stream()
-                .filter(f -> f.getEtablissement() != null)
-                .map(f -> {
-                    Etablissement e = f.getEtablissement();
+   @Override
+public List<FactureResponseDto> getAllFactures() {
 
-                    return FactureResponseDto.builder()
-                            .idFacture("#" + f.getReference())
-                            .date(f.getDateFacture() != null
-                                    ? f.getDateFacture().toInstant()
-                                    .atZone(ZoneId.systemDefault())
-                                    .toLocalDateTime()
-                                    .format(formatter)
-                                    : "—")
-                            .nomEtablissement(e.getNomEtablissement() != null ? e.getNomEtablissement() : "—")
-                            .type(e.getType() != null ? e.getType().name() : "—")
-                            .gouvernorat(e.getRegion() != null ? e.getRegion() : "—")
-                            .email(e.getEmail() != null ? e.getEmail() : "—")
-                            .statut(f.getStatutFacture() != null ? f.getStatutFacture().name() : "—")
-                            .build();
-                })
-                .collect(Collectors.toList());
-    }
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm");
+
+    return factureRepository.findAll().stream()
+        .filter(f -> f.getEtablissement() != null)
+        .map(f -> {
+
+            Etablissement e = f.getEtablissement();
+
+            int nombreEnfants = enfantRepository
+                .countByIdEtablissement(new ObjectId(e.getIdEtablissment()))
+                .intValue();
+
+            double montantHT = nombreEnfants * 15.0;
+            double montantTVA = montantHT * 0.19;
+            double timbre = 1.0;
+            double montantTTC = montantHT + montantTVA + timbre;
+
+            return FactureResponseDto.builder()
+                .idFacture("#" + f.getReference())
+                .date(
+                    f.getDateFacture() != null
+                        ? f.getDateFacture().toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDateTime()
+                            .format(formatter)
+                        : "—"
+                )
+                .nomEtablissement(e.getNomEtablissement())
+                .type(e.getType().name())
+                .gouvernorat(e.getRegion())
+                .email(e.getEmail())
+                 .telephone(e.getTelephone())
+
+                // 💰 FINANCIER COMPLET
+                .montantHT(montantHT)
+                .montantTVA(montantTVA)
+                .timbreFiscal(timbre)
+                .montantTTC(montantTTC)
+                .nombreEnfants(nombreEnfants)
+                .methode(f.getMethode().name())
+
+                .statut(f.getStatutFacture().name())
+                .build();
+        })
+        .collect(Collectors.toList());
+}
+
+    /* ======================= DETAIL FACTURE ======================= */
+
     @Override
-    public FactureResponseDto getFactureById(String id) {
+    public FactureDetailResponseDto getFactureById(String id) {
+
         Facture f = factureRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Facture introuvable"));
 
@@ -107,44 +141,51 @@ public class FactureServiceImpl implements FactureService {
             throw new RuntimeException("Aucun établissement lié à cette facture");
         }
 
+        int nombreEnfants = enfantRepository.countByIdEtablissement(
+                new ObjectId(e.getIdEtablissment())
+        ).intValue();
+
+        double montantHT = nombreEnfants * 15.0;
+        double montantTVA = montantHT * 0.19;
+        double timbre = 1.0;
+        double montantTTC = montantHT + montantTVA + timbre;
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm");
 
-        return FactureResponseDto.builder()
+        return FactureDetailResponseDto.builder()
                 .idFacture("#" + f.getReference())
-                .date(f.getDateFacture().toInstant()
+                .date(
+                    f.getDateFacture().toInstant()
                         .atZone(ZoneId.systemDefault())
                         .toLocalDateTime()
-                        .format(formatter))
-                .nomEtablissement(e.getNomEtablissement() != null ? e.getNomEtablissement() : "—")
-                .email(e.getEmail() != null ? e.getEmail() : "—")
-                .gouvernorat(e.getRegion() != null ? e.getRegion() : "—")
-                .type(e.getType() != null ? e.getType().name() : "—")
-                .statut(f.getStatutFacture() != null ? f.getStatutFacture().name() : "EN_ATTENTE")
+                        .format(formatter)
+                )
+                .nomEtablissement(e.getNomEtablissement())
+                .type(e.getType().name())
+                .gouvernorat(e.getRegion())
+                .email(e.getEmail())
+                .telephone(e.getTelephone())
+
+                // 💰 FINANCIER
+                .montantHT(montantHT)
+                .montantTVA(montantTVA)
+                .timbreFiscal(timbre)
+                .montantTTC(montantTTC)
+                 .methode(f.getMethode().name())
+                .nombreEnfants(nombreEnfants)
+                .statut(f.getStatutFacture().name())
                 .build();
     }
 
+    /* ======================= UTIL ======================= */
 
-
- /*   private double calculerMontantSelonFormule(FormuleAbonnement formule) {
-        switch (formule) {
-            case ESSAI_14_JOURS:
-                return 0.0;
-            case STANDARD_MENSUEL:
-                return 30.0;
-            case STANDARD_ANNUEL:
-                return 30.0 * 12 ;
-            case PREMIUM_MENSUEL:
-                return 60.0;
-            case PREMIUM_ANNUEL:
-                return 60.0 * 12 ;
-            default:
-                throw new IllegalArgumentException("Formule inconnue : " + formule);
-        }
-    }*/
     private String genererReferenceFacture() {
         LocalDateTime now = LocalDateTime.now();
         long compteur = factureRepository.count() + 1;
-        return String.format("FAC-%d-%02d-%03d", now.getYear(), now.getMonthValue(), compteur);
+        return String.format("FAC-%d-%02d-%03d",
+                now.getYear(),
+                now.getMonthValue(),
+                compteur
+        );
     }
 }
-

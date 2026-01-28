@@ -1,5 +1,6 @@
 package tn.kidora.spring.kidorabackoffice.services;
 
+import tn.kidora.spring.kidorabackoffice.dto.FactureDetailResponseDto;
 import tn.kidora.spring.kidorabackoffice.dto.FactureRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.FactureResponseDto;
 import tn.kidora.spring.kidorabackoffice.entities.Facture;
@@ -12,6 +13,6 @@ public interface FactureService {
     long totalFacturesPayees();      // nombre payées
     long totalFacturesImpaye();      // nombre impayées
     List<FactureResponseDto> getAllFactures();
-    public FactureResponseDto getFactureById(String id);
+    public FactureDetailResponseDto getFactureById(String id);
 
 }

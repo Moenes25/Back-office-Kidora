@@ -67,6 +67,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/enfants/count").permitAll()
                 .requestMatchers("/api/client/parents/total").permitAll()
                   .requestMatchers("/uploads/**").permitAll()
+                   .requestMatchers("/factures/**").permitAll()
                   .requestMatchers(
                      "/api/auth/forgot-password",
                     "/api/auth/verify-otp",
