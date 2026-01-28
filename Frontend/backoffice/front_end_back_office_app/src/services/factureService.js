@@ -53,38 +53,47 @@ function mapFactureToRow(f) {
   if (!f) return null;
 
   // 1) Support des 2 schémas
-  const id      = f.id || f.idFacture || f.reference || "";
+  const id = f.id || f.idFacture || f.reference || "";
   const dateRaw = f.dateFacture || f.date || null;
 
   // si le backend renvoie un sous-objet etablissement
   const etabObj = f.etablissement || {};
-  // sinon, les champs aplatís
+  // sinon, les champs aplatis
   const nomEtab = etabObj.nomEtablissement || f.nomEtablissement || "";
-  const region  = etabObj.region            || f.gouvernorat       || "";
-  const email   = etabObj.email             || f.email             || "";
-  const typeRaw = etabObj.type              || f.type              || "";
+  const region  = etabObj.region || f.gouvernorat || "";
+  const email   = etabObj.email  || f.email || "";
+  const telephone   = etabObj.telephone   || f.telephone  || "";
+  const typeRaw = etabObj.type   || f.type || "";
 
-  // 2) Enum -> affichage
-  const typeSlug    = enumToTypeSlug(typeRaw);             // CRECHE|GARDERIE|ECOLE -> creche|...
+  // 2) Formatage
+  const date = fmtFrDate(dateRaw);
+  const typeSlug = enumToTypeSlug(typeRaw);
   const statusLabel = enumToStatusLabel(f.statutFacture || f.statut);
 
   return {
     id,
-    date: fmtFrDate(dateRaw) || (typeof dateRaw === "string" ? dateRaw : ""),
+    date,
     client: nomEtab,
     type: typeSlug || "creche",
     region,
     email,
+    telephone,
     status: statusLabel || "impayée",
     avatarColor: pickAvatarGradient(nomEtab || id),
 
-    // champs bruts si besoin ailleurs
+    // 💰 MONTANTS
+    montantHT: Number(f.montantHT ?? 0),
+    montantTVA: Number(f.montantTVA ?? 0),
+    timbreFiscal: Number(f.timbreFiscal ?? 1),
+    montantTTC: Number(f.montantTTC ?? f.montant ?? 0),
+    nombreEnfants: Number(f.nombreEnfants ?? 0),
+
     methode: f.methode,
     reference: f.reference,
-    montant: f.montant,
     raw: f,
   };
 }
+
 
 
 // ========================= API =========================
@@ -140,8 +149,29 @@ export async function getAbonnementByEtablissement(etabId) {
 
 // retourne la facture mappée + les objets etab & abo
 export async function getFactureFull(id) {
-  const { data } = await api.get(`${ROOT}/${id}`); // dto backend
-  // ---- extrait l'id etab quelle que soit la forme ----
+  const { data } = await api.get(`${ROOT}/${id}`); // DTO backend
+
+  // ---- infos de base depuis le DTO ----
+  const idFacture = data.id || data.idFacture || data.reference || "";
+  const dateRaw = data.dateFacture || data.date || null;
+
+  const nomEtab = data.nomEtablissement || "";
+  const email = data.email || "";
+  const telephone = data.telephone || "";
+  const region = data.gouvernorat || "";
+  const typeRaw = data.type || "CRECHE";
+  const statusRaw = data.statut || data.statutFacture || "IMPAYEE";
+
+  // ---- formatage ----
+  const date = dateRaw
+    ? new Date(dateRaw).toLocaleString("fr-FR")
+    : "";
+
+  const type = enumToTypeSlug(typeRaw);
+  const status = enumToStatusLabel(statusRaw);
+  const avatarColor = pickAvatarGradient(nomEtab + idFacture);
+
+  // ---- récupérer etablissement & abonnement (optionnel) ----
   const etabId =
     data?.etablissement?.idEtablissment ||
     data?.etablissement?.idEtablissement ||
@@ -156,24 +186,31 @@ export async function getFactureFull(id) {
     try { abo  = await getAbonnementByEtablissement(etabId); } catch {}
   }
 
-  // construit une “row” compatible avec ta UI + garde les bruts
-  const row = {
-    id: data.id || data.idFacture || data.reference || "",
-    date: (data.dateFacture || data.date) ? new Date(data.dateFacture || data.date).toLocaleString("fr-FR") : "",
-    // côté preview on prendra d'abord les infos “etab”
-    client:  etab?.nomEtablissement || data.nomEtablissement || "",
-    email:   etab?.email            || data.email || "",
-    region:  etab?.region           || data.gouvernorat || "",
-    type:    (etab?.type || data.type || "CRECHE").toString().toLowerCase(),
-    status:  (data.statutFacture || data.statut || "IMPAYEE").toUpperCase() === "PAYEE" ? "Payée" : "impayée",
-    avatarColor: pickAvatarGradient((etab?.nomEtablissement || "") + (data.id || "")),
+  // ---- row FINAL (PROPRE) ----
+  return {
+    id: idFacture,
+    date,
+    client: etab?.nomEtablissement || nomEtab,
+    email: etab?.email || email,
+    telephone: etab?. telephone || telephone,
+    region: etab?.region || region,
+    type,
+    status,
+    avatarColor,
+
+    // 💰 FINANCIER (depuis backend)
+    montantHT: Number(data.montantHT ?? 0),
+    montantTVA: Number(data.montantTVA ?? 0),
+    timbreFiscal: Number(data.timbreFiscal ?? 1),
+    montantTTC: Number(data.montantTTC ?? 0),
+    nombreEnfants: Number(data.nombreEnfants ?? 0),
+
     raw: data,
     _etab: etab,
-    _abo:  abo,
+    _abo: abo,
   };
-
-  return row;
 }
+
 
 
 // ---- Totaux pour KPI ----
@@ -190,3 +227,7 @@ export async function getTotalsStats() {
     // envoyees: Number(e?.data) || 0, // si un jour tu ajoutes /total/envoyees
   };
 }
+
+
+
+

@@ -20,7 +20,8 @@ import jsPDF from "jspdf";
 import { getAllEtablissements } from "services/entreprisesService";
 import { createFacture } from "services/factureService";          
 import { getFactures, deleteFacture, updateFacture ,  pickAvatarGradient, getFactureFull , getTotalsStats} from "services/factureService";
- import Swal from "sweetalert2";
+import { getNombreEnfantsParEtablissement } from "services/dashboardService"; 
+import Swal from "sweetalert2";
 
 
 
@@ -34,25 +35,42 @@ const CARD_BG = {
   unpaid: "#f59e0b", // amber
   sent:   "#8b5cf6", // purple
 };
+const PAIEMENT_LABELS = {
+  VIREMENT: "Virement bancaire",
+  CHEQUE: "Chèque",
+  ESPECES: "Espèces",
+  CARTE_BANCAIRE: "Carte bancaire",
+};
+const TVA_RATE = 19;
 
 const fmtMoney = (n) =>
   (Number(n) || 0).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " DT";
 
 function computeTotals(lines = []) {
   const rows = lines.map(l => {
-    const qty  = Number(l.qty)  || 0;
-    const pu   = Number(l.puHT) || 0;
-    const tvaP = Number(l.tva)  || 0;
-    const ht   = qty * pu;
-    const tva  = ht * (tvaP / 100);
-    const ttc  = ht + tva;
-    return { ...l, ht, tva, ttc };
+    const qty = Number(l.qty) || 0;
+    const puHT = Number(l.puHT) || 0;
+
+    const ht = qty * puHT;
+    const tva = ht * (TVA_RATE / 100);
+    const ttc = ht + tva;
+
+    return {
+      ...l,
+      tvaRate: TVA_RATE,   // 👈 taux clair
+      ht,
+      tva,
+      ttc,
+    };
   });
+
   const subHT = rows.reduce((s, r) => s + r.ht, 0);
-  const subTVA= rows.reduce((s, r) => s + r.tva, 0);
+  const subTVA = rows.reduce((s, r) => s + r.tva, 0);
   const total = subHT + subTVA;
+
   return { rows, subHT, subTVA, total };
 }
+
 
 /* --------------------------- Données démo --------------------------- */
 
@@ -444,12 +462,15 @@ function SupportPagination({ page, pageCount, total, onPage }) {
 }
 /* --------------------------- Modale d’édition --------------------------- */
 
+
 // Remplace ta FactureModal par cette version "branchée"
 const FactureModal = ({ row = {}, onClose, onCreated }) => {
   const [etabs, setEtabs] = useState([]);
   const [etabId, setEtabId] = useState("");          // on envoie l'id au backend
   const [statut, setStatut] = useState("IMPAYEE");   // enum backend
   const [methode, setMethode] = useState("VIREMENT");// valeur par défaut
+  const [nombreEnfants, setNombreEnfants] = useState(0);
+const [montantEstime, setMontantEstime] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -466,20 +487,52 @@ const FactureModal = ({ row = {}, onClose, onCreated }) => {
     if (row.raw?.statutFacture) setStatut(String(row.raw.statutFacture).toUpperCase());
     if (row.raw?.methode) setMethode(String(row.raw.methode).toUpperCase());
   }, [row]);
+
+
+  useEffect(() => {
+  if (!etabId) return;
+  (async () => {
+    const count = await getNombreEnfantsParEtablissement(etabId);
+    setNombreEnfants(count);
+    const montantBase = count * 15;
+    const montantTVA = montantBase * 0.19;
+    const montantTotal = montantBase + montantTVA + 1;
+    setMontantEstime(montantTotal);
+  })();
+}, [etabId]);
+
 const handleSubmit = async () => {
   if (!etabId) return alert("Sélectionnez un établissement");
+const montantHT = nombreEnfants * 15;
+const montantTVA = montantHT * 0.19;
+const timbreFiscal = 1;
+const montantTTC = montantHT + montantTVA + timbreFiscal;
+const dto = {
+  etablissementId: etabId,
+  methode,
+  statutFacture: statut
+};
 
-  const dto = { etablissementId: etabId, methode, statutFacture: statut };
+
   const created = await createFacture(dto);
 
   const etab = etabs.find(e => String(e.idEtablissment) === String(etabId));
 
-  const patched = {
-    ...created,
-    client: etab?.nomEtablissement || created.client || "",
-    email:  etab?.email             || created.email  || "",
-    region: etab?.region            || created.region || "",
-  };
+const patched = {
+  ...created,
+  client: etab?.nomEtablissement || created.client || "",
+  email: etab?.email || created.email || "",
+  region: etab?.region || created.region || "",
+
+  // 👇 OBLIGATOIRE
+  nombreEnfants,
+  montantHT,
+  montantTVA,
+  timbreFiscal,
+  montantTTC,
+};
+
+
 
   // ✅ assure une couleur même si l’API ne l’a pas mise
   patched.avatarColor = created.avatarColor ||
@@ -538,6 +591,14 @@ const handleSubmit = async () => {
             <option value="ESPECES">Espèces</option>
           </select> */}
         </div>
+        <div className="mt-3 text-sm text-slate-700 bg-indigo-50 border border-indigo-200 rounded p-2">
+  <p>
+    <strong>{nombreEnfants}</strong> enfant{nombreEnfants > 1 ? "s" : ""} associé{nombreEnfants > 1 ? "s" : ""} à cet établissement
+  </p>
+  <p>
+    Montant TTC estimé : <strong>{fmtMoney(montantEstime)}</strong>
+  </p>
+</div>
 
         <div className="mt-4 flex justify-end gap-2">
           <button onClick={onClose} className="rounded-xl border px-3 py-1.5 text-sm">Annuler</button>
@@ -555,201 +616,279 @@ const InvoicePreview = React.forwardRef(function InvoicePreview(
   { row, lines, className = "" },
   ref
 ) {
-  const { rows: calcRows, subHT, subTVA, total } = computeTotals(lines || []);
+
+const montantHT = Number(row?.montantHT);
+const montantTVA = Number(row?.montantTVA);
+const TIMBRE = Number(row?.timbreFiscal ?? 1);
+const montantTTC = Number(row?.montantTTC);
+
+
+
+const nombreEnfants = Number(row?.nombreEnfants ?? 0);
+
+
+
+
+
+
+
+const fallbackLines = [{
+  desc: `Abonnement Platfome Kidora`,
+  qty: 1,
+  puHT: montantHT,
+}];
+
+
+
+
+
+const linesToUse = Array.isArray(lines) && lines.length ? lines : fallbackLines;
+
+const calcRows = [{
+  desc: `Abonnement Platfome Kidora`,
+  qty: 1,
+  puHT: montantHT,
+  ht: montantHT,
+  tva: montantTVA,
+  ttc: montantTTC - TIMBRE,
+}];
+
+const total = montantTTC;
+
+
   const status = row?.status || "Non défini";
 
   const Hr = ({ className = "" }) => (
     <div className={`h-px w-full bg-slate-300 ${className}`} />
   );
+console.log("NOMBRE ENFANTS PREVIEW =", nombreEnfants);
+
 
   return (
-    <section
-      ref={ref}
-      className={`mx-auto max-w-[980px] bg-white shadow-md rounded-md border border-slate-300 print:shadow-none print:border-0 print:rounded-none ${className}`}
-    >
-      {/* DATE (haut gauche) */}
-      <div className="px-6 pt-4 text-[11px] text-slate-500">
-        {new Date().toLocaleString("fr-FR")}
+   <section
+  ref={ref}
+  className={`mx-auto max-w-[980px] bg-white shadow-md rounded-md border border-slate-300 print:shadow-none print:border-0 print:rounded-none ${className}`}
+>
+  {/* DATE */}
+  <div className="px-6 pt-4 text-[11px] text-slate-500">
+    {new Date().toLocaleString("fr-FR")}
+  </div>
+
+  {/* EN-TÊTE */}
+  <div className="px-6 pt-2 grid grid-cols-1 md:grid-cols-[1fr_1.1fr] gap-4 items-start">
+    {/* Société */}
+    <div className="border border-slate-300 rounded-md p-3 grid grid-cols-[64px_1fr] gap-6 items-center">
+      <div className="h-20 w-20 rounded-md border border-slate-300 grid place-items-center overflow-hidden">
+        <img className="object-contain h-18 w-18" src={logoKidora} alt="Kidora" />
       </div>
-
-      {/* ENTÊTE : Société (gauche) + Client (droite) */}
-      <div className="px-6 pt-2 grid grid-cols-1 md:grid-cols-[1fr_1.1fr] gap-4 items-start">
-        {/* Société / vendeur */}
-        <div className="border border-slate-300 rounded-md p-3 grid grid-cols-[64px_1fr] gap-6 items-center">
-          <div className="h-20 w-20 rounded-md border border-slate-300 grid place-items-center overflow-hidden">
-            <img className="object-contain h-18 w-18" src={logoKidora} alt="Kidora" />
-          </div>
-          <div className="leading-tight gap-6 ">
-            <div className="font-extrabold text-[15px] uppercase mb-1">KIDORA</div>
-            <div className="text-[12px]">Adresse : Tunis</div>
-            <div className="text-[12px]">Tunis 3074</div>
-            <div className="text-[12px]">MF : 1860471/X</div>
-          </div>
-        </div>
-
-        {/* Cartouche client (comme la maquette) */}
-        <div className="border border-slate-300 rounded-md p-3">
-          <div className="font-semibold text-[13px] mb-1">{row?.client || "—"}</div>
-          <div className="text-[12px]">{row?.region || "—"}</div>
-          <div className="text-[12px]">{row?.email ? `Email : ${row.email}` : "Email : —"}</div>
-          <div className="text-[12px]">{row?.pays || "Tunisie"}</div>
-        </div>
+      <div className="leading-tight gap-6 ">
+        <div className="font-extrabold text-[15px] uppercase mb-1">KIDORA</div>
+        <div className="text-[12px]">Adresse : Tunis 3074 - Tunisie</div>
+        <div className="text-[12px]">MF : 1860471/X</div>
+        <div className="text-[12px]">RC : B1417982022 / RNE : 1706280V</div>
+        <div className="text-[12px]">Tél : +216 50 000 000</div>
+        <div className="text-[12px]">Email : support@kidora.tn</div>
       </div>
+    </div>
 
-      {/* TITRE CENTRÉ entre deux filets */}
-      <div className="px-6 mt-4">
-        <div className="flex items-center gap-4">
-          <Hr />
-          <h1 className="text-[16px] font-bold whitespace-nowrap">
-            Facture N° {row?.id || "—"}
-          </h1>
-          <Hr />
-        </div>
+    {/* Client */}
+    <div className="border border-slate-300 rounded-md p-3 h-full">
+      <div className="font-semibold text-[13px] mb-1">{row?.client || "—"}</div>
+      <div className="text-[12px]">Adresse : {row?.region || "—"} - {row?.pays || "Tunisie"}</div>
+      <div className="text-[12px]">{row?.email ? `Email : ${row.email}` : "Email : —"}</div>
+        <div className="text-[12px]">{row?.telephone ? `Tél : ${row.telephone}` : "Tél : —"}</div>
+      
+    </div>
+  </div>
+
+  {/* TITRE */}
+  <div className="px-6 mt-4">
+    <div className="flex items-center gap-4">
+      <Hr />
+      <h1 className="text-[16px] font-bold whitespace-nowrap">Facture N° {row?.id || "—"}</h1>
+      <Hr />
+    </div>
+  </div>
+
+  {/* Infos client + facture */}
+  <div className="px-6 mt-3 grid grid-cols-1 md:grid-cols-2 gap-4 text-[13px]">
+    <div className="border border-slate-300 rounded-md p-3">
+      <div className="font-semibold mb-2">Client</div>
+      <div className="grid grid-cols-[90px_1fr] gap-y-1">
+        <span className="text-slate-500">Nom :</span>
+        <span>{row?.client || "—"}</span>
+        <span className="text-slate-500">Adresse :</span>
+        <span>{row?.region || "—"}</span>
+        <span className="text-slate-500">Email :</span>
+        <span>{row?.email || "—"}</span>
+         <span className="text-slate-500">Téléphone :</span>
+            <span>{row?.telephone || "—"}</span>
+
+    <span className="text-slate-500">Type :</span>
+    <span>
+      {TYPE_META[row?.type]?.label || row?.type || "—"}
+    </span>
+
+    <span className="text-slate-500">Enfants :</span>
+    <span>
+      {row?.nombreEnfants ?? 0}
+    </span>
       </div>
+    </div>
 
-      {/* CLIENT & INFOS FACTURE (deux blocs) */}
-      <div className="px-6 mt-3 grid grid-cols-1 md:grid-cols-2 gap-4 text-[13px]">
-        <div className="border border-slate-300 rounded-md p-3">
-          <div className="font-semibold mb-2">Client</div>
-          <div className="grid grid-cols-[90px_1fr] gap-y-1">
-            <span className="text-slate-500">Nom :</span>
-            <span>{row?.client || "—"}</span>
-            <span className="text-slate-500">Adresse :</span>
-            <span>{row?.region || "—"}</span>
-            <span className="text-slate-500">Email :</span>
-            <span>{row?.email || "—"}</span>
-          </div>
-        </div>
-
-        <div className="border border-slate-300 rounded-md p-3">
-          <div className="font-semibold mb-2">Informations facture</div>
-          <div className="grid grid-cols-[120px_1fr] gap-y-1">
-            <span className="text-slate-500">Date :</span>
-            <span>{row?.date || new Date().toLocaleDateString("fr-FR")}</span>
-            <span className="text-slate-500">N° :</span>
-            <span>{row?.id || "—"}</span>
-            <span className="text-slate-500">Statut :</span>
-            <span>{status}</span>
-            <span className="text-slate-500">Code Client :</span>
-            <span>{row?.codeClient || "CLI-XXXX"}</span>
-            <span className="text-slate-500">Code TVA :</span>
-            <span>TVA-0F9GO1E4R</span>
-          </div>
-        </div>
+    <div className="border border-slate-300 rounded-md p-3">
+      <div className="font-semibold mb-2">Informations facture</div>
+      <div className="grid grid-cols-[120px_1fr] gap-y-1">
+        <span className="text-slate-500">Date :</span>
+        <span>{row?.date || new Date().toLocaleDateString("fr-FR")}</span>
+        <span className="text-slate-500">N° :</span>
+        <span>{row?.id || "—"}</span>
+        <span className="text-slate-500">Statut :</span>
+        <span>{status}</span>
+      {/* <span className="text-slate-500">Code Client :</span>
+        <span>{row?.codeClient || "CLI-XXXX"}</span>
+        <span className="text-slate-500">Code TVA :</span>
+        <span>TVA-0F9GO1E4R</span>
+        <span className="text-slate-500">Période :</span>
+        <span>{row?.periode || "Janvier 2026"}</span>*/}
       </div>
+    </div>
+  </div>
+  
 
-      {/* TABLEAU PRODUITS (lignes identiques à l'exemple) */}
-      <div className="px-6 mt-3">
-        <table className="w-full text-[13px] border border-slate-300 border-separate border-spacing-0">
-          <thead>
-            <tr className="bg-slate-100 text-slate-700 uppercase">
-              {[
-                "Code",
-                "Désignation",
-                "Qté",
-                "P.U. HT",
-                "Remise",
-                "Montant HT",
-                "TVA%",
-                "Montant TTC",
-              ].map((h) => (
-                <th
-                  key={h}
-                  className="border border-slate-300 px-2 py-2 text-left text-[11px] font-semibold"
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {calcRows.map((r, i) => (
-              <tr key={i} className="odd:bg-white even:bg-slate-50">
-                <td className="border border-slate-300 px-2 py-1">PROD-001</td>
-                <td className="border border-slate-300 px-2 py-1">{r.desc}</td>
-                <td className="border border-slate-300 px-2 py-1 text-center">{r.qty}</td>
-                <td className="border border-slate-300 px-2 py-1 text-right">{fmtMoney(r.puHT)}</td>
-                <td className="border border-slate-300 px-2 py-1 text-center">0%</td>
-                <td className="border border-slate-300 px-2 py-1 text-right">{fmtMoney(r.ht)}</td>
-                <td className="border border-slate-300 px-2 py-1 text-center">{r.tva}%</td>
-                <td className="border border-slate-300 px-2 py-1 text-right">{fmtMoney(r.ttc)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+  {/* LIGNES PRODUITS */}
+  <div className="px-6 mt-3">
+    <table className="w-full text-[13px] border border-slate-300 border-separate border-spacing-0">
+      <thead>
+        <tr className="bg-slate-100 text-slate-700 uppercase">
+          {["Code", "Désignation", "Qté", "P.U. HT", "Remise", "Montant HT", "TVA%", "Montant TTC"].map((h) => (
+            <th key={h} className="border border-slate-300 px-2 py-2 text-left text-[11px] font-semibold">{h}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {calcRows.map((r, i) => (
+          <tr key={i} className="odd:bg-white even:bg-slate-50">
+            <td className="border border-slate-300 px-2 py-1">PROD-001</td>
+            <td className="border border-slate-300 px-2 py-1">{r.desc}</td>
+            <td className="border border-slate-300 px-2 py-1 text-center">{r.qty}</td>
+            <td className="border border-slate-300 px-2 py-1 text-right">{fmtMoney(r.puHT)}</td>
+            <td className="border border-slate-300 px-2 py-1 text-center">0%</td>
+            <td className="border border-slate-300 px-2 py-1 text-right">{fmtMoney(r.ht)}</td>
+            <td className="border border-slate-300 px-2 py-1 text-center">19%</td>
+            <td className="border border-slate-300 px-2 py-1 text-right">{fmtMoney(r.ttc)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
 
-      {/* TVA (gauche) + TOTEAUX (droite) */}
-      <div className="px-6 mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <table className="text-[13px] w-full border border-slate-300 border-separate border-spacing-0">
-          <thead className="bg-slate-100">
-            <tr>
-              <th className="border border-slate-300 px-2 py-2 text-left">T.V.A. %</th>
-              <th className="border border-slate-300 px-2 py-2 text-left">Assiette</th>
-              <th className="border border-slate-300 px-2 py-2 text-left">Montant</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="border border-slate-300 px-2 py-2">20%</td>
-              <td className="border border-slate-300 px-2 py-2">{fmtMoney(subHT)}</td>
-              <td className="border border-slate-300 px-2 py-2">{fmtMoney(subTVA)}</td>
-            </tr>
-          </tbody>
-        </table>
+  {/* TOTALS */}
+  <div className="px-6 mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+ {/* TABLE TVA (support multi-taux) */}
+<table className="text-[13px] w-full border border-slate-300 border-separate border-spacing-0">
+  <thead className="bg-slate-100">
+    <tr>
+      <th className="border border-slate-300 px-2 py-2 text-left">T.V.A. %</th>
+      <th className="border border-slate-300 px-2 py-2 text-left">Assiette</th>
+      <th className="border border-slate-300 px-2 py-2 text-left">Montant</th>
+    </tr>
+  </thead>
+ <tbody>
+  <tr>
+    <td className="border px-2 py-2">19%</td>
+    <td className="border px-2 py-2">{fmtMoney(montantHT)}</td>
+    <td className="border px-2 py-2">{fmtMoney(montantTVA)}</td>
+  </tr>
+</tbody>
 
-        <div className="text-sm border border-slate-300 rounded-md p-3 leading-tight">
-          <div className="flex justify-between border-b pb-1">
-            <span>Total HT Brut</span> <strong>{fmtMoney(subHT)}</strong>
-          </div>
-          <div className="flex justify-between border-b py-1">
-            <span>Remise</span> <strong>0</strong>
-          </div>
-          <div className="flex justify-between border-b py-1">
-            <span>Total HT Net</span> <strong>{fmtMoney(subHT)}</strong>
-          </div>
-          <div className="flex justify-between border-b py-1">
-            <span>Total TVA</span> <strong>{fmtMoney(subTVA)}</strong>
-          </div>
-          <div className="mt-2 pt-2 border-t flex justify-between text-base font-bold">
-            <span>Net à Payer</span> <span>{fmtMoney(total)}</span>
-          </div>
-        </div>
-      </div>
+</table>
 
-      {/* ARRÊTÉ */}
-      <div className="px-6 mt-4 text-sm">
-        <strong>
-          Arrêté la présente Facture à la somme de — {fmtMoney(total)} DT —
-        </strong>
-      </div>
 
-      {/* SIGNATURES */}
-      <div className="px-6 mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-center text-slate-700">
-        <div className="border border-slate-300 h-28 flex items-end justify-center p-2 rounded">
-          Notes
-        </div>
-        <div className="border border-slate-300 h-28 flex items-end justify-center p-2 rounded">
-          Signature Client
-        </div>
-        <div className="border border-slate-300 h-28 flex items-end justify-center p-2 rounded">
-          Signature & Cachet
-        </div>
-      </div>
+    <div className="text-sm border border-slate-300 rounded-md p-3 leading-tight">
+  <div className="flex justify-between border-b py-1">
+  <span>Total HT</span>
+  <strong>{fmtMoney(montantHT)}</strong>
+</div>
 
-      {/* PIED DE PAGE */}
-      <footer className="px-6 py-5 text-center text-[11px] text-slate-500">
-        Commercial Management • KIDORA — contact : +216 XX XXX XXX — MF: 1860471/X
-      </footer>
+<div className="flex justify-between border-b py-1">
+  <span>Total TVA (19%)</span>
+  <strong>{fmtMoney(montantTVA)}</strong>
+</div>
 
-      {/* Styles impression */}
-      <style>{`
-        @media print {
-          section { box-shadow: none !important; }
-          table { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-        }
-      `}</style>
-    </section>
+<div className="flex justify-between border-b py-1">
+  <span>Timbre fiscal</span>
+  <strong>{fmtMoney(TIMBRE)}</strong>
+</div>
+
+<div className="mt-2 pt-2  flex justify-between text-base font-bold">
+  <span>Net à Payer</span>
+  <span>{fmtMoney(montantTTC)}</span>
+</div>
+
+    </div>
+  </div>
+
+  {/* RÉCAP TTC */}
+  <div className="px-6 mt-4 text-base font-semibold text-right">
+   Total TTC à régler : <strong>{fmtMoney(montantTTC)}</strong>
+
+  </div>
+
+  {/* MODALITÉS DE PAIEMENT & MENTIONS */}
+  <div className="px-6 mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 text-[13px]">
+    <div className="border border-slate-300 rounded-md p-3">
+      <div className="font-semibold mb-2">Modalités de paiement</div>
+      <p>
+  Mode de paiement : {PAIEMENT_LABELS[row?.methode?.toUpperCase()] || "—"}
+</p>
+
+      <p>Délai de paiement : 30 jours</p>
+      <p>RIB Kidora : TN59 1234 5678 9123 4567 89</p>
+    </div>
+
+    <div className="border border-slate-300 rounded-md p-3">
+      <div className="font-semibold mb-2">Mentions légales</div>
+      <p>Facture générée par la plateforme Kidora</p>
+      <p>TVA incluse selon la réglementation tunisienne</p>
+    </div>
+  </div>
+
+  {/* ARRÊTÉ */}
+  <div className="px-6 mt-4 text-sm">
+    <strong>
+      Arrêté la présente Facture à la somme de — {fmtMoney(montantTTC)} —
+
+    </strong>
+  </div>
+
+  {/* SIGNATURES */}
+  <div className="px-6 mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-center text-slate-700">
+    <div className="border border-slate-300 h-28 flex items-end justify-center p-2 rounded">
+      Notes
+    </div>
+    <div className="border border-slate-300 h-28 flex items-end justify-center p-2 rounded">
+      Signature Client
+    </div>
+    <div className="border border-slate-300 h-28 flex items-end justify-center p-2 rounded">
+      Signature & Cachet
+    </div>
+  </div>
+
+  {/* FOOTER */}
+  <footer className="px-6 py-5 text-center text-[11px] text-slate-500">
+    Commercial Management • KIDORA — contact : +216 50 000 000 — MF: 1860471/X
+  </footer>
+
+  {/* Impression */}
+  <style>{`
+    @media print {
+      section { box-shadow: none !important; }
+      table { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+  `}</style>
+</section>
+
   );
 });
 
@@ -758,18 +897,9 @@ const InvoicePreview = React.forwardRef(function InvoicePreview(
 /* --------------------------- Modale d’aperçu (utilise InvoicePreview) --------------------------- */
 
 function InvoiceModal({ row, onClose }) {
- const realAbo = row?._abo || null;
- const computedLines = React.useMemo(() => {
-   if (Array.isArray(row?.lines) && row.lines.length) return row.lines;
-  if (realAbo) {
-     // construit une ligne propre depuis l'abonnement
-     const lib = realAbo.formule ? `Abonnement — ${realAbo.formule}` : "Abonnement";
-     const pu  = Number(realAbo.montantTotal ?? realAbo.montantDu ?? 0);
-     // si ton PU est “0” mais que tu veux montrer “montant dû”, remplace ci-dessus par montantDu
-     return [{ desc: lib, qty: 1, puHT: pu, tva: 0 }];
-   }
-  return [{ desc: row?.abonnement || "Abonnement", qty: 1, puHT: 0, tva: 0 }];
- }, [row, realAbo]);
+
+
+
 
   const previewRef = React.useRef(null);
 
@@ -881,8 +1011,8 @@ const exportPDF = async () => {
           transition={{ type: "spring", stiffness: 200, damping: 20 }}
           className="relative z-10 w-[800px] max-w-[95vw] max-h-[90vh] overflow-auto rounded-2xl bg-transparent"
         >
-          {/* 👉 on passe le ref au preview */}
-          <InvoicePreview ref={previewRef} row={row} lines={computedLines} />
+          <InvoicePreview ref={previewRef} row={row} />
+
 
           {/* barre d’actions (non imprimée) */}
           <div className="mt-3 flex justify-end gap-2 print:hidden">
@@ -1276,31 +1406,31 @@ const handleCreated = async (createdRow) => {
   }
 };
 
-
 const onRowAction = async (id, action) => {
   setOpenRowMenu(null);
-  if (action === "view") {
-  // charge la facture + etab + abo à jour
-   try {
-     const rich = await getFactureFull(id);
-     setViewRow(rich);
-   } catch (e) {
-     // fallback si l’API spécifique n’est pas prête
-     const row = rows.find(r => r.id === id);
-     setViewRow(row || null);
-   }
-    return;
-  }
-  if (action === "Envoyer") alert(`Envoyer ${id}`);
-  if (action === "delete") {
-    setRows((r) => r.filter((x) => x.id !== id));
-    setSelected((s) => {
-      const n = new Set(s);
-      n.delete(id);
-      return n;
+  if (action !== "view") return;
+
+  try {
+    const rich = await getFactureFull(id);
+
+    // ✅ le backend fournit déjà TOUT
+    setViewRow({
+      ...rich,
+      montantHT: rich.montantHT,
+      montantTVA: rich.montantTVA,
+      montantTTC: rich.montantTTC,
+      timbreFiscal: rich.timbreFiscal,
+      nombreEnfants: rich.nombreEnfants,
     });
+
+  } catch (e) {
+    console.error("Erreur chargement facture", e);
+    const fallback = rows.find(r => r.id === id);
+    setViewRow(fallback || null);
   }
 };
+
+
 
 
   /* ------------------------------ RENDER ------------------------------ */
