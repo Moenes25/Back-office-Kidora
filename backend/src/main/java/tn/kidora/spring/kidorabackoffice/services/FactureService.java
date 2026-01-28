@@ -12,6 +12,7 @@ public interface FactureService {
     long totalFacturesPayees();      // nombre payées
     long totalFacturesImpaye();      // nombre impayées
     List<FactureResponseDto> getAllFactures();
-    public FactureResponseDto getFactureById(String id);
+     FactureResponseDto getFactureById(String id);
+    //void envoyerFactureDepuisFront(String idFacture, MultipartFile file)
 
 }

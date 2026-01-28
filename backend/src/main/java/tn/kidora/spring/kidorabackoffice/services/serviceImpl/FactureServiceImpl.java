@@ -128,5 +128,41 @@ public class FactureServiceImpl implements FactureService {
         long compteur = factureRepository.count() + 1;
         return String.format("FAC-%d-%02d-%03d", now.getYear(), now.getMonthValue(), compteur);
     }
+/*
+@Override
+public void envoyerFactureDepuisFront(String idFacture, MultipartFile file) {
+    Facture facture = factureRepository.findById(idFacture)
+            .orElseThrow(() -> new RuntimeException("Facture introuvable"));
+
+    Etablissement etab = facture.getEtablissement();
+    if (etab == null || etab.getEmail() == null) {
+        throw new RuntimeException("Établissement ou email non défini pour cette facture");
+    }
+    try {
+        // Récupérer le contenu du PDF envoyé depuis le front
+        byte[] pdfBytes = file.getBytes();
+   // Préparer le mail
+        String subject = "Votre facture Kidora #" + facture.getReference();
+        String body = "Bonjour " + etab.getNomEtablissement() + ",\n\n" +
+                      "Veuillez trouver ci-joint votre facture générée depuis l'application Kidora.\n\n" +
+                      "Cordialement,\nL’équipe Kidora.";
+
+        // Envoi de l’email
+        emailService.sendEmailWithAttachment(
+                etab.getEmail(),
+                subject,
+                body,
+                pdfBytes,
+                file.getOriginalFilename() != null ? file.getOriginalFilename() : "Facture_" + facture.getReference() + ".pdf"
+        );
+
+        System.out.println("✅ Facture PDF reçue du front et envoyée à : " + etab.getEmail());
+
+    } catch (Exception e) {
+        throw new RuntimeException("Erreur lors de l'envoi de la facture : " + e.getMessage());
+    }
+}
+
+ */
 }
 

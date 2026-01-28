@@ -46,4 +46,14 @@ public class FactureController {
     public ResponseEntity<FactureResponseDto> getFactureById(@PathVariable String id) {
         return ResponseEntity.ok(factureService.getFactureById(id));
     }
+   /* @PostMapping("/{id}/send-email")
+    public ResponseEntity<String> envoyerFactureDepuisFront(
+            @PathVariable String id,
+            @RequestParam("file") MultipartFile file) {
+
+        factureService.envoyerFactureDepuisFront(id, file);
+        return ResponseEntity.ok("Facture envoyée avec succès !");
+    }
+    }*/
+
 }
