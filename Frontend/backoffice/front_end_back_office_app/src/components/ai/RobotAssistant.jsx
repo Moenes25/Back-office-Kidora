@@ -3,6 +3,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HiOutlineX, HiOutlineMinus, HiOutlinePaperAirplane } from "react-icons/hi";
 
+
+
+
 /* ---------- RobotHead (identique à ton style) ---------- */
 function RobotHead({ pulsing = false, mood = "smile", speaking = false }) {
   return (
@@ -26,33 +29,17 @@ function RobotHead({ pulsing = false, mood = "smile", speaking = false }) {
       <motion.div
         className="absolute left-[10px] top-[15px] h-3 w-3 rounded-full bg-indigo-600 shadow-inner"
         animate={{ scaleY: [1, 0.15, 1] }}
-        transition={{ duration: 3.2, repeat: Infinity, delay: 0.2 }}
+      
       />
       <motion.div
         className="absolute right-[10px] top-[15px] h-3 w-3 rounded-full bg-indigo-600 shadow-inner"
         animate={{ scaleY: [1, 0.15, 1] }}
-        transition={{ duration: 3.2, repeat: Infinity, delay: 0.6 }}
+     
       />
 
       {/* bouche */}
       {mood === "smile" ? (
-        <svg
-          className="absolute left-1/2 top-[26px] -translate-x-1/2"
-          width="30"
-          height="16"
-          viewBox="0 0 30 16"
-          fill="none"
-        >
-          <motion.path
-            d="M3 3 C 10 14, 20 14, 27 3"
-            stroke="#6366f1"
-            strokeWidth="3"
-            strokeLinecap="round"
-            initial={false}
-            animate={speaking ? { y: [0, -0.8, 0] } : { y: 0 }}
-            transition={{ duration: 0.9, repeat: speaking ? Infinity : 0 }}
-          />
-        </svg>
+     <div className="absolute left-1/2 top-[28px] h-1.5 w-6 -translate-x-1/2 rounded-full bg-indigo-300" />
       ) : (
         // visage neutre (poker face)
         <div className="absolute left-1/2 top-[28px] h-1.5 w-6 -translate-x-1/2 rounded-full bg-indigo-300" />
