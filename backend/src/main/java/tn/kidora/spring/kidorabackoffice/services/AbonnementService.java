@@ -8,7 +8,8 @@ import tn.kidora.spring.kidorabackoffice.dto.PaiementHistoriqueDto;
 import java.util.List;
 import java.util.Map;
 
-public interface AbonnementService {
+public interface
+AbonnementService {
     ResponseEntity<AbonnementResponseDTO> addAbonnement(AbonnementRequestDTO dto);
      ResponseEntity<AbonnementResponseDTO> updateAbonnement(String id, AbonnementRequestDTO dto);
      ResponseEntity<Void> deleteAbonnement(String id);

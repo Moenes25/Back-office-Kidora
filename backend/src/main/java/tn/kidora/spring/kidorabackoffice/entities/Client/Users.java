@@ -47,8 +47,6 @@ public class Users {
     // @DBRef
     // private List<Classes> classes;
 
-    @DBRef
-    private Etablissement etablissement;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

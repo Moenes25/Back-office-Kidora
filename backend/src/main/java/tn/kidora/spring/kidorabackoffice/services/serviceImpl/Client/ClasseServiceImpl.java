@@ -30,7 +30,8 @@ public class ClasseServiceImpl implements  ClasseService{
              
         }
         System.out.println("voici username de l'utilisateur connectee : " + username);
-        Users user = clientRepo.findByEmail(username);
+        Users user = clientRepo.findByEmail(username)
+                .orElseThrow(() -> new IllegalArgumentException("Utilisateur non enregistré"));
          entity.setCreated_by(user);
         
        

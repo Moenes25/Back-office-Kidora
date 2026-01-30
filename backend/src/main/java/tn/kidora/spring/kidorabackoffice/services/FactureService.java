@@ -1,5 +1,6 @@
 package tn.kidora.spring.kidorabackoffice.services;
 
+import org.springframework.web.multipart.MultipartFile;
 import tn.kidora.spring.kidorabackoffice.dto.FactureRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.FactureResponseDto;
 import tn.kidora.spring.kidorabackoffice.entities.Facture;
@@ -13,6 +14,6 @@ public interface FactureService {
     long totalFacturesImpaye();      // nombre impayées
     List<FactureResponseDto> getAllFactures();
      FactureResponseDto getFactureById(String id);
-    //void envoyerFactureDepuisFront(String idFacture, MultipartFile file)
+    void envoyerFactureDepuisFront(String idFacture, MultipartFile file);
 
 }

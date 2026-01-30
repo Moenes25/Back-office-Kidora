@@ -16,16 +16,16 @@ import java.util.List;
 @Document(collection = "Enfants")
 public class Enfants {
     @Id
-    private  String idEnfant;
-    private  String nom;
-    private  String prenom;
-    private  Integer age;
+    private String idEnfant;
+    private String nom;
+    private String prenom;
+    private Integer age;
 
     private String imageUrl;
     @DBRef
     private Etablissement etablissement;
 
-    @DBRef 
+    @DBRef
     private Classes classe;
 
     @DBRef

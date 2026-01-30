@@ -85,7 +85,7 @@ public class SecurityConfig {
 
                 // .addFilterBefore(new JwtFilter(customUserDetailsService, jwtUtils), UsernamePasswordAuthenticationFilter.class)
 
-                            
+
              .build();
                
     }

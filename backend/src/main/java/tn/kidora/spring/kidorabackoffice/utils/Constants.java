@@ -86,6 +86,7 @@ public class Constants {
     public static final String FACTURE_TOTAL_IMPAYEES = "/total/impayees";
     public static final String FACTURE_ALL = "/all";
     public static final String FACTURE_BY_ID = "/{id}";
+    public static final String FACTURE_SEND_EMAIL = "/{id}/send-email";
     // ---------------------- CLIENT EVENTS ------------------------
     public static final String CLIENT_EVENTS = "/client/evenements";
     public static final String CREATE_EVENT = "/create";
@@ -104,6 +105,11 @@ public class Constants {
     public static final String EDUCATEURS= "/educateurs";
     public static final String ANFANTS_BY_CLASSE = "/enfants-by-classe";
 
+
+
+    public static final String MARQUER_ABSENCE = "/marquer";
+    public static final String NOMBRE_PRESENTS_AUJOURDHUI = "/presents/aujourdhui";
+    public static final String NOMBRE_ABSENTS_AUJOURDHUI = "/absents/aujourdhui";
 
 
 

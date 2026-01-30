@@ -2,8 +2,10 @@ package tn.kidora.spring.kidorabackoffice.controllers;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import tn.kidora.spring.kidorabackoffice.dto.FactureRequestDTO;
 import tn.kidora.spring.kidorabackoffice.dto.FactureResponseDto;
 import tn.kidora.spring.kidorabackoffice.entities.Facture;
@@ -46,14 +48,12 @@ public class FactureController {
     public ResponseEntity<FactureResponseDto> getFactureById(@PathVariable String id) {
         return ResponseEntity.ok(factureService.getFactureById(id));
     }
-   /* @PostMapping("/{id}/send-email")
+    @PostMapping(value = Constants.FACTURE_SEND_EMAIL,consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> envoyerFactureDepuisFront(
             @PathVariable String id,
             @RequestParam("file") MultipartFile file) {
-
         factureService.envoyerFactureDepuisFront(id, file);
         return ResponseEntity.ok("Facture envoyée avec succès !");
     }
-    }*/
 
 }
